@@ -1,0 +1,38 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+
+    <div class="container mt-5">
+        <h1>Дашборд</h1>
+        <p>Добро пожаловать, {{ user.username }}!</p>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card text-white bg-warning bg-gradient mb-3">
+                    <div class="card-header">Бригады</div>
+                    <div class="card-body">
+                        <h4 class="card-title">{{ brigades.count }}</h4>
+                        <a href="{% url 'brigade_list' %}" class="btn btn-light">Просмотреть</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-info bg-gradient mb-3">
+                    <div class="card-header">Категории</div>
+                    <div class="card-body">
+                        <h4 class="card-title">{{ categories.count }}</h4>
+                        <a href="{% url 'category_list' %}" class="btn btn-light">Просмотреть</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-success bg-gradient mb-3">
+                    <div class="card-header">Оборудование</div>
+                    <div class="card-body">
+                        <h4 class="card-title">{{ equipment.count }}</h4>
+                        <a href="{% url 'equipment_list' %}" class="btn btn-light">Просмотреть</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
