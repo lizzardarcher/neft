@@ -1,10 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "layouts/base.html" %}
+{% load static %}
 
-</body>
-</html>
+{% block title %} Главная {% endblock title %}
+
+{% block content %}
+<div class="position-relative overflow-hidden vh-100" style="background-image: url('{% static "img/main-bg.jpg" %}'); background-size: cover; background-position: center;">
+    <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-50"></div>
+    <div class="position-relative container d-flex justify-content-center align-items-center h-100">
+        <div class="text-center text-white">
+            <h1 class="mb-4">Добро пожаловать в систему учета оборудования</h1>
+            <p class="lead mb-4">Доступ только для персонала.</p>
+            <a href="{% url 'dashboard' %}" class="btn btn-light btn-lg">Войти в систему</a>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE -->
+{% block scripts %}
+{% endblock scripts %}

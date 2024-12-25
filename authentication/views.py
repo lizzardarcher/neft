@@ -11,8 +11,33 @@ from django.contrib.auth import authenticate, login
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.middleware.csrf import get_token
+from django.views.generic import TemplateView
+
 from .forms import LoginForm, SignUpForm
 
+class LoginView(TemplateView):
+    template_name = 'accounts/login.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = LoginForm()
+        return context
+
+
+    def post(self, request, *args, **kwargs):
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                 login(request, user)
+                 return redirect('dashboard') # Перенаправление на дашборд
+            else:
+                 form.add_error(None, "Неправильный логин или пароль")
+        context = self.get_context_data(**kwargs)
+        context['form'] = form
+        return self.render_to_response(context)
 
 def login_view(request):
     form = LoginForm(request.POST or None)

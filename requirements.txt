@@ -1,0 +1,12 @@
+asgiref
+Django
+django-appconf
+fontawesomefree
+gunicorn
+lxml
+mysqlclient
+packaging
+python-dotenv
+sqlparse
+Unidecode
+whitenoise

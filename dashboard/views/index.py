@@ -1,7 +1,9 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.messages.views import SuccessMessageMixin
 from django.views.generic import TemplateView
 
 
-class DashboardView(TemplateView):
+class DashboardView(LoginRequiredMixin, TemplateView, SuccessMessageMixin):
     template_name = 'dashboard/index.html'
 
     def get_context_data(self, **kwargs):
