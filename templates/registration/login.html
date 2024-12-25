@@ -1,0 +1,58 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Login {% endblock %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+        <div class="row">
+          <div class="col-md-8">
+            <div class="card">
+              <form role="form" method="post" action="">
+                   {% csrf_token %}
+                <div class="card-header">
+                  <h5 class="title">Логин</h5>
+                  <h6 class="card-category">
+                      {% if msg %}
+                        <span class="text-danger">{{ msg }}</span>
+                      {% else %}
+                        Введите пользовательские данные
+                      {% endif %}  
+                  </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                      <div class="col-md-3 px-md-1">
+                        <div class="form-group">
+                          <label>Логин</label>
+                          {{ form.username }}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-3 px-md-1">
+                        <div class="form-group">
+                          <label>Пароль</label>
+                          {{ form.password }}
+                        </div>
+                      </div>
+                    </div>
+                                    </div>
+                <div class="card-footer">
+                  <button type="submit" name="login" class="btn btn-fill btn-primary">Подтвердить</button>
+                  &nbsp; &nbsp;
+                    <p>Еще на создали аккаунт? <a href="{% url 'register' %}" class="text-primary">Создать аккаунт</a></p>
+                    <p>Забыли пароль? <a href="/users/password_reset" class="text-primary">Восстановить пароль</a></p>
+                </div>
+              </form>
+            </div>
+          </div>
+      </div>
+
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}
