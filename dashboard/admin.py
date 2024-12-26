@@ -1,7 +1,5 @@
 from django.contrib import admin
 from django.contrib.auth.models import Group, User
-admin.site.unregister(Group)
-admin.site.unregister(User)
 
 from .models import *
 
@@ -23,8 +21,4 @@ class EquipmentAdmin(admin.ModelAdmin):
 
 @admin.register(Transfer)
 class TransferAdmin(admin.ModelAdmin):
-    ...
-
-@admin.register(User)
-class UserAdmin(admin.ModelAdmin):
     ...
