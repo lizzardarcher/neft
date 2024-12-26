@@ -1,0 +1,92 @@
+{% block content %}
+    <div class="container bg-light mt-4 rounded">
+        <h2>Список бригад</h2>
+        {% include 'includes/search.html' %}
+        <table class="table table-bordered table-striped">
+            <thead class="thead-dark">
+            <tr>
+                <th>ID</th>
+                <th>Название бригады</th>
+                <th>Описание</th>
+                <th>Всего оборудования (Ед.)</th>
+                <th>Действия</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for brigade in brigades %}
+                <tr>
+                    <td>{{ brigade.id }}</td>
+                    <td><a href="{% url 'brigade_detail' brigade.id %}" class="">{{ brigade.name }}</a></td>
+                    <td>
+                        {% if brigade.description %}
+                            {{ brigade.description|truncatewords:10 }}
+                            <a href="#" data-toggle="modal"
+                               data-target="#descriptionModal{{ brigade.id }}">Подробнее</a>
+
+                            <div class="modal fade" id="descriptionModal{{ brigade.id }}" tabindex="-1" role="dialog"
+                                 aria-labelledby="descriptionModalLabel" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="descriptionModalLabel">Описание
+                                                бригады: {{ brigade.name }}</h5>
+                                        </div>
+                                        <div class="modal-body">
+                                            {{ brigade.description|linebreaksbr }}
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                                Закрыть
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <span class="text-muted">Нет описания</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'brigade_detail' brigade.id %}" class="">{{ brigade.equipment_set.count }}</a>
+                    </td>
+                    <td>
+                        {% if request.user.is_superuser %}
+
+                            <a href="{% url 'brigade_update' brigade.id %}" class="btn btn-sm btn-warning"><i class="fa fa-edit"></i></a>
+                            <button type="button" class="btn btn-sm btn-danger" data-toggle="modal"
+                                    data-target="#deleteModal{{ brigade.id }}"><i class="fa fa-trash-can"></i></button>
+                            <div class="modal fade" id="deleteModal{{ brigade.id }}" tabindex="-1" role="dialog"
+                                 aria-labelledby="deleteModalLabel" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="deleteModalLabel">Подтверждение удаления</h5>
+                                        </div>
+                                        <div class="modal-body">
+                                            Вы уверены, что хотите удалить бригаду "{{ brigade.name }}"?
+                                            После удаления оборудование, привязанное к бригаде "{{ brigade.name }}",
+                                            потеряет привязку к данной бригаде и не будет нигде числиться.
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена
+                                            </button>
+                                            <a href="{% url 'brigade_delete' brigade.id %}" class="btn btn-danger">Удалить</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="3">Нет данных о бригадах.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% include 'includes/pagination.html' %}
+        <a href="{% url 'dashboard' %}" class="btn btn-sm btn-outline-dark mt-2 mb-2">НАЗАД</a>
+
+    </div>
+{% endblock content %}

@@ -3,35 +3,35 @@
 
 {% block content %}
 
-    <div class="container mt-5">
+    <div class="container bg-light p-5 mt-5 rounded">
         <h1>Система контроля оборудования</h1>
         <p>Добро пожаловать, {{ user.username }}!</p>
         <div class="row">
             <div class="col-md-4">
-                <div class="card text-white bg-warning bg-gradient mb-3">
-                    <div class="card-header">Бригады</div>
+                <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
+                    <div class="card-header"><i class="fa fa-helmet-safety"></i> Бригады: {{ brigades.count }}</div>
                     <div class="card-body">
-                        <h4 class="card-title">Всего: {{ brigades.count }}</h4>
-                        <a href="{% url 'brigade_list' %}" class="btn btn-light">Просмотреть</a>
+                        <h5 class="card-title">Список бригад</h5>
                     </div>
+                        <a href="{% url 'brigade_list' %}" class="m-1 btn btn-outline-info">Просмотреть</a>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card text-white bg-info bg-gradient mb-3">
-                    <div class="card-header">Категории</div>
+                <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
+                    <div class="card-header"><i class="fa fa-list-alt"></i> Категории: {{ categories.count }}</div>
                     <div class="card-body">
-                        <h4 class="card-title">Всего: {{ categories.count }}</h4>
-                        <a href="{% url 'category_list' %}" class="btn btn-light">Просмотреть</a>
+                        <h5 class="card-title">Список категорий оборудования</h5>
                     </div>
+                    <a href="{% url 'category_list' %}" class="m-1 btn btn-outline-info">Просмотреть</a>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card text-white bg-success bg-gradient mb-3">
-                    <div class="card-header">Оборудование</div>
+                <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
+                    <div class="card-header"><i class="fa fa-hammer"></i> Оборудование: {{ equipment.count }}</div>
                     <div class="card-body">
-                        <h4 class="card-title">Всего: {{ equipment.count }}</h4>
-                        <a href="{% url 'equipment_list' %}" class="btn btn-light">Просмотреть</a>
+                        <h5 class="card-title">Полный список доступного оборудования</h5>
                     </div>
+                    <a href="{% url 'equipment_list' %}" class="m-1 btn btn-outline-info">Просмотреть</a>
                 </div>
             </div>
         </div>
