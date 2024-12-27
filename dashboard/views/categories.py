@@ -1,8 +1,24 @@
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 
+from dashboard.models import Category
+
 
 class CategoryListView(ListView):
-    ...
+    model = Category
+    context_object_name = 'categories'
+    template_name = 'dashboard/categories/category_list.html'
+    paginate_by = 30
+
+    def get_queryset(self):
+        """Поиск по названию категории"""
+        queryset = super().get_queryset().order_by('name')
+        search_request = self.request.GET.get("search")
+        if search_request:
+            category_by_name = Category.objects.filter(name__icontains=search_request)
+            category_by_parent = Category.objects.filter(name__icontains=search_request)
+            category_by_description = Category.objects.filter(description__icontains=search_request)
+            queryset = (category_by_description | category_by_name | category_by_parent).order_by('name')
+        return queryset
 
 
 class CategoryCreateView(CreateView):

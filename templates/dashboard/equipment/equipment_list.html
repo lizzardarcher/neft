@@ -1,0 +1,9 @@
+{% extends 'layouts/base.html' %}
+{% block title %}Оборудование{% endblock title %}
+{% block content %}
+    <div class="container mt-4">
+        {% include 'includes/search.html' %}
+        <h2>Список Оборудования</h2>
+        {% include 'dashboard/equipment/_equipment_table.html' %}
+    </div>
+{% endblock content %}

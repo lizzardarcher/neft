@@ -19,14 +19,18 @@ class BrigadeListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
 
     def get_queryset(self):
         """Поиск по имени и описанию бригады"""
+        queryset = super().get_queryset()
         search_request = self.request.GET.get("search")
         if search_request:
             brigade_by_name = Brigade.objects.filter(name__icontains=search_request)
             brigade_by_description = Brigade.objects.filter(description__icontains=search_request)
-            object_list = brigade_by_description | brigade_by_name
-        else:
-            object_list = Brigade.objects.all()
-        return object_list
+            queryset = brigade_by_description | brigade_by_name
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_size'] = self.request.GET.get('page_size', self.paginate_by)
+        return context
 
 class BrigadeDetailView(LoginRequiredMixin, SuccessMessageMixin, DetailView):
     model = Brigade
@@ -53,6 +57,9 @@ class BrigadeUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'dashboard/brigades/brigade_form_update.html'
     form_class = BrigadeForm
     success_url = '/dashboard/brigades'
+
+    def get_success_message(self, cleaned_data):
+        return f"Бригада {cleaned_data['name']} Успешно обновлена!"
 
 
 def brigade_delete(request, brigade_id):
