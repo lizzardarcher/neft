@@ -9,7 +9,7 @@ urlpatterns = [
     path('brigade/<int:pk>/detail', brigades.BrigadeDetailView.as_view(), name='brigade_detail'),
     path('brigades/create/', brigades.BrigadeCreateView.as_view(), name='brigade_create'),
     path('brigades/<int:pk>/update/', brigades.BrigadeUpdateView.as_view(), name='brigade_update'),
-    path('brigades/<int:pk>/delete/', brigades.BrigadeDeleteView.as_view(), name='brigade_delete'),
+    path('brigades/<int:brigade_id>/delete/', brigades.brigade_delete, name='brigade_delete'),
 
     path('categories/', categories.CategoryListView.as_view(), name='category_list'),
     path('categories/create/', categories.CategoryCreateView.as_view(), name='category_create'),

@@ -1,39 +1,32 @@
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 
+from dashboard.forms import BrigadeForm
 from dashboard.models import Brigade, Category, Equipment
 
 
-class BrigadeListView(LoginRequiredMixin, SuccessMessageMixin, View):
+class BrigadeListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
     model = Brigade
     context_object_name = 'brigades'
     template_name = 'dashboard/brigades/brigade_list.html'
     paginate_by = 10
 
-    def get(self, request):
-        search_query = request.GET.get('search', '')
-        if search_query:
-            brigades = Brigade.objects.filter(name__icontains=search_query)
+    def get_queryset(self):
+        """Поиск по имени и описанию бригады"""
+        search_request = self.request.GET.get("search")
+        if search_request:
+            brigade_by_name = Brigade.objects.filter(name__icontains=search_request)
+            brigade_by_description = Brigade.objects.filter(description__icontains=search_request)
+            object_list = brigade_by_description | brigade_by_name
         else:
-            brigades = Brigade.objects.all()
-
-        paginator = Paginator(brigades, self.paginate_by)
-        page = request.GET.get('page')
-        try:
-            page_obj = paginator.get_page(page)
-        except PageNotAnInteger:
-            page_obj = paginator.get_page(1)
-        except EmptyPage:
-            page_obj = paginator.get_page(paginator.num_pages)
-
-        context = {'brigades': page_obj}
-        return render(request, self.template_name, context)
-
+            object_list = Brigade.objects.all()
+        return object_list
 
 class BrigadeDetailView(LoginRequiredMixin, SuccessMessageMixin, DetailView):
     model = Brigade
@@ -46,12 +39,25 @@ class BrigadeDetailView(LoginRequiredMixin, SuccessMessageMixin, DetailView):
         return context
 
 class BrigadeCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
-    ...
-
+    model = Brigade
+    context_object_name = 'brigade'
+    template_name = 'dashboard/brigades/brigade_form_create.html'
+    form_class = BrigadeForm
+    success_url = '/dashboard/brigades'
+    def get_success_message(self, cleaned_data):
+        return f"Бригада {cleaned_data['name']} Успешно создана!"
 
 class BrigadeUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
-    ...
+    model = Brigade
+    context_object_name = 'brigade'
+    template_name = 'dashboard/brigades/brigade_form_update.html'
+    form_class = BrigadeForm
+    success_url = '/dashboard/brigades'
 
 
-class BrigadeDeleteView(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
-    ...
+def brigade_delete(request, brigade_id):
+    brigade = get_object_or_404(Brigade, id=brigade_id)
+    brigade.delete()
+    messages.success(request, 'Бригада успешно удалена!')
+    return redirect('brigade_list')
+    # return render(request, 'dashboard/brigades/brigade_list.html', {'message': 'Успешно удалено'})

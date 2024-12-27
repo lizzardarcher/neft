@@ -1,5 +1,5 @@
 {% block content %}
-    <div class="container bg-light mt-4 rounded">
+        <a href="{% url 'brigade_create' %}" class="btn btn-outline-success mb-4 mt-4">Добавить бригаду <i class="fa fa-plus-square"></i></a>
         <h2>Список бригад</h2>
         {% include 'includes/search.html' %}
         <table class="table table-bordered table-striped">
@@ -88,5 +88,4 @@
         {% include 'includes/pagination.html' %}
         <a href="{% url 'dashboard' %}" class="btn btn-sm btn-outline-dark mt-2 mb-2">НАЗАД</a>
 
-    </div>
 {% endblock content %}
