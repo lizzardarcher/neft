@@ -1,17 +1,37 @@
 {% extends 'layouts/base.html' %}
 {% block content %}
     {% include 'includes/form_errors.html' %}
-	<div class="container mt-4">
+    <div class="container mt-4">
         <h2>Добавление нового оборудования для бригады: {{ brigade }}</h2>
         <form method="post">
             {% csrf_token %}
-           <div class="form-group">
-                <label for="name">Название бригады:</label>
+            <div class="form-group">
+                <label for="name">Категория:</label>
+                {{ form.category }}
+            </div>
+            <div class="form-group">
+                <label for="name">Серийный номер:</label>
+                {{ form.serial }}
+            </div>
+            <div class="form-group">
+                <label for="name">Название:</label>
                 {{ form.name }}
+            </div>
+            <div class="form-group">
+                <label for="name">Дата выпуска:</label>
+                {{ form.date_release }}
+            </div>
+            <div class="form-group">
+                <label for="name">Дата ввода в эксплуатацию:</label>
+                {{ form.date_exploitation }}
+            </div>
+            <div class="form-group">
+                <label for="name">Состояние:</label>
+                {{ form.condition }}
             </div>
             <hr>
             <button type="submit" class="btn btn-primary">Добавить</button>
-             <a href="{% url 'brigade_list' %}" class="btn btn-secondary">Отмена</a>
+            <a href="{% url 'brigade_list' %}" class="btn btn-secondary">Отмена</a>
         </form>
     </div>
 {% endblock content %}

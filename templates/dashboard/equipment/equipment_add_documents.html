@@ -1,0 +1,35 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+    {% include 'includes/form_errors.html' %}
+    <div class="container mt-4">
+        <div class="card mt-5">
+            <div class="card-body">
+                <h2>Добавить документ</h2>
+                <p class="small">{{ equipment.name }} {{ equipment.serial }}</p>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ document_form.as_p }}
+                    <hr>
+                    <button class="btn btn-outline-success" type="submit">Добавить новый</button>
+                    <a href="{% url 'brigade_detail' brigade.id %}" class="btn btn-secondary">Назад</a>
+                </form>
+            </div>
+        </div>
+
+        {% if equipment.documents.all %}
+            <div class="card mt-5">
+                <div class="card-body">
+                    <h5>Добавленные документы</h5>
+                    <ol>
+                        {% for doc in equipment.documents.all %}
+                            <li>
+                                <a href="{{ doc.file.url }}">{{ doc.title }} | {{ doc.file.name }}</a>
+                            </li>
+                        {% endfor %}
+                    </ol>
+                </div>
+            </div>
+        {% endif %}
+
+    </div>
+{% endblock content %}

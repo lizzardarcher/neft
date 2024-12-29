@@ -41,7 +41,7 @@ class Equipment(models.Model):
     documents = models.ManyToManyField(Document, blank=True, verbose_name='Документы для оборудования')
     date_release = models.DateField(auto_now_add=False, auto_now=False, null=False, blank=False, verbose_name='Дата выпуска')
     date_exploitation = models.DateField(auto_now_add=False, auto_now=False, null=False, blank=False, verbose_name='Дата ввода в эксплуатацию')
-    condition = models.CharField(max_length=100, null=False, blank=False, default='', choices=CONDITION, verbose_name='Состояние оборудования')
+    condition = models.CharField(max_length=100, null=False, blank=False, default='work', choices=CONDITION, verbose_name='Состояние оборудования')
 
     def __str__(self):
         return f"{self.name} ({self.category})"

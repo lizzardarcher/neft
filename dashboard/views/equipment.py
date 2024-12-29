@@ -1,9 +1,10 @@
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
+from django.views.generic.detail import SingleObjectMixin
 
-from dashboard.forms import EquipmentCreateByBrigadeForm
-from dashboard.models import Equipment, Brigade
+from dashboard.forms import EquipmentCreateByBrigadeForm, EquipmentAddDocumentsForm, DocumentForm
+from dashboard.models import Equipment, Brigade, Document
 
 
 class EquipmentListView(ListView):
@@ -26,10 +27,11 @@ class EquipmentListView(ListView):
 class EquipmentCreateView(CreateView):
     ...
 
+
 class EquipmentCreateByBrigadeIdView(CreateView):
     model = Equipment
     form_class = EquipmentCreateByBrigadeForm
-    template_name = 'dashboard/equipment/equipment_form.html'  # Замените на путь к вашему шаблону
+    template_name = 'dashboard/equipment/equipment_form.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data()
@@ -37,14 +39,47 @@ class EquipmentCreateByBrigadeIdView(CreateView):
         return context
 
     def form_valid(self, form):
-        brigade_id = self.kwargs.get('brigade_id')  # Извлекаем из URL
+        brigade_id = self.kwargs.get('brigade_id')
         brigade = get_object_or_404(Brigade, pk=brigade_id)
         form.instance.brigade = brigade
         return super().form_valid(form)
 
     def get_success_url(self):
         brigade_id = self.kwargs.get('brigade_id')
-        return reverse('brigade_detail', args=[brigade_id])  # Замените на свой URL просмотра категории
+        return reverse('brigade_detail', args=[brigade_id])
+
+
+class EquipmentAddDocumentsView(CreateView):
+    model = Document
+    form_class = EquipmentAddDocumentsForm
+    template_name = 'dashboard/equipment/equipment_add_documents.html'
+
+    def get_object(self):
+        return get_object_or_404(Equipment, pk=self.kwargs.get('equipment_id'))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['equipment'] = self.get_object()
+        context['brigade'] = Brigade.objects.get(pk=self.kwargs.get('brigade_id'))
+        context['document_form'] = DocumentForm()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        document_form = DocumentForm(request.POST, request.FILES)
+        if document_form.is_valid():
+            new_document = document_form.save()
+            self.object.documents.add(new_document)
+            return self.form_valid(self.get_form())
+
+        return super().post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        equipment_id = self.kwargs.get('equipment_id')
+        brigade_id = self.kwargs.get('brigade_id')
+        return redirect(reverse('equipment_add_document', args=[equipment_id, brigade_id]))
+
+
 
 class EquipmentUpdateView(UpdateView):
     ...
@@ -54,4 +89,6 @@ class EquipmentDeleteView(DeleteView):
     ...
 
 class EquipmentDetailView(DetailView):
-    ...
+    model = Equipment
+    context_object_name = 'equipment'
+    template_name = 'dashboard/equipment/equipment_detail.html'

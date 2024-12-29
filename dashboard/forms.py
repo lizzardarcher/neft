@@ -1,6 +1,6 @@
 from django import forms
 
-from dashboard.models import Brigade, Equipment
+from dashboard.models import Brigade, Equipment, Document
 
 
 class BrigadeForm(forms.ModelForm):
@@ -22,7 +22,20 @@ class EquipmentCreateByBrigadeForm(forms.ModelForm):
             'serial': forms.TextInput(attrs={'class': 'form-control'}),
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'condition': forms.Select(attrs={'class': 'form-control'}),
-            'documents': forms.ClearableFileInput(attrs={'class': 'form-control'}),
             'date_release': forms.DateTimeInput(format='%Y-%m-%d', attrs={'class': 'form-control text-info', 'type': 'date'}),
             'date_exploitation': forms.DateTimeInput(format='%Y-%m-%d', attrs={'class': 'form-control text-info', 'type': 'date', 'multiple': 'multiple'}),
         }
+
+class DocumentForm(forms.ModelForm):
+    class Meta:
+        model = Document
+        fields = ['title', 'file']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'file': forms.FileInput(attrs={'class': 'form-control'}),
+        }
+
+class EquipmentAddDocumentsForm(forms.ModelForm):
+    class Meta:
+        model = Equipment
+        fields = ['documents']

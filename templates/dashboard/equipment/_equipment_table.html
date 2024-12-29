@@ -19,7 +19,7 @@
             <td>{{ equipment.serial }}</td>
             <td>{{ equipment.name }}</td>
             <td>{{ equipment.category }}</td>
-            <td>{{ equipment.documents.count }}</td>
+            <td>{{ equipment.documents.count }} <a href="{% url 'equipment_add_document' equipment.id equipment.brigade.id %}" class=""><i class="fa fa-add"></i></a></td>
             <td>{{ equipment.date_release }}</td>
             <td>{{ equipment.date_exploitation }}</td>
             <td>
