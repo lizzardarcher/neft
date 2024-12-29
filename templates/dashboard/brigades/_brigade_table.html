@@ -17,7 +17,7 @@
         {% for brigade in brigades %}
             <tr>
                 <td>{{ brigade.id }}</td>
-                <td><b><a href="{% url 'brigade_detail' brigade.id %}" class="">{{ brigade.name }}</a></b></td>
+                <td><b><a href="{% url 'brigade_detail' brigade.id %}" class="link-offset-2 bg-dark-subtle p-1 rounded" style="text-decoration: none;">{{ brigade.name }}</a></b></td>
                 <td>
                     {% if brigade.description %}
                         {{ brigade.description|truncatewords:10 }}
@@ -48,14 +48,14 @@
                     {% endif %}
                 </td>
                 <td>
-                    <a href="{% url 'brigade_detail' brigade.id %}" class="">{{ brigade.equipment_set.count }}</a>
+                    <a href="{% url 'brigade_detail' brigade.id %}" class="link-offset-2 text-bg-{% if brigade.equipment_set.count > 0%}success{% else %}secondary{% endif %} p-2 rounded" style="text-decoration: none;">{{ brigade.equipment_set.count }}</a>
                 </td>
                 <td>
                     {% if request.user.is_superuser %}
 
-                        <a href="{% url 'brigade_update' brigade.id %}" class="btn btn-sm btn-warning"><i
+                        <a href="{% url 'brigade_update' brigade.id %}" class="btn btn-sm btn-outline-warning"><i
                                 class="fa fa-edit"></i></a>
-                        <button type="button" class="btn btn-sm btn-danger" data-toggle="modal"
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-toggle="modal"
                                 data-target="#deleteModal{{ brigade.id }}"><i class="fa fa-trash-can"></i></button>
                         <div class="modal fade" id="deleteModal{{ brigade.id }}" tabindex="-1" role="dialog"
                              aria-labelledby="deleteModalLabel" aria-hidden="true">

@@ -22,6 +22,7 @@ class Category(models.Model):
 
 
 class Document(models.Model):
+    title = models.CharField(max_length=300, null=False, blank=False, verbose_name='Название документа')
     file = models.FileField(upload_to='equipment_documents/')
     upload_date = models.DateTimeField(auto_now_add=True)
 
@@ -37,7 +38,7 @@ class Equipment(models.Model):
     name = models.CharField(max_length=200, null=False, blank=False, verbose_name='Название')
     category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=False, verbose_name='Категория')
     brigade = models.ForeignKey(Brigade, on_delete=models.SET_NULL, null=True, blank=False, verbose_name='Бригада')
-    documents = models.ManyToManyField(Document, blank=True)
+    documents = models.ManyToManyField(Document, blank=True, verbose_name='Документы для оборудования')
     date_release = models.DateField(auto_now_add=False, auto_now=False, null=False, blank=False, verbose_name='Дата выпуска')
     date_exploitation = models.DateField(auto_now_add=False, auto_now=False, null=False, blank=False, verbose_name='Дата ввода в эксплуатацию')
     condition = models.CharField(max_length=100, null=False, blank=False, default='', choices=CONDITION, verbose_name='Состояние оборудования')

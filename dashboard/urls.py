@@ -18,6 +18,7 @@ urlpatterns = [
 
     path('equipment/', equipment.EquipmentListView.as_view(), name='equipment_list'),
     path('equipment/create/', equipment.EquipmentCreateView.as_view(), name='equipment_create'),
+    path('equipment/<int:brigade_id>/create/', equipment.EquipmentCreateByBrigadeIdView.as_view(), name='equipment_create_by_brigade'),
     path('equipment/<int:equipment_id>/update/', equipment.EquipmentUpdateView.as_view(), name='equipment_update'),
     path('equipment/<int:equipment_id>/delete/', equipment.EquipmentDeleteView.as_view(), name='equipment_delete'),
     path('equipment/<int:equipment_id>/', equipment.EquipmentDetailView.as_view(), name='equipment_detail'),
