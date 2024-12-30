@@ -20,8 +20,9 @@ urlpatterns = [
     path('equipment/create/', equipment.EquipmentCreateView.as_view(), name='equipment_create'),
     path('equipment/<int:brigade_id>/create/', equipment.EquipmentCreateByBrigadeIdView.as_view(), name='equipment_create_by_brigade'),
     path('equipment/<int:equipment_id>/<int:brigade_id>/add_document/', equipment.EquipmentAddDocumentsView.as_view(), name='equipment_add_document'),
-    path('equipment/<int:equipment_id>/update/', equipment.EquipmentUpdateView.as_view(), name='equipment_update'),
-    path('equipment/<int:equipment_id>/delete/', equipment.EquipmentDeleteView.as_view(), name='equipment_delete'),
+    path('equipment/<int:pk>/update/', equipment.EquipmentUpdateView.as_view(), name='equipment_update'),
+    path('equipment/<int:pk>/<int:brigade_id>/update_by_brigade/', equipment.EquipmentUpdateByBrigadeView.as_view(), name='equipment_update_by_brigade'),
+    path('equipment/<int:equipment_id>/delete/', equipment.equipment_delete, name='equipment_delete'),
     path('equipment/<int:pk>/', equipment.EquipmentDetailView.as_view(), name='equipment_detail'),
 
     path('transfers/create/', transfers.TransferCreateView.as_view(), name='transfer_create'),

@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
 from django.contrib.messages.views import SuccessMessageMixin
 from django.views.generic import TemplateView
 
@@ -13,4 +14,5 @@ class DashboardView(LoginRequiredMixin, TemplateView, SuccessMessageMixin):
         context['brigades'] = Brigade.objects.all()
         context['categories'] = Category.objects.all()
         context['equipment'] = Equipment.objects.all()
+        context['users'] = User.objects.all()
         return context

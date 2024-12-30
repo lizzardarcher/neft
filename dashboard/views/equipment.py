@@ -1,17 +1,20 @@
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.views.generic.detail import SingleObjectMixin
 
-from dashboard.forms import EquipmentCreateByBrigadeForm, EquipmentAddDocumentsForm, DocumentForm
+from dashboard.forms import EquipmentCreateByBrigadeForm, EquipmentAddDocumentsForm, DocumentForm, EquipmentCreateForm
 from dashboard.models import Equipment, Brigade, Document
 
 
-class EquipmentListView(ListView):
+class EquipmentListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
     model = Equipment
     context_object_name = 'equipments'
     template_name = 'dashboard/equipment/equipment_list.html'
-    paginate_by = 100
+    paginate_by = 30
 
     def get_queryset(self):
         """Поиск по названию категории"""
@@ -24,14 +27,21 @@ class EquipmentListView(ListView):
         return queryset
 
 
-class EquipmentCreateView(CreateView):
-    ...
+class EquipmentCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+    model = Equipment
+    form_class = EquipmentCreateForm
+    template_name = 'dashboard/equipment/equipment_form.html'
+    success_message = 'Оборудование успешно добавлено!'
+
+    def get_success_url(self):
+        return reverse('equipment_list')
 
 
-class EquipmentCreateByBrigadeIdView(CreateView):
+class EquipmentCreateByBrigadeIdView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Equipment
     form_class = EquipmentCreateByBrigadeForm
-    template_name = 'dashboard/equipment/equipment_form.html'
+    template_name = 'dashboard/equipment/equipment_form_by_brigade.html'
+    success_message = 'Оборудование успешно добавлено!'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data()
@@ -49,7 +59,7 @@ class EquipmentCreateByBrigadeIdView(CreateView):
         return reverse('brigade_detail', args=[brigade_id])
 
 
-class EquipmentAddDocumentsView(CreateView):
+class EquipmentAddDocumentsView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Document
     form_class = EquipmentAddDocumentsForm
     template_name = 'dashboard/equipment/equipment_add_documents.html'
@@ -80,15 +90,34 @@ class EquipmentAddDocumentsView(CreateView):
         return redirect(reverse('equipment_add_document', args=[equipment_id, brigade_id]))
 
 
+class EquipmentUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = Equipment
+    form_class = EquipmentCreateForm
+    template_name = 'dashboard/equipment/equipment_update.html'
+    success_message = 'Оборудование успешно обновлено!'
 
-class EquipmentUpdateView(UpdateView):
-    ...
+    def get_success_url(self):
+        return reverse('equipment_list')
 
 
-class EquipmentDeleteView(DeleteView):
-    ...
+class EquipmentUpdateByBrigadeView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = Equipment
+    form_class = EquipmentCreateForm
+    template_name = 'dashboard/equipment/equipment_update_by_brigade.html'
+    success_message = 'Оборудование успешно обновлено!'
 
-class EquipmentDetailView(DetailView):
+    def get_success_url(self):
+        return reverse('brigade_detail', args=[self.kwargs.get('brigade_id')])
+
+
+class EquipmentDetailView(LoginRequiredMixin, SuccessMessageMixin, DetailView):
     model = Equipment
     context_object_name = 'equipment'
     template_name = 'dashboard/equipment/equipment_detail.html'
+
+
+def equipment_delete(request, equipment_id):
+    equipment = get_object_or_404(Equipment, id=equipment_id)
+    equipment.delete()
+    messages.success(request, 'Оборудование успешно удалено!')
+    return redirect('equipment_list')

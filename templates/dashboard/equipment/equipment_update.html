@@ -1,7 +1,7 @@
 {% extends 'layouts/base.html' %}
 {% block content %}
     <div class="container mt-4">
-        <h2>Добавление нового оборудования для бригады: {{ brigade }}</h2>
+        <h2>Обновить данные об оборудовании</h2>
         <form method="post">
             {% csrf_token %}
             <div class="form-group">
@@ -33,7 +33,7 @@
                 {{ form.condition }}
             </div>
             <hr>
-            <button type="submit" class="btn btn-primary">Добавить</button>
+            <button type="submit" class="btn btn-primary">Обновить</button>
             <a href="{% url 'equipment_list' %}" class="btn btn-secondary">Отмена</a>
         </form>
     </div>

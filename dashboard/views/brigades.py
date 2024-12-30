@@ -67,4 +67,3 @@ def brigade_delete(request, brigade_id):
     brigade.delete()
     messages.success(request, 'Бригада успешно удалена!')
     return redirect('brigade_list')
-    # return render(request, 'dashboard/brigades/brigade_list.html', {'message': 'Успешно удалено'})

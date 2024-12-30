@@ -34,7 +34,7 @@ class Equipment(models.Model):
 
     CONDITION = (('work','Рабочее'),('faulty', 'Неисправное'), ('repair', 'В ремонте'))
 
-    serial = models.CharField(max_length=200, unique=True, null=False, blank=False, verbose_name='Идентификатор оборудования')
+    serial = models.CharField(max_length=200, null=False, blank=False, verbose_name='Идентификатор оборудования')
     name = models.CharField(max_length=200, null=False, blank=False, verbose_name='Название')
     category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=False, verbose_name='Категория')
     brigade = models.ForeignKey(Brigade, on_delete=models.SET_NULL, null=True, blank=False, verbose_name='Бригада')

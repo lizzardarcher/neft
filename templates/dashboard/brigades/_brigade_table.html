@@ -1,13 +1,12 @@
 {% block content %}
-    <a href="{% url 'brigade_create' %}" class="btn btn-outline-success mb-4 mt-4">Добавить бригаду <i
-            class="fa fa-plus-square"></i></a>
     <h2>Список бригад</h2>
     {% include 'dashboard/brigades/brigade_search.html' %}
+    <a href="{% url 'brigade_create' %}" class="btn btn-outline-success mb-4 mt-4">Добавить бригаду <i class="fa fa-plus-square"></i></a>
     <table class="table table-bordered table-striped">
         <thead class="thead-dark">
         <tr>
             <th>ID</th>
-            <th>Название бригады</th>
+            <th>Бригада</th>
             <th>Описание</th>
             <th>Всего оборудования (Ед.)</th>
             <th>Действия</th>
@@ -48,7 +47,7 @@
                     {% endif %}
                 </td>
                 <td>
-                    <a href="{% url 'brigade_detail' brigade.id %}" class="link-offset-2 text-bg-{% if brigade.equipment_set.count > 0%}success{% else %}secondary{% endif %} p-2 rounded" style="text-decoration: none;">{{ brigade.equipment_set.count }}</a>
+                    <a href="{% url 'brigade_detail' brigade.id %}" class="link-offset-2 text-bg-{% if brigade.equipment_set.count > 0%}success{% else %}secondary{% endif %} p-1 rounded" style="text-decoration: none;">{{ brigade.equipment_set.count }}</a>
                 </td>
                 <td>
                     {% if request.user.is_superuser %}

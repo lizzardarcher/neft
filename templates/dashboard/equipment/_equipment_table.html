@@ -19,7 +19,9 @@
             <td>{{ equipment.serial }}</td>
             <td>{{ equipment.name }}</td>
             <td>{{ equipment.category }}</td>
-            <td>{{ equipment.documents.count }} <a href="{% url 'equipment_add_document' equipment.id equipment.brigade.id %}" class=""><i class="fa fa-add"></i></a></td>
+            <td>{{ equipment.documents.count }} <a
+                    href="{% url 'equipment_add_document' equipment.id equipment.brigade.id %}"
+                    class="link-underline-opacity-100-hover link-success">Добавить</a></td>
             <td>{{ equipment.date_release }}</td>
             <td>{{ equipment.date_exploitation }}</td>
             <td>
@@ -32,9 +34,9 @@
                 {% endif %}
             </td>
             <td>
-                <a href="{% url 'equipment_update' equipment.id %}" class="btn btn-sm btn-warning"><i
+                <a href="{% url 'equipment_update' equipment.id %}" class="btn btn-sm btn-outline-warning"><i
                         class="fa fa-edit"></i> </a>
-                <button type="button" class="btn btn-sm btn-danger" data-toggle="modal"
+                <button type="button" class="btn btn-sm btn-outline-danger" data-toggle="modal"
                         data-target="#deleteModal{{ equipment.id }}"><i class="fa fa-trash-can"></i>
                 </button>
 
@@ -65,3 +67,5 @@
     {% endfor %}
     </tbody>
 </table>
+{% include 'includes/pagination.html' %}
+<a href="{% url 'dashboard' %}" class="btn btn-sm btn-outline-dark mt-2 mb-2">НАЗАД</a>
