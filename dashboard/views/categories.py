@@ -1,6 +1,6 @@
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 
-from dashboard.models import Category
+from dashboard.models import Category, Equipment
 
 
 class CategoryListView(ListView):
@@ -20,6 +20,24 @@ class CategoryListView(ListView):
             queryset = (category_by_description | category_by_name | category_by_parent).order_by('name')
         return queryset
 
+    def get_context_data(self, **kwargs):
+        """Отображает список всех категорий с количеством оборудования."""
+        categories = Category.objects.filter(parent=None)
+
+        # Подготавливаем словарь с количеством оборудования для каждой категории
+        category_counts = {}
+        for category in categories:
+            def get_all_subcategories(category):
+                subcategories = [category]
+                for sub in category.subcategories.all():
+                    subcategories.extend(get_all_subcategories(sub))
+                return subcategories
+
+            all_categories = get_all_subcategories(category)
+            category_counts[category.id] = Equipment.objects.filter(category__in=all_categories).count()
+        context = super().get_context_data()
+        context["category_counts"] = category_counts
+        return context
 
 class CategoryCreateView(CreateView):
     ...

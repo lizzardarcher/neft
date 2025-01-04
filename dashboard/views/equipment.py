@@ -17,13 +17,23 @@ class EquipmentListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
     paginate_by = 30
 
     def get_queryset(self):
-        """Поиск по названию категории"""
-        queryset = super().get_queryset().order_by('name')
+        queryset = super().get_queryset()
         search_request = self.request.GET.get("search")
+        category = self.request.GET.get("category")
+        sort_by = self.request.GET.get('sort_by', 'id')  # по умолчанию сортируем по id
+        order = self.request.GET.get('order', 'asc')  # по умолчанию прямой порядок
         if search_request:
             equipment_by_name = Equipment.objects.filter(name__icontains=search_request)
             equipment_by_serial = Equipment.objects.filter(name__icontains=search_request)
-            queryset = (equipment_by_name | equipment_by_serial).order_by('name')
+            queryset = (equipment_by_name | equipment_by_serial)
+        if category:
+            queryset = queryset.filter(category__name=category)
+        if sort_by:
+            if order == 'desc':
+                sort_by = f"-{sort_by}"  # ставим минус, если обратный порядок
+                queryset = queryset.order_by(sort_by)
+            else:
+                queryset = queryset.order_by(sort_by)
         return queryset
 
 

@@ -38,8 +38,27 @@ class BrigadeDetailView(LoginRequiredMixin, SuccessMessageMixin, DetailView):
     template_name = 'dashboard/brigades/brigade_detail.html'
 
     def get_context_data(self, **kwargs):
+
+        equipments = Equipment.objects.filter(brigade=self.get_object())
+        search_request = self.request.GET.get("search")
+        category = self.request.GET.get("category")
+        sort_by = self.request.GET.get('sort_by', 'id')  # по умолчанию сортируем по id
+        order = self.request.GET.get('order', 'asc')  # по умолчанию прямой порядок
+        if search_request:
+            equipment_by_name = Equipment.objects.filter(name__icontains=search_request)
+            equipment_by_serial = Equipment.objects.filter(name__icontains=search_request)
+            equipments = (equipment_by_name | equipment_by_serial)
+        if category:
+            equipments = equipments.filter(category__name=category)
+        if sort_by:
+            if order == 'desc':
+                sort_by = f"-{sort_by}"  # ставим минус, если обратный порядок
+                equipments = equipments.order_by(sort_by)
+            else:
+                equipments = equipments.order_by(sort_by)
+
         context = super(BrigadeDetailView, self).get_context_data(**kwargs)
-        context['equipments'] = Equipment.objects.filter(brigade=self.get_object())
+        context['equipments'] = equipments
         return context
 
 class BrigadeCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
