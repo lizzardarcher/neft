@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.auth.models import User
 
 from dashboard.models import Brigade, Equipment, Document
 
@@ -62,3 +63,37 @@ class EquipmentAddDocumentsForm(forms.ModelForm):
     class Meta:
         model = Equipment
         fields = ['documents']
+
+
+class UserCreateForm(forms.ModelForm):
+    """Форма для создания пользователя с группами."""
+
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'email', 'password', 'groups', 'is_active', 'is_staff',
+                  'is_superuser']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'password': forms.PasswordInput(attrs={'class': 'form-control'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'required checkbox', 'checked': 'checked'}),
+            'is_staff': forms.CheckboxInput(attrs={'class': 'required checkbox'}),
+            'is_superuser': forms.CheckboxInput(attrs={'class': 'required checkbox'}),
+        }
+
+    def clean_password(self):
+        password = self.cleaned_data.get('password')
+        if not password:
+            raise forms.ValidationError("Поле пароль обязательно для заполнения")
+        return password
+
+    def save(self, commit=True):
+        user = super(UserCreateForm, self).save(commit=False)
+        password = self.cleaned_data.get('password')
+        user.set_password(password)
+        if commit:
+            user.save()
+            self.save_m2m()
+        return user

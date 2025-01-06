@@ -33,3 +33,8 @@ def is_word(filename):
 def is_excel(filename):
     ext = os.path.splitext(filename)[1].lower()
     return ext in ['.xls', '.xlsx']
+
+
+@register.filter(name='add_class')
+def add_class(field, class_name):
+  return field.as_widget(attrs={"class": class_name})

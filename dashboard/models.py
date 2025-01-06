@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, User
-
+from django.conf import settings
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 
 class Brigade(models.Model):
     name = models.CharField(max_length=200, unique=True, null=False, blank=False, verbose_name='Название бригады')
@@ -58,12 +60,21 @@ class Transfer(models.Model):
         return f"{self.equipment} from {self.from_brigade if self.from_brigade else 'Неизвестно'} to {self.to_brigade}"
 
 
-# class User(AbstractUser):
-#     ROLE_CHOICES = [
-#         ('admin', 'Администратор'),
-#         ('operator', 'Оператор'),
-#     ]
-#     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='operator', verbose_name='Права доступа')
-#
-#     def __str__(self):
-#         return self.username
+class UserActionLog(models.Model):
+    """Модель для хранения истории действий пользователя."""
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Пользователь')
+    action_type = models.CharField(max_length=255, verbose_name='Тип действия')
+    action_time = models.DateTimeField(auto_now_add=True, verbose_name='Время действия')
+    content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, blank=True, null=True)
+    object_id = models.PositiveIntegerField(blank=True, null=True)
+    content_object = GenericForeignKey('content_type', 'object_id')
+    description = models.TextField(blank=True, null=True, verbose_name='Описание')
+
+
+    def str(self):
+        return f'{self.user.username} - {self.action_type} - {self.action_time.strftime("%Y-%m-%d %H:%M:%S")}'
+
+    class Meta:
+         verbose_name = 'История действий пользователя'
+         verbose_name_plural = 'История действий пользователей'

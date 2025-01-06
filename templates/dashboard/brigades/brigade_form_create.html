@@ -1,7 +1,7 @@
 {% extends 'layouts/base.html' %}
 {% block content %}
     {% include 'includes/form_errors.html' %}
-	<div class="container mt-4">
+	<div class="container bg-light p-4 mt-4 rounded">
         <h2>Создание новой бригады</h2>
         <form method="post">
             {% csrf_token %}

@@ -1,14 +1,22 @@
 {% block content %}
-    <div class="container">
-        <h1>Пользователи</h1>
-        <a href="" class="btn btn-outline-success mb-3">Создать пользователя</a>
-        <table class="table table-striped">
-            <thead>
+
+    <div class="container mt-4">
+        <h1>Список пользователей</h1>
+        <a href="{% url 'user_create' %}" class="btn btn-success mb-2">Создать пользователя</a>
+        <table class="table table-bordered table-striped">
+            <thead class="thead-dark">
             <tr>
                 <th>ID</th>
                 <th>Имя пользователя</th>
-                <th>Электронная почта</th>
+                <th>Имя</th>
+                <th>Фамилия</th>
+                <th>Email</th>
+                <th>Группы</th>
+                <th>Активный</th>
+                <th>Персонал</th>
+                <th>Суперпользователь</th>
                 <th>Действия</th>
+
             </tr>
             </thead>
             <tbody>
@@ -16,14 +24,55 @@
                 <tr>
                     <td>{{ user.id }}</td>
                     <td>{{ user.username }}</td>
+                    <td>{{ user.first_name }}</td>
+                    <td>{{ user.last_name }}</td>
                     <td>{{ user.email }}</td>
                     <td>
-                        <a href="" class="btn btn-sm btn-outline-warning"><i class="fa fa-edit"></i></a>
-                        <a href="" class="btn btn-sm btn-outline-danger"><i class="fa fa-trash"></i></a>
+                        {% for group in user.groups.all %}
+                            <span class="badge bg-info">{{ group.name }}</span>
+                        {% empty %}
+                            ---
+                        {% endfor %}
+                    </td>
+                    <td>{{ user.is_active|yesno:"✅,🛑" }}</td>
+                    <td>{{ user.is_staff|yesno:"✅,🛑" }}</td>
+                    <td>{{ user.is_superuser|yesno:"✅,🛑" }}</td>
+                    <td>
+                        <a href="{% url 'user_update' user.id %}" class="btn btn-sm btn-outline-warning"><i
+                                class="fa fa-edit"></i></a>
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-toggle="modal"
+                                data-target="#deleteModal{{ user.id }}"><i class="fa fa-trash-can"></i></button>
+                        <div class="modal fade" id="deleteModal{{ user.id }}" tabindex="-1" role="dialog"
+                             aria-labelledby="deleteModalLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="deleteModalLabel">Подтверждение удаления</h5>
+                                    </div>
+                                    <div class="modal-body">
+                                        Вы уверены, что хотите удалить пользователя "{{ user.username }}"?
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена
+                                        </button>
+                                        <a href="{% url 'user_delete' user.id %}"
+                                           class="btn btn-danger">Удалить</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </td>
                 </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="9">Нет данных о пользователях.</td>
+                </tr>
             {% endfor %}
+
             </tbody>
         </table>
+        <a href="{% url 'dashboard' %}" class="btn btn-secondary mb-2">Назад</a>
+
     </div>
+
 {% endblock content %}

@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.messages.views import SuccessMessageMixin
 from django.views.generic import TemplateView
 
-from dashboard.models import Brigade, Category, Equipment
+from dashboard.models import Brigade, Category, Equipment, UserActionLog, Transfer
 
 
 class DashboardView(LoginRequiredMixin, TemplateView, SuccessMessageMixin):
@@ -15,4 +15,6 @@ class DashboardView(LoginRequiredMixin, TemplateView, SuccessMessageMixin):
         context['categories'] = Category.objects.all()
         context['equipment'] = Equipment.objects.all()
         context['users'] = User.objects.all()
+        context['user_log'] = UserActionLog.objects.all()
+        context['transfers'] = Transfer.objects.all()
         return context
