@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 
-from dashboard.models import Brigade, Equipment, Document
+from dashboard.models import Brigade, Equipment, Document, Category
 
 
 class BrigadeForm(forms.ModelForm):
@@ -97,3 +97,13 @@ class UserCreateForm(forms.ModelForm):
             user.save()
             self.save_m2m()
         return user
+
+class CategoryCreateViewForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ('name', 'parent', 'description')
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'parent': forms.Select(attrs={'class': 'form-control'}),
+            'description': forms.TextInput(attrs={'class': 'form-control'}),
+        }

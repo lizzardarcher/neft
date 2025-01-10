@@ -1,9 +1,15 @@
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.messages.views import SuccessMessageMixin
+from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.urls import reverse
 
+from dashboard.forms import CategoryCreateViewForm
 from dashboard.models import Category, Equipment
 
 
-class CategoryListView(ListView):
+class CategoryListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
     model = Category
     context_object_name = 'categories'
     template_name = 'dashboard/categories/category_list.html'
@@ -39,13 +45,37 @@ class CategoryListView(ListView):
         context["category_counts"] = category_counts
         return context
 
-class CategoryCreateView(CreateView):
+class CategoryCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+    model = Category
+    form_class = CategoryCreateViewForm
+    template_name = 'dashboard/categories/category_form.html'
+
+    def get_success_message(self, cleaned_data):
+        msg = cleaned_data['name']
+        return f'Категория {msg} успешно добавлена!'
+
+    def get_success_url(self):
+        return reverse('category_list')
+
+class CategoryUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = Category
+    form_class = CategoryCreateViewForm
+    template_name = 'dashboard/categories/category_form.html'
+
+    def get_success_message(self, cleaned_data):
+        msg = cleaned_data['name']
+        return f'Категория {msg} успешно обновлена!'
+
+    def get_success_url(self):
+        return reverse('category_list')
+
+
+class CategoryDeleteView(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
     ...
 
 
-class CategoryUpdateView(UpdateView):
-    ...
-
-
-class CategoryDeleteView(DeleteView):
-    ...
+def category_delete(request, category_id):
+    category = get_object_or_404(Category, id=category_id)
+    category.delete()
+    messages.success(request, 'Оборудование успешно удалено!')
+    return redirect('category_list')

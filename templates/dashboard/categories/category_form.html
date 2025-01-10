@@ -1,10 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-
-</body>
-</html>
+{% extends 'layouts/base.html' %}
+{% block content %}
+    <div class="container bg-light p-4 mt-4 rounded">
+        <h2>{{ category }}</h2>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="name">Название:</label>
+                {{ form.name }}
+            </div>
+            <div class="form-group">
+                <label for="name">Родительская категория:</label>
+                {{ form.parent }}
+            </div>
+            <div class="form-group">
+                <label for="name">Описание:</label>
+                {{ form.description }}
+            </div>
+            <hr>
+            <button type="submit" class="btn btn-primary">Подтвердить</button>
+            <a href="{% url 'category_list' %}" class="btn btn-secondary">Отмена</a>
+        </form>
+    </div>
+{% endblock content %}

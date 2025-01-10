@@ -113,7 +113,7 @@ class EquipmentUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 class EquipmentUpdateByBrigadeView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Equipment
     form_class = EquipmentCreateForm
-    template_name = 'dashboard/equipment/equipment_update_by_brigade.html'
+    template_name = 'dashboard/equipment/equipment_update.html'
     success_message = 'Оборудование успешно обновлено!'
 
     def get_success_url(self):

@@ -3,14 +3,14 @@
     <table class="table table-bordered table-striped">
         <thead class="thead-dark">
         <tr>
-            <th><a href="?sort_by=id{% if request.GET.sort_by == 'id' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'id' %}&order=asc{% else %}&order=asc{% endif %}">ID</a></th>
-            <th><a href="?sort_by=serial{% if request.GET.sort_by == 'serial' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'serial' %}&order=asc{% else %}&order=asc{% endif %}">Идентификатор оборудования</a></th>
-            <th><a href="?sort_by=name{% if request.GET.sort_by == 'name' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'name' %}&order=asc{% else %}&order=asc{% endif %}">Название</a></th>
-            <th><a href="?sort_by=category{% if request.GET.sort_by == 'category' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'category' %}&order=asc{% else %}&order=asc{% endif %}">Категория</a></th>
-            <th><a href="?sort_by=brigade{% if request.GET.sort_by == 'brigade' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'brigade' %}&order=asc{% else %}&order=asc{% endif %}">Бригада</a></th>
+            <th><a href="?sort_by=id{% if request.GET.sort_by == 'id' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'id' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">ID</a></th>
+            <th><a href="?sort_by=serial{% if request.GET.sort_by == 'serial' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'serial' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Идентификатор оборудования</a></th>
+            <th><a href="?sort_by=name{% if request.GET.sort_by == 'name' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'name' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Название</a></th>
+            <th><a href="?sort_by=category{% if request.GET.sort_by == 'category' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'category' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Категория</a></th>
+            <th><a href="?sort_by=brigade{% if request.GET.sort_by == 'brigade' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'brigade' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Бригада</a></th>
             <th>Документы</th>
-            <th><a href="?sort_by=date_release{% if request.GET.sort_by == 'date_release' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'date_release' %}&order=asc{% else %}&order=asc{% endif %}">Дата выпуска оборудования</a></th>
-             <th><a href="?sort_by=date_exploitation{% if request.GET.sort_by == 'date_exploitation' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'date_exploitation' %}&order=asc{% else %}&order=asc{% endif %}">Дата ввода в эксплуатацию</a></th>
+            <th><a href="?sort_by=date_release{% if request.GET.sort_by == 'date_release' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'date_release' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Дата выпуска оборудования</a></th>
+             <th><a href="?sort_by=date_exploitation{% if request.GET.sort_by == 'date_exploitation' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'date_exploitation' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Дата ввода в эксплуатацию</a></th>
             <th>Состояние</th>
             <th>Действия</th>
         </tr>
@@ -33,8 +33,8 @@
                         class="link-underline-opacity-100-hover link-warning">Нет Бригады</a>
                     {% endif %}
                 </td>
-                <td>{{ equipment.date_release }}</td>
-                <td>{{ equipment.date_exploitation }}</td>
+                <td><small>{{ equipment.date_release|date:"d-m-Y" }}</small></td>
+                <td><small>{{ equipment.date_exploitation|date:"d-m-Y" }}</small></td>
                 <td>
                     {% if equipment.condition == 'work' %}
                         <span class="badge bg-success rounded">{{ equipment.get_condition_display }}</span>
@@ -45,7 +45,7 @@
                     {% endif %}
                 </td>
                 <td>
-                    <a href="{% url 'equipment_update' equipment.id %}" class="btn btn-sm btn-outline-warning"><i
+                    <a href="{% if 'brigade' in request.path %}{% url 'equipment_update_by_brigade' equipment.id equipment.brigade.id %}{% else %}{% url 'equipment_update' equipment.id %}{% endif %}" class="btn btn-sm btn-outline-warning"><i
                             class="fa fa-edit"></i> </a>
                     <button type="button" class="btn btn-sm btn-outline-danger" data-toggle="modal"
                             data-target="#deleteModal{{ equipment.id }}"><i class="fa fa-trash-can"></i>
