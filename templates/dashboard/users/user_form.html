@@ -3,24 +3,104 @@
 {% block content %}
     <div class="container bg-light p-4 mt-4 rounded">
         <h1>Создать нового пользователя</h1>
-        <form method="post">
+        <form class="form-control-lg" method="post">
             {% csrf_token %}
-             {% for field in form %}
-                  <div class="mb-3">
-                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                    {{ field }}
-                    {% if field.errors %}
-                         <div class="text-danger">
-                            {% for error in field.errors %}
-                                {{ error }}
-                            {% endfor %}
-                         </div>
-                    {% endif %}
-                </div>
-            {% endfor %}
 
-            <button type="submit" class="btn btn-primary">Создать</button>
-             <a href="{% url 'user_list' %}" class="btn btn-secondary">Назад к списку пользователей</a>
+            <div class="form-group mt-4">
+                <label for="username"> Логин:</label>
+                {{ form.username|add_class:"form-control" }}
+                {% if form.username.errors %}
+                    <div class="text-danger">
+                        {% for error in form.username.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <small><code>(Пользователь будет входить в приложение по этому логину)</code></small>
+            </div>
+
+            <div class="form-group">
+                <label for="first_name">Имя:</label>
+                {{ form.first_name|add_class:"form-control" }}
+                {% if form.first_name.errors %}
+                    <div class="text-danger">
+                        {% for error in form.first_name.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <small><code>(Необязательно)</code></small>
+            </div>
+
+            <div class="form-group mt-4">
+                <label for="last_name">Фамилия:</label>
+                {{ form.last_name|add_class:"form-control" }}
+                {% if form.last_name.errors %}
+                    <div class="text-danger">
+                        {% for error in form.last_name.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <small><code>(Необязательно)</code></small>
+            </div>
+
+            <div class="form-group mt-4">
+                <label for="email">Email:</label>
+                {{ form.email|add_class:"form-control" }}
+                {% if form.email.errors %}
+                    <div class="text-danger">
+                        {% for error in form.email.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <small><code>(Необязательно)</code></small>
+            </div>
+
+            <div class="form-group mt-4">
+                <label for="password">Пароль:</label>
+                {{ form.password|add_class:"form-control" }}
+                {% if form.password.errors %}
+                    <div class="alert alert-danger mt-2">
+                        {% for error in form.password.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <small><code>(Обязательное поле. Не более 150 символов. Только буквы, цифры и символы @/./+/-/_.)</code></small>
+            </div>
+
+            <div class="form-group mt-4 mb-4">
+                <label for="is_superuser">Группа пользователей:</label>
+                {{ form.groups }}
+                <br>
+                <small><code>(...)</code></small>
+            </div>
+
+            <div class="form-group mt-4 mb-4">
+                <label for="is_superuser">Пользователь Активен:</label>
+                {{ form.is_active }}
+                <br>
+                <small><code>(...)</code></small>
+            </div>
+
+            <div class="form-group mt-4 mb-4">
+                <label for="is_superuser">Статус персонала:</label>
+                {{ form.is_staff }}
+                <br>
+                <small><code>(...)</code></small>
+            </div>
+
+            <div class="form-group mt-4 mb-4">
+                <label for="is_superuser">Администратор:</label>
+                {{ form.is_superuser }}
+                <br>
+                <small><code>(Дать пользователю все права)</code></small>
+            </div>
+            <button type="submit" class="btn btn-primary">{% if 'create' in request.path %}Создать{% else %}
+                Обновить{% endif %}</button>
+            <a href="{% url 'user_list' %}" class="btn btn-secondary">Назад к списку пользователей</a>
         </form>
     </div>
 {% endblock content %}

@@ -23,12 +23,14 @@ class UserListView(LoginRequiredMixin, ListView):
         context['logs'] = UserActionLog.objects.all().order_by('-action_time')[:10]
         return context
 
+
 class UserDetailView(LoginRequiredMixin, DetailView):
     model = User
     context_object_name = 'user'
     template_name = 'dashboard/users/user_detail.html'
 
-class UserCreateView(LoginRequiredMixin, SuccessMessageMixin,CreateView):
+
+class UserCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = User
     form_class = UserCreateForm
     template_name = 'dashboard/users/user_form.html'
@@ -36,7 +38,7 @@ class UserCreateView(LoginRequiredMixin, SuccessMessageMixin,CreateView):
     success_message = 'Пользователь успешно создан!'
 
 
-class UserUpdateView(LoginRequiredMixin, SuccessMessageMixin,UpdateView):
+class UserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = User
     form_class = UserCreateForm
     template_name = 'dashboard/users/user_form.html'
@@ -50,10 +52,10 @@ def user_delete(request, user_id):
     messages.success(request, 'Пользователь успешно удалён!')
     return redirect('user_list')
 
-class UserActionLogView(ListView):
-   model = UserActionLog
-   template_name = 'dashboard/users/user_action_log.html'
-   context_object_name = 'logs'
-   ordering = ['-action_time']
-   paginate_by = 10
 
+class UserActionLogView(ListView):
+    model = UserActionLog
+    template_name = 'dashboard/users/user_action_log.html'
+    context_object_name = 'logs'
+    ordering = ['-action_time']
+    paginate_by = 10

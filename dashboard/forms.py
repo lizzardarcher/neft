@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
+from django.contrib.auth.password_validation import validate_password
 
 from dashboard.models import Brigade, Equipment, Document, Category
 
@@ -70,23 +71,25 @@ class UserCreateForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email', 'password', 'groups', 'is_active', 'is_staff',
-                  'is_superuser']
+        fields = ['username', 'first_name', 'last_name', 'email', 'password', 'groups', 'is_active', 'is_staff', 'is_superuser']
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control'}),
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
             'password': forms.PasswordInput(attrs={'class': 'form-control'}),
-            'is_active': forms.CheckboxInput(attrs={'class': 'required checkbox', 'checked': 'checked', 'hidden': 'hidden'}),
-            'is_staff': forms.CheckboxInput(attrs={'class': 'required checkbox', 'checked': 'checked', 'hidden': 'hidden'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'required checkbox', 'checked': 'checked'}),
+            'is_staff': forms.CheckboxInput(attrs={'class': 'required checkbox', 'checked': 'checked'}),
             'is_superuser': forms.CheckboxInput(attrs={'class': 'required checkbox'}),
+            'groups': forms.CheckboxSelectMultiple()
         }
 
     def clean_password(self):
         password = self.cleaned_data.get('password')
         if not password:
             raise forms.ValidationError("Поле пароль обязательно для заполнения")
+        # Добавляем валидацию пароля Django
+        validate_password(password)
         return password
 
     def save(self, commit=True):
