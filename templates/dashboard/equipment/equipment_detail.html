@@ -61,7 +61,8 @@
                                         {% if document.file.name|is_image %}
                                             <a href="{{ document.file.url }}"
                                                target="_blank">
-                                            <img src="{{ document.file.url }}" alt="{{ document.file.name|get_filename }}"></a>
+                                                <img src="{{ document.file.url }}"
+                                                     alt="{{ document.file.name|get_filename }}"></a>
                                         {% elif document.file.name|is_pdf %}
                                             <a href="{{ document.file.url }}"
                                                target="_blank">
@@ -69,13 +70,18 @@
                                                 {{ document.file.name|get_filename }}</a>
                                         {% elif document.file.name|is_excel %}
                                             <a href="{{ document.file.url }}"
-                                               target="_blank"><i class="fas fa-file-excel file-icon"></i><br> {{ document.file.name|get_filename }}</a>
+                                               target="_blank"><i
+                                                    class="fas fa-file-excel file-icon"></i><br> {{ document.file.name|get_filename }}
+                                            </a>
                                         {% elif document.file.name|is_word %}
                                             <a href="{{ document.file.url }}"
-                                               target="_blank"><i class="fas fa-file-word file-icon"></i><br> {{ document.file.name|get_filename }}</a>
+                                               target="_blank"><i
+                                                    class="fas fa-file-word file-icon"></i><br> {{ document.file.name|get_filename }}
+                                            </a>
                                         {% else %}
                                             <a href="{{ document.file.url }}"
-                                               target="_blank"><i class="fas fa-file file-icon"></i> <br> {{ document.file.name|get_filename }}</a>
+                                               target="_blank"><i class="fas fa-file file-icon"></i>
+                                                <br> {{ document.file.name|get_filename }}</a>
                                         {% endif %}
                                     </div>
                                 {% endfor %}

@@ -25,4 +25,4 @@ class TransferAdmin(admin.ModelAdmin):
 
 @admin.register(UserActionLog)
 class UserActionLogAdmin(admin.ModelAdmin):
-    ...
+    list_display = ('user', 'action_type', 'action_time', 'object_id', 'content_type', 'content_object', 'description')

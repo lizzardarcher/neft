@@ -73,7 +73,7 @@ class UserActionLog(models.Model):
 
 
     def str(self):
-        return f'{self.user.username} - {self.action_type} - {self.action_time.strftime("%Y-%m-%d %H:%M:%S")}'
+        return f'{self.user} - {self.action_type} - {self.action_time.strftime("%Y-%m-%d %H:%M:%S")}'
 
     class Meta:
          verbose_name = 'История действий пользователя'

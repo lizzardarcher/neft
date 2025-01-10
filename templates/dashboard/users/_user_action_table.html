@@ -1,0 +1,36 @@
+    <div class="container mt-4">
+        <h1>История действий пользователя</h1>
+           <table class="table table-bordered table-striped">
+            <thead class="thead-dark">
+            <tr>
+                <th>Пользователь</th>
+                <th>Тип действия</th>
+                <th>Время</th>
+                <th>Объект</th>
+                <th>Описание</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for log in logs %}
+                <tr>
+                    <td>{{ log.user.username }}</td>
+                    <td>{{ log.action_type }}</td>
+                    <td>{{ log.action_time|date:'Y-m-d H:i' }}</td>
+                      <td>
+                         {% if log.content_object %}
+                           <a href="{% url 'equipment_detail' log.content_object.id %}">{{ log.content_object }}</a>
+                         {% else %}
+                            ---
+                        {% endif %}
+                      </td>
+                    <td>{{ log.description }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5">Нет данных об истории действий пользователя.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+       {% include 'includes/pagination.html' %}
+    </div>

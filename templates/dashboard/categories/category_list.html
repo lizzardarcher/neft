@@ -7,6 +7,9 @@
 {% block content %}
     <div class="container bg-light p-4 mt-4 rounded">
         <h1>Список категорий</h1>
+        {% if request.user.is_superuser %}
+        <a class="btn btn-outline-success mb-2 mt-2" href="{% url 'category_create' %}">Добавить категорию</a>
+        {% endif %}
         <ul class="list-group">
             {% for category in categories %}
                 <li class="list-group-item">

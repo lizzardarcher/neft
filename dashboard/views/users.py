@@ -1,6 +1,8 @@
 from django.contrib import messages
+from django.contrib.admin.models import LogEntry
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
@@ -13,6 +15,13 @@ class UserListView(LoginRequiredMixin, ListView):
     model = User
     context_object_name = 'users'
     template_name = 'dashboard/users/user_list.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['content_types'] = ContentType.objects.all()
+        context['users'] = User.objects.all()
+        context['logs'] = UserActionLog.objects.all()
+        return context
 
 class UserDetailView(LoginRequiredMixin, DetailView):
     model = User
@@ -48,3 +57,18 @@ class UserActionLogView(ListView):
    context_object_name = 'logs'
    ordering = ['-action_time']
    paginate_by = 10
+
+
+class UserAdminLogView(ListView):
+    """Отображает историю действий пользователя из LogEntry (CBV)."""
+    model = LogEntry
+    template_name = 'dashboard/users/user_action_log.html'
+    context_object_name = 'logs'
+    ordering = ['-action_time']
+    paginate_by = 10
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['content_types'] = ContentType.objects.all()
+        context['users'] = User.objects.all()
+        return context
