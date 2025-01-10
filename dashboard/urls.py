@@ -4,6 +4,7 @@ from .views import index, reports, users, brigades, transfers, categories, equip
 
 urlpatterns = [
     path('', index.DashboardView.as_view(), name='dashboard'),  # Главная страница дашборда
+    path('instructions', index.InstructionView.as_view(), name='instructions'),
 
     path('brigades/', brigades.BrigadeListView.as_view(), name='brigade_list'),
     path('brigade/<int:pk>/detail', brigades.BrigadeDetailView.as_view(), name='brigade_detail'),

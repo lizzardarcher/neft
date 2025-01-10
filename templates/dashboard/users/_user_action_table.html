@@ -1,36 +1,44 @@
-    <div class="container mt-4">
-        <h1>История действий пользователя</h1>
-           <table class="table table-bordered table-striped">
-            <thead class="thead-dark">
+<div class="container mt-4">
+    <h1>История действий пользователей</h1>
+    {% if 'users' in request.path %}
+        <a class="btn btn-outline-info mt-2 mb-2" href="{% url 'user_action_log' %}">Подробнее</a>
+    {% endif %}
+    <table class="table table-bordered table-striped">
+        <thead class="thead-dark">
+        <tr>
+            <th>Пользователь</th>
+            <th>Тип действия</th>
+            <th>Время</th>
+            <th>Объект</th>
+            <th>Описание</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for log in logs %}
             <tr>
-                <th>Пользователь</th>
-                <th>Тип действия</th>
-                <th>Время</th>
-                <th>Объект</th>
-                <th>Описание</th>
+                <td>{{ log.user.username }}</td>
+                <td>{{ log.action_type }}</td>
+                <td>{{ log.action_time|date:'Y-m-d H:i' }}</td>
+                <td>
+                    {% if log.content_object %}
+                        <a href="{% url 'equipment_detail' log.content_object.id %}">{{ log.content_object }}</a>
+                    {% else %}
+                        ---
+                    {% endif %}
+                </td>
+                <td>{{ log.description }}</td>
             </tr>
-            </thead>
-            <tbody>
-            {% for log in logs %}
-                <tr>
-                    <td>{{ log.user.username }}</td>
-                    <td>{{ log.action_type }}</td>
-                    <td>{{ log.action_time|date:'Y-m-d H:i' }}</td>
-                      <td>
-                         {% if log.content_object %}
-                           <a href="{% url 'equipment_detail' log.content_object.id %}">{{ log.content_object }}</a>
-                         {% else %}
-                            ---
-                        {% endif %}
-                      </td>
-                    <td>{{ log.description }}</td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="5">Нет данных об истории действий пользователя.</td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-       {% include 'includes/pagination.html' %}
-    </div>
+        {% empty %}
+            <tr>
+                <td colspan="5">Нет данных об истории действий пользователя.</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% if 'action-log' in request.path %}
+        <a class="btn btn-outline-info mt-2 mb-2" href="{% url 'user_list' %}">Назад</a>
+    {% else %}
+        <a href="{% url 'dashboard' %}" class="btn btn-secondary mb-2">Назад</a>
+    {% endif %}
+    {% include 'includes/pagination.html' %}
+</div>

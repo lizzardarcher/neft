@@ -1,12 +1,13 @@
 asgiref
-Django
+Django~=5.1.4
 django-appconf
 fontawesomefree
 gunicorn
 lxml
 mysqlclient
 packaging
-python-dotenv
+python-dotenv~=1.0.1
 sqlparse
 Unidecode
 whitenoise
+Faker

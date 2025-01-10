@@ -1,0 +1,41 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Инструкция{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+      <h1>Инструкция</h1>
+        {% if instructions %}
+            <div class="row">
+                 {% for group, instruction in instructions.items %}
+                     <div class="col-md-4">
+                         <div class="card mb-4">
+                             <div class="card-body">
+                                 {% if group == 'admin' %}
+                                    <h2 class="card-title">Инструкция для администратора</h2>
+                                 {% elif group == 'manager' %}
+                                     <h2 class="card-title">Инструкция для управляющего</h2>
+                                 {% elif group == 'operator' %}
+                                   <h2 class="card-title">Инструкция для оператора</h2>
+                                  {% endif %}
+                                     {% for category, actions in instruction.items %}
+                                       <h3 class="card-subtitle mb-2 text-muted">{{ category }}</h3>
+                                       <ul class="list-group list-group-flush">
+                                           {% for action in actions %}
+                                              <li class="list-group-item">{{ action }}</li>
+                                           {% endfor %}
+                                       </ul>
+                                   {% endfor %}
+                             </div>
+                         </div>
+                     </div>
+                   {% endfor %}
+            </div>
+
+        {% else %}
+             <p>Вы не состоите ни в одной из групп пользователей. Свяжитесь с администратором для получения доступа</p>
+        {% endif %}
+
+    </div>
+{% endblock %}
+

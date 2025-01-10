@@ -84,12 +84,11 @@ def populate_users(num_users=5):
 
 
 def run():
-    """Запускает скрипт популяции"""
-    populate_brigades()
-    populate_categories()
-    populate_documents()
-    populate_equipment()
-    populate_users()
+    populate_brigades(25)
+    populate_categories(10)
+    populate_documents(900)
+    populate_equipment(3000)
+    populate_users(15)
 
 
 if __name__ == '__main__':

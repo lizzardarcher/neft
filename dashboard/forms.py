@@ -78,8 +78,8 @@ class UserCreateForm(forms.ModelForm):
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
             'password': forms.PasswordInput(attrs={'class': 'form-control'}),
-            'is_active': forms.CheckboxInput(attrs={'class': 'required checkbox', 'checked': 'checked'}),
-            'is_staff': forms.CheckboxInput(attrs={'class': 'required checkbox'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'required checkbox', 'checked': 'checked', 'hidden': 'hidden'}),
+            'is_staff': forms.CheckboxInput(attrs={'class': 'required checkbox', 'checked': 'checked', 'hidden': 'hidden'}),
             'is_superuser': forms.CheckboxInput(attrs={'class': 'required checkbox'}),
         }
 

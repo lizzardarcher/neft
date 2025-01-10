@@ -5,10 +5,10 @@
         <p>{{ brigade.description }}</p>
         <hr>
         <h2>Оборудование бригады</h2>
+        {% include 'includes/search.html' %}
         <a href="{% url 'brigade_list' %}" class="btn btn-outline-dark mb-3">Назад к списку бригад</a>
         <a href="{% url 'equipment_create_by_brigade' brigade.id %}" class="btn btn-outline-success mb-3"><i class="fa fa-plus-square"></i> Добавить оборудование</a>
         {% include 'dashboard/equipment/_equipment_table.html' %}
-        {% include 'includes/pagination.html' %}
     </div>
 {% endblock content %}
 {% block extrascript %}

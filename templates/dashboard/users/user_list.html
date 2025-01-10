@@ -1,17 +1,8 @@
 {% extends 'layouts/base.html' %}
 {% block content %}
     <div class="container-fluid bg-light p-4 mt-5 rounded">
-
-        <div class="row">
-            <div class="col-sm-12 col-md-12 col-lg-6">
-                {% include 'dashboard/users/_user_table.html' %}
-            </div>
-            <div class="col-sm-12 col-md-12 col-lg-6">
-                {% include 'dashboard/users/_user_action_table.html' %}
-            </div>
-        </div>
+        {% include 'dashboard/users/_user_table.html' %}
+        {% include 'dashboard/users/_user_action_table.html' %}
     </div>
 
 {% endblock content %}
-
-{% block extrascript %}{% endblock extrascript %}

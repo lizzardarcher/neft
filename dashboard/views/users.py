@@ -20,7 +20,7 @@ class UserListView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context['content_types'] = ContentType.objects.all()
         context['users'] = User.objects.all()
-        context['logs'] = UserActionLog.objects.all()
+        context['logs'] = UserActionLog.objects.all().order_by('-action_time')[:10]
         return context
 
 class UserDetailView(LoginRequiredMixin, DetailView):
@@ -50,7 +50,6 @@ def user_delete(request, user_id):
     messages.success(request, 'Пользователь успешно удалён!')
     return redirect('user_list')
 
-
 class UserActionLogView(ListView):
    model = UserActionLog
    template_name = 'dashboard/users/user_action_log.html'
@@ -58,17 +57,3 @@ class UserActionLogView(ListView):
    ordering = ['-action_time']
    paginate_by = 10
 
-
-class UserAdminLogView(ListView):
-    """Отображает историю действий пользователя из LogEntry (CBV)."""
-    model = LogEntry
-    template_name = 'dashboard/users/user_action_log.html'
-    context_object_name = 'logs'
-    ordering = ['-action_time']
-    paginate_by = 10
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['content_types'] = ContentType.objects.all()
-        context['users'] = User.objects.all()
-        return context
