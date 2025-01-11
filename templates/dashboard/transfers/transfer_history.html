@@ -1,10 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'layouts/base.html' %}
 
-</body>
-</html>
+{% block title %}История перемещений{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h1>История перемещений оборудования</h1>
+
+        <table class="table table-bordered table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Оборудование</th>
+                    <th>Из бригады</th>
+                    <th>В бригаду</th>
+                    <th>Дата перемещения</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transfer in transfers %}
+                <tr>
+                    <td>{{ transfer.id }}</td>
+                    <td><a href="{% url 'equipment_detail' transfer.equipment.id %}">{{ transfer.equipment.name }}</a></td>
+                    <td>{{ transfer.from_brigade|default:"-" }}</td>
+                    <td>{{ transfer.to_brigade|default:"-" }}</td>
+                    <td>{{ transfer.transfer_date }}</td>
+                </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5">Нет данных о перемещениях оборудования.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+       {% include 'includes/pagination.html' %}
+    </div>
+{% endblock %}

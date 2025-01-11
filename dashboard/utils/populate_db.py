@@ -100,10 +100,10 @@ def populate_users(num_users=5):
 
 
 def run():
-    populate_brigades(25)
-    populate_categories(10)
-    populate_documents(9000)
-    populate_equipment(300000)
+    # populate_brigades(25)
+    # populate_categories(10)
+    # populate_documents(300)
+    # populate_equipment(1000)
     populate_users(15)
 
 

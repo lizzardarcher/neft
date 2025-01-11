@@ -1,18 +1,12 @@
-import csv
-
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from django.db.models import Q
-from django.http import HttpResponse
-from django.shortcuts import render, get_object_or_404, redirect
-from django.views import View
+from django.core.paginator import Paginator
+from django.shortcuts import  get_object_or_404, redirect
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
-from openpyxl.workbook import Workbook
 
 from dashboard.forms import BrigadeForm
-from dashboard.models import Brigade, Category, Equipment
+from dashboard.models import Brigade, Equipment
 
 
 class BrigadeListView(LoginRequiredMixin, SuccessMessageMixin, ListView):

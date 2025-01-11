@@ -1,7 +1,5 @@
-from django.utils import timezone
 from .models import UserActionLog, Equipment, Category
 from django.contrib.contenttypes.models import ContentType
-from django.http import HttpResponse
 from django.urls import resolve
 
 
@@ -55,3 +53,4 @@ class UserActionLoggerMiddleware:
             log.save()
 
         return response
+

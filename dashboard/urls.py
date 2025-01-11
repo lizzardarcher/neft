@@ -29,7 +29,6 @@ urlpatterns = [
     path('equipment/<int:equipment_id>/delete/', equipment.equipment_delete, name='equipment_delete'),
     path('equipment/<int:pk>/', equipment.EquipmentDetailView.as_view(), name='equipment_detail'),
 
-    path('transfers/create/', transfers.TransferCreateView.as_view(), name='transfer_create'),
     path('transfers/history/', transfers.TransferHistoryView.as_view(), name='transfer_history'),
 
     path('users/', users.UserListView.as_view(), name='user_list'),
@@ -38,7 +37,6 @@ urlpatterns = [
     path('user/<int:pk>/update/', users.UserAccountUpdateView.as_view(), name='account_update'),
     path('users/<int:user_id>/delete/', users.user_delete, name='user_delete'),
     path('user/<int:pk>/detail', users.UserDetailView.as_view(), name='user_detail'),
-
     path('action-log/', users.UserActionLogView.as_view(), name='user_action_log'),
 
     path('reports/', reports.ReportListView.as_view(), name='report_list'),

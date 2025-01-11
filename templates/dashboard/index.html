@@ -1,4 +1,5 @@
 {% extends "layouts/base.html" %}
+{% load custom_filters %}
 {% load static %}
 
 {% block content %}
@@ -35,15 +36,37 @@
                 </div>
             </div>
             {% if request.user.is_superuser %}
-            <div class="col-md-4 mb-3">
-                <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
-                    <div class="card-header"><i class="fa fa-user"></i> Пользователи: {{ users.count }}</div>
-                    <div class="card-body">
-                        <h5 class="card-title">Список пользователей</h5>
+                <div class="col-md-4 mb-3">
+                    <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
+                        <div class="card-header"><i class="fa fa-user"></i> Пользователи: {{ users.count }}</div>
+                        <div class="card-body">
+                            <h5 class="card-title">Список пользователей</h5>
+                        </div>
+                        <a href="{% url 'user_list' %}" class="m-1 btn btn-outline-info">Просмотреть</a>
                     </div>
-                    <a href="{% url 'user_list' %}" class="m-1 btn btn-outline-info">Просмотреть</a>
                 </div>
-            </div>
+            {% endif %}
+            {% if user|has_group:"Управляющий" or user|has_group:"Администратор" %}
+                <div class="col-md-4 mb-3">
+                    <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
+                        <div class="card-header"><i class="fa fa-down-left-and-up-right-to-center"></i> Перемещений: {{ transfers.count }}</div>
+                        <div class="card-body">
+                            <h5 class="card-title">Перемещение оборудования</h5>
+                        </div>
+                        <a href="{% url 'transfer_history' %}" class="m-1 btn btn-outline-info">Просмотреть</a>
+                    </div>
+                </div>
+            {% endif %}
+            {% if request.user.is_superuser %}
+                <div class="col-md-4 mb-3">
+                    <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
+                        <div class="card-header"><i class="fa fa-font-awesome-logo-full"></i> Записей: {{ user_log.count }}</div>
+                        <div class="card-body">
+                            <h5 class="card-title">Журнал действий пользователей</h5>
+                        </div>
+                        <a href="{% url 'user_action_log' %}" class="m-1 btn btn-outline-info">Просмотреть</a>
+                    </div>
+                </div>
             {% endif %}
         </div>
     </div>

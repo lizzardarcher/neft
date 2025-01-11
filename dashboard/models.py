@@ -3,6 +3,9 @@ from django.contrib.auth.models import AbstractUser, User
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
+
 
 class Brigade(models.Model):
     name = models.CharField(max_length=200, unique=True, null=False, blank=False, verbose_name='Название бригады')
@@ -38,7 +41,7 @@ class Equipment(models.Model):
 
     serial = models.CharField(max_length=200, null=False, blank=False, verbose_name='Идентификатор оборудования')
     name = models.CharField(max_length=200, null=False, blank=False, verbose_name='Название')
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=False, verbose_name='Категория')
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=False, verbose_name='Категория')
     brigade = models.ForeignKey(Brigade, on_delete=models.SET_NULL, null=True, blank=False, verbose_name='Бригада')
     documents = models.ManyToManyField(Document, blank=True, verbose_name='Документы для оборудования')
     date_release = models.DateField(auto_now_add=False, auto_now=False, null=False, blank=False, verbose_name='Дата выпуска')
@@ -49,6 +52,20 @@ class Equipment(models.Model):
         return f"{self.name} ({self.category})"
 
 
+@receiver(pre_save, sender=Equipment)
+def equipment_pre_save(sender, instance, **kwargs):
+  """
+  Ловим pre_save сигнал для модели equipment, и сохраняем данные о перемещении оборудования в модель Transfers
+  """
+  if instance.pk:
+    old_instance = Equipment.objects.get(pk=instance.pk)
+    if old_instance.brigade != instance.brigade:
+      Transfer.objects.create(
+          equipment=instance,
+          from_brigade=old_instance.brigade,
+          to_brigade=instance.brigade,
+        )
+
 class Transfer(models.Model):
     equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE)
     from_brigade = models.ForeignKey(Brigade, on_delete=models.SET_NULL, null=True, blank=True, related_name='transfers_from')
@@ -58,6 +75,7 @@ class Transfer(models.Model):
 
     def __str__(self):
         return f"{self.equipment} from {self.from_brigade if self.from_brigade else 'Неизвестно'} to {self.to_brigade}"
+
 
 
 class UserActionLog(models.Model):
