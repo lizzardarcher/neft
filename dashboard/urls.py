@@ -45,4 +45,9 @@ urlpatterns = [
     path('reports/summary/', reports.ReportSummaryView.as_view(), name='report_summary'),
     path('reports/brigades/', reports.ReportByBrigadeView.as_view(), name='report_by_brigade'),
 
+    path('brigade/export/csv/', index.BrigadeCSVExportView.as_view(), name='brigade_export_csv'),
+    path('brigade/export/excel/', index.BrigadeExcelExportView.as_view(), name='brigade_export_excel'),
+    path('equipment/export/csv/', index.EquipmentCSVExportView.as_view(), name='equipment_export_csv'),
+    path('equipment/export/excel/', index.EquipmentExcelExportView.as_view(), name='equipment_export_excel'),
+
 ]

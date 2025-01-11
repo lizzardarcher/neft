@@ -1,7 +1,18 @@
+{% load custom_filters %}
 {% block content %}
     <h2>Список бригад</h2>
     {% include 'dashboard/brigades/brigade_search.html' %}
-    <a href="{% url 'brigade_create' %}" class="btn btn-outline-success mb-4 mt-4">Добавить бригаду <i class="fa fa-plus-square"></i></a>
+    <div class="d-flex justify-content-between mt-4 mb-4">
+        <div class="p-0"><a href="{% url 'brigade_create' %}" class="btn btn-outline-success">Добавить бригаду
+            <i class="fa fa-plus-square"></i></a>
+        </div>
+        <div class="p-0">
+            <a class="btn btn-success" href="{% url 'brigade_export_excel' %}"><i class="fa fa-file-excel"></i>
+                Выгрузить в EXCEL</a>
+            <a class="btn btn-success" href="{% url 'brigade_export_csv' %}"><i class="fa fa-file-csv"></i> Выгрузить в
+                CSV</a>
+        </div>
+    </div>
     <table class="table table-bordered table-striped">
         <thead class="thead-dark">
         <tr>
@@ -16,7 +27,8 @@
         {% for brigade in brigades %}
             <tr>
                 <td>{{ brigade.id }}</td>
-                <td><b><a href="{% url 'brigade_detail' brigade.id %}" class="link-offset-2 bg-light-subtle p-1 rounded" style="text-decoration: none;">{{ brigade.name }}</a></b></td>
+                <td><b><a href="{% url 'brigade_detail' brigade.id %}" class="link-offset-2 bg-light-subtle p-1 rounded"
+                          style="text-decoration: none;">{{ brigade.name }}</a></b></td>
                 <td>
                     {% if brigade.description %}
                         {{ brigade.description|truncatewords:10 }}
@@ -47,11 +59,12 @@
                     {% endif %}
                 </td>
                 <td>
-                    <a href="{% url 'brigade_detail' brigade.id %}" class="link-offset-2 text-bg-{% if brigade.equipment_set.count > 0%}success{% else %}secondary{% endif %} p-1 rounded" style="text-decoration: none;">{{ brigade.equipment_set.count }}</a>
+                    <a href="{% url 'brigade_detail' brigade.id %}"
+                       class="link-offset-2 text-bg-{% if brigade.equipment_set.count > 0 %}success{% else %}secondary{% endif %} p-1 rounded"
+                       style="text-decoration: none;">{{ brigade.equipment_set.count }}</a>
                 </td>
                 <td>
-                    {% if request.user.is_superuser %}
-
+                    {% if user|has_group:"Управляющий" or user|has_group:"Администратор" %}
                         <a href="{% url 'brigade_update' brigade.id %}" class="btn btn-sm btn-outline-warning"><i
                                 class="fa fa-edit"></i></a>
                         <button type="button" class="btn btn-sm btn-outline-danger" data-toggle="modal"
@@ -77,6 +90,9 @@
                                 </div>
                             </div>
                         </div>
+                    {% else %}
+                        <a href="" class="btn btn-sm btn-outline-secondary" disabled><i class="fa fa-edit"></i></a>
+                        <a href="" class="btn btn-sm btn-outline-secondary" disabled><i class="fa fa-trash-can"></i></a>
                     {% endif %}
                 </td>
             </tr>

@@ -3,7 +3,7 @@ import django
 import random
 from faker import Faker
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'neft.settings')  # замените your_project
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'neft.settings')
 django.setup()
 
 from dashboard.models import Brigade, Category, Document, Equipment

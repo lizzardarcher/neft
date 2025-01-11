@@ -3,8 +3,8 @@
 {% block title %}Инструкция{% endblock %}
 
 {% block content %}
-    <div class="container mt-4">
-        <h1>Инструкция пользователя</h1>
+    <div class="container mt-4 bg-light rounded">
+        <h1 class="mb-4">Инструкция пользователя</h1>
 
         <div class="accordion" id="instructionsAccordion">
             <div class="accordion-item">
@@ -159,10 +159,12 @@
                 <li><strong>Пагинация:</strong> Списки длиннее 10 записей будут разделены на страницы для более удобного
                     просмотра.
                 </li>
+                <li><strong>Выгрузка данных:</strong> Таблицы данных о бригадах и оборудовании можно выгрузить в формате
+                    .excel или .csv на соответствующих страницах сайта.
+                </li>
             </ul>
         </div>
-        <p><strong>Контакты поддержки:</strong>
-            В случае возникновения вопросов или проблем, пожалуйста, свяжитесь с администратором системы.</p>
+        <p><strong>Контакты поддержки:</strong> В случае возникновения вопросов или проблем, пожалуйста, свяжитесь с администратором системы. koshka@mail.ru</p>
 
         <h2>Таблица разрешений</h2>
         <table class="table table-bordered table-striped">
@@ -218,7 +220,6 @@
 
 
         <h1>Связи между таблицами базы данных</h1>
-
         <table class="table table-bordered table-striped">
             <thead class="thead-dark">
             <tr>
