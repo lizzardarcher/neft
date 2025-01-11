@@ -16,7 +16,7 @@
         {% for brigade in brigades %}
             <tr>
                 <td>{{ brigade.id }}</td>
-                <td><b><a href="{% url 'brigade_detail' brigade.id %}" class="link-offset-2 bg-dark-subtle p-1 rounded" style="text-decoration: none;">{{ brigade.name }}</a></b></td>
+                <td><b><a href="{% url 'brigade_detail' brigade.id %}" class="link-offset-2 bg-light-subtle p-1 rounded" style="text-decoration: none;">{{ brigade.name }}</a></b></td>
                 <td>
                     {% if brigade.description %}
                         {{ brigade.description|truncatewords:10 }}

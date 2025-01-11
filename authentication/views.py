@@ -13,7 +13,8 @@ from django.utils.html import strip_tags
 from django.middleware.csrf import get_token
 from django.views.generic import TemplateView
 
-from .forms import LoginForm, SignUpForm
+from .forms import LoginForm, SignUpForm, UserPasswordResetForm, UserSetPasswordForm, UserPasswordChangeForm
+
 
 class LoginView(TemplateView):
     template_name = 'accounts/login.html'
@@ -23,7 +24,6 @@ class LoginView(TemplateView):
         context['form'] = LoginForm()
         return context
 
-
     def post(self, request, *args, **kwargs):
         form = LoginForm(request.POST)
         if form.is_valid():
@@ -31,13 +31,14 @@ class LoginView(TemplateView):
             password = form.cleaned_data['password']
             user = authenticate(request, username=username, password=password)
             if user is not None:
-                 login(request, user)
-                 return redirect('dashboard') # Перенаправление на дашборд
+                login(request, user)
+                return redirect('dashboard')  # Перенаправление на дашборд
             else:
-                 form.add_error(None, "Неправильный логин или пароль")
+                form.add_error(None, "Неправильный логин или пароль")
         context = self.get_context_data(**kwargs)
         context['form'] = form
         return self.render_to_response(context)
+
 
 def login_view(request):
     form = LoginForm(request.POST or None)
@@ -59,6 +60,7 @@ def login_view(request):
             msg = 'Error validating the form'
 
     return render(request, "accounts/login.html", {"form": form, "msg": msg})
+
 
 def register_user(request):
     msg = None
@@ -86,7 +88,6 @@ def register_user(request):
             msg = '<span class="badge badge-success">Пользователь успешно зарегистрирован</span>'
             success = True
 
-
             # return redirect("/login/")
 
         else:
@@ -95,6 +96,7 @@ def register_user(request):
         form = SignUpForm()
 
     return render(request, "accounts/register.html", {"form": form, "msg": msg, "success": success})
+
 
 class UserPasswordResetView(PasswordResetView):
     template_name = 'accounts/password_reset.html'
