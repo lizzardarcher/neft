@@ -1,0 +1,27 @@
+{% extends 'layouts/base.html' %}
+{% block title %}Обновить данные пользователя{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h1>Обновить данные пользователя</h1>
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="mb-3">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="text-danger">
+                            {% for error in field.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="btn btn-primary">Обновить</button>
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary ">Назад на главную</a>
+        </form>
+    </div>
+{% endblock %}

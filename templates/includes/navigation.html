@@ -14,6 +14,9 @@
                     <a class="nav-link" href="{% url 'instructions' %}">Инструкция</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="{% url 'user_detail' request.user.id %}">Личный кабинет</a>
+                </li>
+                <li class="nav-item">
                     <form action="{% url 'logout' %}" method="post">
                         {% csrf_token %}
                         <button class="nav-link text-body font-weight-bold px-0 p-2"

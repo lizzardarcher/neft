@@ -1,0 +1,34 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Личный кабинет{% endblock %}
+
+{% block content %}
+    <div class="container mt-4 bg-light rounded">
+        <h1>Личный кабинет</h1>
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Информация о пользователе</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Логин:</strong> {{ user.username }}</li>
+                    <li class="list-group-item"><strong>Имя:</strong> {{ user.first_name|default:"-" }}</li>
+                    <li class="list-group-item"><strong>Фамилия:</strong> {{ user.last_name|default:"-" }}</li>
+                    <li class="list-group-item"><strong>Email:</strong> {{ user.email|default:"-" }}</li>
+                    <li class="list-group-item"><strong>Администратор:</strong> {% if user.is_superuser %} Да {% else %} Нет {% endif %}</li>
+                     <li class="list-group-item"><strong>Группы:</strong>
+                         {% for group in user.groups.all %}
+                                {{ group.name }} {% if not forloop.last %}, {% endif %}
+                         {% empty %}
+                             -
+                         {% endfor %}
+                     </li>
+                </ul>
+            </div>
+        </div>
+
+         <div class="mt-4 mb-4">
+             <a href="{% url 'dashboard' %}" class="btn btn-secondary">На главную</a>
+             <a href="{% url 'account_update' user.id %}" class="btn btn-primary">Изменить профиль</a>
+       </div>
+
+    </div>
+{% endblock %}

@@ -4,7 +4,7 @@ Copyright (c) 2019 - present AppSeed.us
 """
 
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, PasswordResetForm, SetPasswordForm, PasswordChangeForm
 from django.contrib.auth.models import User
 
 
@@ -58,3 +58,30 @@ class SignUpForm(UserCreationForm):
     class Meta:
         model = User
         fields = ('username', 'email', 'password1', 'password2')
+
+
+class UserPasswordResetForm(PasswordResetForm):
+    email = forms.EmailField(widget=forms.EmailInput(attrs={
+        'class': 'form-control'
+    }))
+
+
+class UserSetPasswordForm(SetPasswordForm):
+    new_password1 = forms.CharField(max_length=50, widget=forms.PasswordInput(attrs={
+        'class': 'form-control', 'placeholder': 'Новый пароль'
+    }), label="Новый пароль")
+    new_password2 = forms.CharField(max_length=50, widget=forms.PasswordInput(attrs={
+        'class': 'form-control', 'placeholder': 'Подтвердить новый пароль'
+    }), label="Подтвердить новый пароль")
+
+
+class UserPasswordChangeForm(PasswordChangeForm):
+    old_password = forms.CharField(max_length=50, widget=forms.PasswordInput(attrs={
+        'class': 'form-control', 'placeholder': 'Старый пароль'
+    }), label='Старый пароль')
+    new_password1 = forms.CharField(max_length=50, widget=forms.PasswordInput(attrs={
+        'class': 'form-control', 'placeholder': 'Новый пароль'
+    }), label="Новый пароль")
+    new_password2 = forms.CharField(max_length=50, widget=forms.PasswordInput(attrs={
+        'class': 'form-control', 'placeholder': 'Подтвердить новый пароль'
+    }), label="Подтвердить новый пароль")

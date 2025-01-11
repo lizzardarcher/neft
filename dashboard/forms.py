@@ -101,6 +101,19 @@ class UserCreateForm(forms.ModelForm):
             self.save_m2m()
         return user
 
+
+class UserUpdateForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'email']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+        }
+
+
 class CategoryCreateViewForm(forms.ModelForm):
     class Meta:
         model = Category

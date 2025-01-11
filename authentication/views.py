@@ -2,7 +2,7 @@
 """
 Copyright (c) 2019 - present AppSeed.us
 """
-
+from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView, PasswordChangeView
 # Create your views here.
 from django.shortcuts import render, redirect
 from django.core.mail import send_mail
@@ -60,7 +60,6 @@ def login_view(request):
 
     return render(request, "accounts/login.html", {"form": form, "msg": msg})
 
-
 def register_user(request):
     msg = None
     success = False
@@ -96,3 +95,17 @@ def register_user(request):
         form = SignUpForm()
 
     return render(request, "accounts/register.html", {"form": form, "msg": msg, "success": success})
+
+class UserPasswordResetView(PasswordResetView):
+    template_name = 'accounts/password_reset.html'
+    form_class = UserPasswordResetForm
+
+
+class UserPasswordResetConfirmView(PasswordResetConfirmView):
+    template_name = 'accounts/password_reset_confirm.html'
+    form_class = UserSetPasswordForm
+
+
+class UserPasswordChangeView(PasswordChangeView):
+    template_name = 'accounts/password_change.html'
+    form_class = UserPasswordChangeForm

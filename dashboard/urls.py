@@ -35,7 +35,10 @@ urlpatterns = [
     path('users/', users.UserListView.as_view(), name='user_list'),
     path('users/create/', users.UserCreateView.as_view(), name='user_create'),
     path('users/<int:pk>/update/', users.UserUpdateView.as_view(), name='user_update'),
+    path('user/<int:pk>/update/', users.UserAccountUpdateView.as_view(), name='account_update'),
     path('users/<int:user_id>/delete/', users.user_delete, name='user_delete'),
+    path('user/<int:pk>/detail', users.UserDetailView.as_view(), name='user_detail'),
+
     path('action-log/', users.UserActionLogView.as_view(), name='user_action_log'),
 
     path('reports/', reports.ReportListView.as_view(), name='report_list'),

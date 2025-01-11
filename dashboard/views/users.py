@@ -7,7 +7,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 
-from dashboard.forms import UserCreateForm
+from dashboard.forms import UserCreateForm, UserUpdateForm
 from dashboard.models import UserActionLog
 
 
@@ -44,6 +44,19 @@ class UserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'dashboard/users/user_form.html'
     success_message = 'Данные пользователя успешно обновлены'
     success_url = '/dashboard/users'
+
+class UserAccountUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = User
+    form_class = UserUpdateForm
+    template_name = 'dashboard/users/user_account_form.html'
+    success_message = 'Данные пользователя успешно обновлены'
+    success_url = '/dashboard/users'
+
+    def get_success_url(self):
+        if 'users' in self.request.path:
+            return self.success_url
+        else:
+            return f'/dashboard/user/{self.request.user.id}/detail'
 
 
 def user_delete(request, user_id):
