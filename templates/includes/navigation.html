@@ -11,10 +11,13 @@
                     <a class="nav-link" href="{% url 'dashboard' %}">Управление</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'instructions' %}">Инструкция</a>
+                    <a class="nav-link" href="{% url 'instructions' %}">Помощь</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'user_detail' request.user.id %}">Личный кабинет</a>
+                    <a class="nav-link" href="{% url 'user_detail' request.user.id %}">Личный кабинет
+                        {% for group in user.groups.all %}
+                            {{ group.name }}
+                        {% endfor %}</a>
                 </li>
                 <li class="nav-item">
                     <form action="{% url 'logout' %}" method="post">
@@ -26,7 +29,7 @@
                     </form>
                 </li>
             </ul>
-{#            <span class="navbar-text">Navbar text with an inline element</span>#}
+            {#            <span class="navbar-text">Navbar text with an inline element</span>#}
         </div>
     </div>
 </nav>

@@ -4,34 +4,165 @@
 
 {% block content %}
     <div class="container mt-4">
-        <h1>Инструкция</h1>
-        {% if instructions %}
-            <div class="row">
-                {% for group, instruction in instructions.items %}
-                    <div class="col-md-4">
-                        <div class="card mb-4">
-                            <div class="card-body">
-                                {% if group == 'admin' %}
-                                    <h2 class="card-title">Инструкция для администратора</h2>
-                                {% elif group == 'manager' %}
-                                    <h2 class="card-title">Инструкция для управляющего</h2>
-                                {% elif group == 'operator' %}
-                                    <h2 class="card-title">Инструкция для оператора</h2>
-                                {% endif %}
-                                {% for category, actions in instruction.items %}
-                                    <h3 class="card-subtitle mb-2 text-muted">{{ category }}</h3>
-                                    <ul class="list-group list-group-flush">
-                                        {% for action in actions %}
-                                            <li class="list-group-item">{{ action }}</li>
-                                        {% endfor %}
-                                    </ul>
-                                {% endfor %}
-                            </div>
-                        </div>
+        <h1>Инструкция пользователя</h1>
+
+        <div class="accordion" id="instructionsAccordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingAdmin">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapseAdmin" aria-expanded="true" aria-controls="collapseAdmin">
+                        Администратор
+                    </button>
+                </h2>
+                <div id="collapseAdmin" class="accordion-collapse collapse" aria-labelledby="headingAdmin"
+                     data-bs-parent="#instructionsAccordion">
+                    <div class="accordion-body">
+                        <p>Администратор обладает полными правами в системе. Он может выполнять все действия,
+                            включая:</p>
+                        <ul>
+                            <li><strong>Управление пользователями:</strong>
+                                <ul>
+                                    <li>Создание новых пользователей с различными правами.</li>
+                                    <li>Редактирование данных существующих пользователей.</li>
+                                    <li>Удаление пользователей из системы.</li>
+                                    <li>Управление группами пользователей и их правами доступа.</li>
+                                    <li>Просмотр истории действий пользователей в системе.</li>
+                                    <li>Просмотр журнала административных действий.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Управление бригадами:</strong>
+                                <ul>
+                                    <li>Просмотр всех существующих бригад.</li>
+                                    <li>Создание новых бригад.</li>
+                                    <li>Редактирование информации о бригадах.</li>
+                                    <li>Удаление бригад из системы.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Управление категориями:</strong>
+                                <ul>
+                                    <li>Просмотр всех существующих категорий.</li>
+                                    <li>Создание новых категорий.</li>
+                                    <li>Редактирование информации о категориях.</li>
+                                    <li>Удаление категорий из системы.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Управление оборудованием:</strong>
+                                <ul>
+                                    <li>Просмотр списка всего оборудования.</li>
+                                    <li>Создание новых единиц оборудования.</li>
+                                    <li>Редактирование информации об оборудовании.</li>
+                                    <li>Удаление оборудования из системы.</li>
+                                    <li>Добавление и управление документацией по оборудованию.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Управление документами:</strong>
+                                <ul>
+                                    <li>Просмотр всех загруженных документов.</li>
+                                    <li>Удаление документов.</li>
+                                </ul>
+                            </li>
+                        </ul>
                     </div>
-                {% endfor %}
+                </div>
             </div>
-        {% endif %}
+
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingManager">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapseManager" aria-expanded="false" aria-controls="collapseManager">
+                        Управляющий
+                    </button>
+                </h2>
+                <div id="collapseManager" class="accordion-collapse collapse" aria-labelledby="headingManager"
+                     data-bs-parent="#instructionsAccordion">
+                    <div class="accordion-body">
+                        <p>Управляющий имеет следующие права:</p>
+                        <ul>
+                            <li><strong>Управление бригадами:</strong>
+                                <ul>
+                                    <li>Просмотр всех существующих бригад.</li>
+                                    <li>Создание новых бригад.</li>
+                                    <li>Редактирование информации о бригадах.</li>
+                                    <li>Удаление бригад из системы.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Управление категориями:</strong>
+                                <ul>
+                                    <li>Просмотр всех существующих категорий.</li>
+                                    <li>Создание новых категорий.</li>
+                                    <li>Редактирование информации о категориях.</li>
+                                    <li>Удаление категорий из системы.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Управление оборудованием:</strong>
+                                <ul>
+                                    <li>Просмотр списка всего оборудования.</li>
+                                    <li>Создание новых единиц оборудования.</li>
+                                    <li>Редактирование информации об оборудовании.</li>
+                                    <li>Удаление оборудования из системы.</li>
+                                    <li>Добавление и управление документацией по оборудованию.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Управление документами:</strong>
+                                <ul>
+                                    <li>Просмотр всех загруженных документов.</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                        <p>Управляющий не имеет доступа к управлению пользователями системы.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingOperator">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapseOperator" aria-expanded="false" aria-controls="collapseOperator">
+                        Оператор
+                    </button>
+                </h2>
+                <div id="collapseOperator" class="accordion-collapse collapse" aria-labelledby="headingOperator"
+                     data-bs-parent="#instructionsAccordion">
+                    <div class="accordion-body">
+                        <p>Оператор обладает следующими правами:</p>
+                        <ul>
+                            <li><strong>Просмотр категорий:</strong>
+                                <ul>
+                                    <li>Просмотр списка всех категорий оборудования.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Управление оборудованием:</strong>
+                                <ul>
+                                    <li>Просмотр списка всего оборудования.</li>
+                                    <li>Редактирование информации об оборудовании.</li>
+                                    <li>Добавление и управление документацией по оборудованию.</li>
+                                </ul>
+                            </li>
+                        </ul>
+                        <p>Оператор не может создавать, удалять или редактировать категории, а также управлять бригадами
+                            и пользователями.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <p><strong>Дополнительные пояснения:</strong></p>
+            <ul>
+                <li><strong>Взаимодействие с формами:</strong> При создании и редактировании записей, вы будете
+                    использовать формы, которые включают необходимые поля для каждой модели.
+                </li>
+                <li><strong>Поиск и фильтрация:</strong> В списках оборудования вы можете использовать поиск и
+                    фильтрацию для быстрого доступа к необходимым данным.
+                </li>
+                <li><strong>Сортировка:</strong> Списки можно сортировать по различным параметрам.</li>
+                <li><strong>Пагинация:</strong> Списки длиннее 10 записей будут разделены на страницы для более удобного
+                    просмотра.
+                </li>
+            </ul>
+        </div>
+        <p><strong>Контакты поддержки:</strong>
+            В случае возникновения вопросов или проблем, пожалуйста, свяжитесь с администратором системы.</p>
 
         <h2>Таблица разрешений</h2>
         <table class="table table-bordered table-striped">
@@ -85,6 +216,50 @@
             </tr>
         </table>
 
+
+        <h1>Связи между таблицами базы данных</h1>
+
+        <table class="table table-bordered table-striped">
+            <thead class="thead-dark">
+            <tr>
+                <th>Таблица 1</th>
+                <th>Тип связи</th>
+                <th>Таблица 2</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>Пользователь</td>
+                <td>Много-ко-многим</td>
+                <td>Группа</td>
+            </tr>
+            <tr>
+                <td>Оборудование</td>
+                <td>Многие-к-одному</td>
+                <td>Категория</td>
+            </tr>
+            <tr>
+                <td>Оборудование</td>
+                <td>Многие-к-одному</td>
+                <td>Бригада</td>
+            </tr>
+            <tr>
+                <td>Оборудование</td>
+                <td>Много-ко-многим</td>
+                <td>Документ</td>
+            </tr>
+            <tr>
+                <td>Документ</td>
+                <td>Многие-к-одному</td>
+                <td>Оборудование</td>
+            </tr>
+            <tr>
+                <td>Категория</td>
+                <td>Многие-к-одному</td>
+                <td>Бригада</td>
+            </tr>
+            </tbody>
+        </table>
     </div>
 {% endblock %}
 
