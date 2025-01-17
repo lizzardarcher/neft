@@ -14,7 +14,7 @@ class EquipmentListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
     model = Equipment
     context_object_name = 'equipments'
     template_name = 'dashboard/equipment/equipment_list.html'
-    paginate_by = 30
+    paginate_by = 50
 
     def get_queryset(self):
         queryset = super().get_queryset()
