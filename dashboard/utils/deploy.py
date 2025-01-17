@@ -30,11 +30,17 @@ def update_system():
     """Обновляет систему и устанавливает зависимости."""
     print("Updating system and installing dependencies...")
     run_command("sudo apt update -y")
+    time.sleep(1)
     run_command("sudo apt upgrade -y")
+    time.sleep(1)
     run_command("sudo apt install -y python3 python3-pip git docker.io docker-compose nginx mysql-server")
+    time.sleep(1)
     run_command("sudo systemctl enable docker")
+    time.sleep(1)
     run_command("sudo systemctl start docker")
+    time.sleep(1)
     run_command("sudo systemctl enable nginx")
+    time.sleep(1)
 
 
 def clone_repo():
@@ -58,9 +64,6 @@ def create_mysql_database():
     run_command(f"sudo mysql -e \"CREATE USER IF NOT EXISTS '{DB_USER}'@'localhost' IDENTIFIED BY '{DB_PASSWORD}';\"")
     run_command(f"sudo mysql -e \"GRANT ALL PRIVILEGES ON {DB_NAME}.* TO '{DB_USER}'@'localhost';\"")
     run_command("sudo mysql -e 'FLUSH PRIVILEGES;'")
-    # Решение проблемы с утечкой памяти из-за логов mysql
-    run_command("sudo sed -i 's/^max_connections/#max_connections/' /etc/mysql/mysql.conf.d/mysqld.cnf")
-    run_command("sudo systemctl restart mysql")
 
 
 def create_ssl_certificate():
@@ -186,17 +189,41 @@ def migrate_db():
 
 def main():
     update_system()
+    time.sleep(1)
+
     clone_repo()
+    time.sleep(1)
+
     create_virtualenv()
+    time.sleep(1)
+
     create_mysql_database()
+    time.sleep(1)
+
     create_ssl_certificate()
+    time.sleep(1)
+
     create_nginx_config()
+    time.sleep(1)
+
     create_docker_files()
+    time.sleep(1)
+
     build_docker_image()
+    time.sleep(1)
+
     run_docker_container()
+    time.sleep(1)
+
     collect_static()
+    time.sleep(1)
+
     migrate_db()
+    time.sleep(1)
+
     create_systemd_service()
+    time.sleep(1)
+
     print("Deployment complete!")
 
 
