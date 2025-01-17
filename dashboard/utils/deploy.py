@@ -5,8 +5,8 @@ import time
 import shutil
 
 # Конфигурация
-PROJECT_NAME = "myproject"  # Замените на название вашего проекта
-GITHUB_REPO = "https://github.com/your_username/your_repo.git"  # Замените на URL вашего репозитория
+PROJECT_NAME = "neft"
+GITHUB_REPO = "https://github.com/lizzardarcher/neft.git"
 DOMAIN = "yourdomain.com"  # Замените на ваш домен
 EMAIL = "your@email.com"  # Замените на ваш email для Let's Encrypt
 DB_NAME = "django_db" # Замените на название вашей БД
