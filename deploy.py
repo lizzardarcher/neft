@@ -26,9 +26,7 @@ def run_command(command, check=True):
 def update_system():
     print("Обновляем систему и устанавливает зависимости...")
     os.system("sudo apt update -y")
-    os.system("sudo apt install -y python3 python3-pip git nginx mysql-server")
-    os.system("sudo apt install -y default-libmysqlclient-dev")
-    os.system("sudo apt install -y python3.12-venv")
+    os.system("sudo apt install -y python3 python3-pip git nginx mysql-server default-libmysqlclient-dev python3.12-venv")
     os.system("sudo systemctl enable nginx")
 
 
