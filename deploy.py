@@ -1,4 +1,3 @@
-
 import os
 import subprocess
 import time
@@ -7,13 +6,14 @@ import shutil
 # Конфигурация
 PROJECT_NAME = "neft"
 GITHUB_REPO = "https://github.com/lizzardarcher/neft.git"
-DOMAIN = "yourdomain.com"  # Замените на ваш домен
-EMAIL = "your@email.com"  # Замените на ваш email для Let's Encrypt
-DB_NAME = "django_db" # Замените на название вашей БД
-DB_USER = "django_user"  # Замените на имя пользователя БД
-DB_PASSWORD = "your_db_password"  # Замените на пароль пользователя БД
+DOMAIN = "rusgeolog.ru"
+EMAIL = "vodkinstorage@gmail.com"
+DB_NAME = "django_db"
+DB_USER = "django_user"
+DB_PASSWORD = "k*hvcnUBcNN^g740kkkj8J&HVvcbk"
 DOCKER_IMAGE_NAME = f"{PROJECT_NAME}-image"
 DOCKER_CONTAINER_NAME = f"{PROJECT_NAME}-container"
+WORK_DIR = "/opt/"
 
 
 def run_command(command, check=True):
@@ -29,48 +29,51 @@ def run_command(command, check=True):
 def update_system():
     """Обновляет систему и устанавливает зависимости."""
     print("Updating system and installing dependencies...")
-    run_command("sudo apt update -y")
+    os.system("sudo apt update -y")
     time.sleep(1)
-    run_command("sudo apt upgrade -y")
+    os.system("sudo apt upgrade -y")
     time.sleep(1)
-    run_command("sudo apt install -y python3 python3-pip git docker.io docker-compose nginx mysql-server")
+    os.system("sudo apt install -y python3 python3-pip git docker.io docker-compose nginx mysql-server")
     time.sleep(1)
-    run_command("sudo systemctl enable docker")
+    os.system("sudo apt install -y python3.12-venv")
     time.sleep(1)
-    run_command("sudo systemctl start docker")
+    os.system("sudo systemctl enable docker")
     time.sleep(1)
-    run_command("sudo systemctl enable nginx")
+    os.system("sudo systemctl start docker")
+    time.sleep(1)
+    os.system("sudo systemctl enable nginx")
     time.sleep(1)
 
 
 def clone_repo():
     """Клонирует репозиторий с GitHub."""
     print(f"Cloning repository from {GITHUB_REPO}...")
-    run_command(f"git clone {GITHUB_REPO} {PROJECT_NAME}")
+    os.system(f"git clone {GITHUB_REPO} {PROJECT_NAME}")
     os.chdir(PROJECT_NAME)
 
 
 def create_virtualenv():
+    os.system('ls')
     """Создаёт виртуальное окружение и устанавливает зависимости."""
     print("Creating virtual environment and installing dependencies...")
-    run_command("python3 -m venv venv")
-    run_command("source venv/bin/activate && pip install -r requirements.txt")
+    os.system("python3 -m venv venv")
+    os.system(f"source venv/bin/activate && pip install -r requirements.txt")
 
 
 def create_mysql_database():
     """Создает базу данных MySQL."""
     print("Creating MySQL database...")
-    run_command(f"sudo mysql -e 'CREATE DATABASE IF NOT EXISTS {DB_NAME};'")
-    run_command(f"sudo mysql -e \"CREATE USER IF NOT EXISTS '{DB_USER}'@'localhost' IDENTIFIED BY '{DB_PASSWORD}';\"")
-    run_command(f"sudo mysql -e \"GRANT ALL PRIVILEGES ON {DB_NAME}.* TO '{DB_USER}'@'localhost';\"")
-    run_command("sudo mysql -e 'FLUSH PRIVILEGES;'")
+    os.system(f"sudo mysql -e 'CREATE DATABASE IF NOT EXISTS {DB_NAME};'")
+    os.system(f"sudo mysql -e \"CREATE USER IF NOT EXISTS '{DB_USER}'@'localhost' IDENTIFIED BY '{DB_PASSWORD}';\"")
+    os.system(f"sudo mysql -e \"GRANT ALL PRIVILEGES ON {DB_NAME}.* TO '{DB_USER}'@'localhost';\"")
+    os.system("sudo mysql -e 'FLUSH PRIVILEGES;'")
 
 
 def create_ssl_certificate():
     """Создает бесплатный SSL-сертификат с Let's Encrypt."""
     print("Creating SSL certificate with Let's Encrypt...")
-    run_command("sudo apt install -y certbot python3-certbot-nginx")
-    run_command(f"sudo certbot --nginx -d {DOMAIN} -m {EMAIL} --non-interactive --agree-tos")
+    os.system("sudo apt install -y certbot python3-certbot-nginx")
+    os.system(f"sudo certbot --nginx -d {DOMAIN} -m {EMAIL} --non-interactive --agree-tos")
 
 
 def create_nginx_config():
@@ -90,7 +93,7 @@ server {{
     ssl_certificate /etc/letsencrypt/live/{DOMAIN}/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/{DOMAIN}/privkey.pem;
 
-    include /etc/nginx/snippets/ssl-params.conf;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
 
     location / {{
         proxy_pass http://unix:/tmp/{PROJECT_NAME}.socket;
@@ -101,60 +104,69 @@ server {{
     }}
 
     location /static/ {{
-        alias /home/ubuntu/{PROJECT_NAME}/static/;
+        alias /opt/{PROJECT_NAME}/static/;
+    }}
+
+    location /media/ {{
+        alias /opt/{PROJECT_NAME}/media/;
     }}
 }}
 """
     with open(f"/etc/nginx/sites-available/{PROJECT_NAME}", "w") as f:
         f.write(nginx_config)
-    run_command(f"sudo ln -s /etc/nginx/sites-available/{PROJECT_NAME} /etc/nginx/sites-enabled/")
-    run_command("sudo systemctl restart nginx")
-
+    os.system(f"sudo ln -s /etc/nginx/sites-available/{PROJECT_NAME} /etc/nginx/sites-enabled/")
+    os.system("sudo systemctl restart nginx")
 
 
 def create_docker_files():
-   """Создает Dockerfile и docker-compose.yml"""
-   print("Creating Dockerfile and docker-compose.yml...")
-   dockerfile_content = f"""
-FROM python:3.10-slim
-WORKDIR /app
-COPY . /app
-RUN pip install --no-cache-dir -r requirements.txt
-COPY . /app
+    """Создает Dockerfile и docker-compose.yml"""
+    print("Creating Dockerfile and docker-compose.yml...")
+    dockerfile_content = f"""
+FROM python:3.12-slim
+WORKDIR /{PROJECT_NAME}
+COPY . /{PROJECT_NAME}
+RUN python3 -m pip install -r requirements.txt
+COPY . /{PROJECT_NAME}
 EXPOSE 8000
-CMD ["gunicorn", "--bind", "unix:/tmp/{PROJECT_NAME}.socket",  "--workers=3", "{PROJECT_NAME}.wsgi:application"]
+CMD ["gunicorn", "--bind", "unix:/tmp/{PROJECT_NAME}.socket",  "--workers=5", "{PROJECT_NAME}.wsgi:application"]
 """
-   with open("Dockerfile", "w") as f:
+    with open(f"{PROJECT_NAME}/Dockerfile", "w") as f:
         f.write(dockerfile_content)
 
-
-   docker_compose_content = f"""
+    docker_compose_content = f"""
 version: "3.9"
 services:
   web:
     build: .
     container_name: {DOCKER_CONTAINER_NAME}
     volumes:
-      - .:/app
+      - .:/{PROJECT_NAME}
     restart: always
     """
-   with open("docker-compose.yml", "w") as f:
+    with open(f"{PROJECT_NAME}/docker-compose.yml", "w") as f:
         f.write(docker_compose_content)
 
+
 def build_docker_image():
-  """Строит Docker образ."""
-  print("Building Docker image...")
-  run_command(f"docker build -t {DOCKER_IMAGE_NAME} .")
+    """Строит Docker образ."""
+    print("Building Docker image...")
+    os.system(f"ls")
+    os.chdir(f"/opt/{PROJECT_NAME}")
+    os.system(f"ls")
+    os.system(f"docker build -t {DOCKER_IMAGE_NAME} .")
+
 
 def run_docker_container():
-   """Запускает Docker контейнер."""
-   print("Running Docker container...")
-   run_command("docker-compose up -d")
+    """Запускает Docker контейнер."""
+    print("Running Docker container...")
+    os.chdir(f"/opt/{PROJECT_NAME}")
+    os.system("docker-compose up -d")
+
 
 def create_systemd_service():
-   """Создает systemd сервис."""
-   print("Creating systemd service...")
-   service_content = f"""
+    """Создает systemd сервис."""
+    print("Creating systemd service...")
+    service_content = f"""
 [Unit]
 Description=Gunicorn daemon for {PROJECT_NAME}
 After=network.target
@@ -162,7 +174,7 @@ After=network.target
 [Service]
 User=ubuntu
 Group=ubuntu
-WorkingDirectory=/home/ubuntu/{PROJECT_NAME}
+WorkingDirectory=/opt/{PROJECT_NAME}
 ExecStart=/usr/bin/docker-compose up
 ExecStop=/usr/bin/docker-compose down
 Restart=always
@@ -170,21 +182,23 @@ Restart=always
 [Install]
 WantedBy=multi-user.target
 """
-   with open(f"/etc/systemd/system/{PROJECT_NAME}.service", "w") as f:
-       f.write(service_content)
-   run_command(f"sudo systemctl daemon-reload")
-   run_command(f"sudo systemctl enable {PROJECT_NAME}.service")
-   run_command(f"sudo systemctl start {PROJECT_NAME}.service")
+    with open(f"/etc/systemd/system/{PROJECT_NAME}.service", "w") as f:
+        f.write(service_content)
+    os.system(f"sudo systemctl daemon-reload")
+    os.system(f"sudo systemctl enable {PROJECT_NAME}.service")
+    os.system(f"sudo systemctl start {PROJECT_NAME}.service")
+
 
 def collect_static():
-   """Собирает статические файлы."""
-   print("Collecting static files...")
-   run_command("source venv/bin/activate && python manage.py collectstatic --noinput")
+    """Собирает статические файлы."""
+    print("Collecting static files...")
+    os.system(f"source venv/bin/activate && python3 manage.py collectstatic --noinput")
+
 
 def migrate_db():
-   """Мигрирует базу данных."""
-   print("Migrating database...")
-   run_command("source venv/bin/activate && python manage.py migrate")
+    """Мигрирует базу данных."""
+    print("Migrating database...")
+    os.system(f"source venv/bin/activate && python3 manage.py migrate")
 
 
 def main():

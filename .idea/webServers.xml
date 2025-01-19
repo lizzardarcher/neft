@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="663d12ea-6c12-4cd4-949f-c5b79b739001" name="rusgeolog.ru">
+        <fileTransfer accessType="SFTP" host="rusgeolog.ru" port="22" sshConfigId="22ff29e3-a686-4329-ad3e-64817ab03be3" sshConfig="root@rusgeolog.ru:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
