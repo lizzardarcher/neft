@@ -1,7 +1,5 @@
 import os
 import subprocess
-import time
-import shutil
 
 # Конфигурация
 PROJECT_NAME = "neft"
@@ -17,8 +15,7 @@ WORK_DIR = "/opt"
 USER = 'root'
 
 def run_command(command, check=True):
-    """Запускает команду в shell."""
-    print(f"Running: {command}")
+    print(f"Запускаем команду в shell: {command}")
     try:
         subprocess.run(command, shell=True, check=check, executable='/bin/bash')
     except subprocess.CalledProcessError as e:
@@ -27,33 +24,29 @@ def run_command(command, check=True):
 
 
 def update_system():
-    """Обновляет систему и устанавливает зависимости."""
-    print("Updating system and installing dependencies...")
+    print("Обновляем систему и устанавливает зависимости...")
     os.system("sudo apt update -y")
-    os.system("sudo apt upgrade -y")
     os.system("sudo apt install -y python3 python3-pip git nginx mysql-server")
+    os.system("sudo apt install -y default-libmysqlclient-dev")
     os.system("sudo apt install -y python3.12-venv")
     os.system("sudo systemctl enable nginx")
 
 
 def clone_repo():
-    """Клонирует репозиторий с GitHub."""
-    print(f"Cloning repository from {GITHUB_REPO}...")
+    print(f"Клонируем репозиторий с GitHub {GITHUB_REPO}...")
     os.system(f"git clone {GITHUB_REPO} {PROJECT_NAME}")
     os.chdir(PROJECT_NAME)
 
 
 def create_virtualenv():
-    """Создаёт виртуальное окружение и устанавливает зависимости."""
-    print("Creating virtual environment and installing dependencies...")
+    print("Создаём виртуальное окружение и устанавливает зависимости...")
     os.chdir(f"{WORK_DIR}/{PROJECT_NAME}")
     os.system("python3 -m venv venv")
     os.system(f"source venv/bin/activate && pip install -r requirements.txt")
 
 
 def create_mysql_database():
-    """Создает базу данных MySQL."""
-    print("Creating MySQL database...")
+    print("Создаем базу данных MySQL...")
     os.system(f"sudo mysql -e 'CREATE DATABASE IF NOT EXISTS {DB_NAME};'")
     os.system(f"sudo mysql -e \"CREATE USER IF NOT EXISTS '{DB_USER}'@'localhost' IDENTIFIED BY '{DB_PASSWORD}';\"")
     os.system(f"sudo mysql -e \"GRANT ALL PRIVILEGES ON {DB_NAME}.* TO '{DB_USER}'@'localhost';\"")
@@ -61,14 +54,13 @@ def create_mysql_database():
 
 
 def create_ssl_certificate():
-    """Создает бесплатный SSL-сертификат с Let's Encrypt."""
-    print("Creating SSL certificate with Let's Encrypt...")
+    print("Создаем бесплатный SSL-сертификат с Let's Encrypt...")
     os.system("sudo apt install -y certbot python3-certbot-nginx")
     os.system(f"sudo certbot --nginx -d {DOMAIN} -m {EMAIL} --non-interactive --agree-tos")
 
 
 def create_gunicorn_service():
-    """Создает сервис systemd для Gunicorn."""
+    print("Создаем сервис systemd для Gunicorn...")
     gunicorn_cmd = f"/opt/{PROJECT_NAME}/venv/bin/gunicorn -c gunicorn-cfg.py {PROJECT_NAME}.wsgi:application"  # Предполагает наличие wsgi файла
     service_file = f"""
 [Unit]
@@ -102,7 +94,7 @@ WantedBy=multi-user.target
 
 
 def create_gunicorn_socket():
-    """Создает сокет systemd для Gunicorn."""
+    print("Создаем сокет systemd для Gunicorn...")
     socket_file = f"""
 [Unit]
 Description=gunicorn socket for {PROJECT_NAME}
@@ -124,8 +116,7 @@ WantedBy=sockets.target
 
 
 def create_nginx_config():
-    """Создает конфигурацию Nginx."""
-    print("Creating Nginx configuration...")
+    print("Создаем конфигурацию Nginx...")
     nginx_config = f"""
 server {{
     listen 80;
@@ -139,8 +130,6 @@ server {{
 
     ssl_certificate /etc/letsencrypt/live/{DOMAIN}/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/{DOMAIN}/privkey.pem;
-
-    ssl_protocols       TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
     include /etc/letsencrypt/options-ssl-nginx.conf;
     client_max_body_size 1G;
     
@@ -168,15 +157,13 @@ server {{
 
 
 def collect_static():
-    """Собирает статические файлы."""
-    print("Collecting static files...")
+    print("Собирает статические файлы...")
     os.chdir(f"{WORK_DIR}/{PROJECT_NAME}")
     os.system(f"source venv/bin/activate && python3 manage.py collectstatic --noinput")
 
 
 def migrate_db():
-    """Мигрирует базу данных."""
-    print("Migrating database...")
+    print("Мигрирует базу данных...")
     os.chdir(f"{WORK_DIR}/{PROJECT_NAME}")
     os.system(f"source venv/bin/activate && python3 manage.py migrate")
 
@@ -192,9 +179,9 @@ def main():
 
     create_ssl_certificate()
 
-    create_gunicorn_service()
-
     create_gunicorn_socket()
+
+    create_gunicorn_service()
 
     create_nginx_config()
 
