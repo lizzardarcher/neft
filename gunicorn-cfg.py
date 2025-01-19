@@ -3,7 +3,7 @@
 command = '/opt/neft/venv/bin/gunicorn'
 pythonpath = '/opt/neft'
 bind = '0.0.0.0'
-workers = 5
+workers = 9
 timeout = 600
 accesslog = '-'
 loglevel = 'info'
