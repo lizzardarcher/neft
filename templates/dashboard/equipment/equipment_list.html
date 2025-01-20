@@ -5,15 +5,14 @@
         <h2>Список Оборудования</h2>
         {% include 'includes/search.html' %}
         <div class="d-flex justify-content-between mt-4 mb-4">
-            <div class="p-0"><a href="{% url 'equipment_create' %}" class="btn btn-outline-success mb-3"><i class="fa fa-plus-square"></i>
-            Добавить оборудование</a>
+            <div class="p-0">
+                <a href="{% url 'equipment_create' %}" class="btn btn-outline-success m-1"><i class="fa fa-plus-square"></i>Добавить оборудование</a>
             </div>
             <div class="p-0">
-                <a class="btn btn-success" href="{% url 'equipment_export_excel' %}"><i class="fa fa-file-excel"></i>
+                <a class="btn btn-success m-1" href="{% url 'equipment_export_excel' %}"><i class="fa fa-file-excel"></i>
                     Выгрузить в EXCEL</a>
-                <a class="btn btn-success" href="{% url 'equipment_export_csv' %}"><i class="fa fa-file-csv"></i>
-                    Выгрузить в
-                    CSV</a>
+                <a class="btn btn-success m-1" href="{% url 'equipment_export_csv' %}"><i class="fa fa-file-csv"></i>
+                    Выгрузить в CSV</a>
             </div>
         </div>
         {% include 'dashboard/equipment/_equipment_table.html' %}

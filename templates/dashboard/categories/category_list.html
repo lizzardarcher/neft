@@ -16,10 +16,10 @@
             {% for category in categories %}
                 <li class="list-group-item">
                     <div class="row">
-                        <div class="col-11">
+                        <div class="col-lg-11 col-sm-10">
                             <a href="{% url 'equipment_list' %}?category={{ category.name }}">{{ category.name }} {{ category.equipment }}</a>
                         </div>
-                        <div class="col-1">
+                        <div class="col-lg-1 col-sm-2">
                             {% if user|has_group:"Управляющий" or user|has_group:"Администратор" %}
                                                             <a href="{% url 'category_update' category.id %}"
                                class="btn btn-sm btn-outline-warning"><i
