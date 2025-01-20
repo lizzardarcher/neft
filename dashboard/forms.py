@@ -78,19 +78,24 @@ class UserCreateForm(forms.ModelForm):
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
             'password': forms.PasswordInput(attrs={'class': 'form-control'}),
-            'is_active': forms.CheckboxInput(attrs={'class': 'required checkbox', 'checked': 'checked'}),
-            'is_staff': forms.CheckboxInput(attrs={'class': 'required checkbox', 'checked': 'checked'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'required checkbox', 'checked': 'checked', 'hidden': 'hidden'}),
+            'is_staff': forms.CheckboxInput(attrs={'class': 'required checkbox', 'checked': 'checked', 'hidden': 'hidden'}),
             'is_superuser': forms.CheckboxInput(attrs={'class': 'required checkbox'}),
-            'groups': forms.CheckboxSelectMultiple()
+            'groups': forms.CheckboxSelectMultiple(),
         }
 
     def clean_password(self):
         password = self.cleaned_data.get('password')
         if not password:
             raise forms.ValidationError("Поле пароль обязательно для заполнения")
-        # Добавляем валидацию пароля Django
         validate_password(password)
         return password
+
+    def clean_groups(self):
+        groups = self.cleaned_data.get('groups')
+        if groups and len(groups) > 1:
+            raise forms.ValidationError("Можно выбрать только одну группу.")
+        return groups
 
     def save(self, commit=True):
         user = super(UserCreateForm, self).save(commit=False)

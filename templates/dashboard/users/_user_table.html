@@ -1,3 +1,4 @@
+{% load custom_filters %}
 {% block content %}
 
     <div class="container mt-4">
@@ -38,10 +39,17 @@
                     <td>{{ user.is_staff|yesno:"✅,🛑" }}</td>
                     <td>{{ user.is_superuser|yesno:"✅,🛑" }}</td>
                     <td>
-                        <a href="{% url 'user_update' user.id %}" class="btn btn-sm btn-outline-warning"><i
-                                class="fa fa-edit"></i></a>
-                        <button type="button" class="btn btn-sm btn-outline-danger" data-toggle="modal"
-                                data-target="#deleteModal{{ user.id }}"><i class="fa fa-trash-can"></i></button>
+                        {% if request.user|has_group:"Администратор" %}
+                            <a href="{% url 'user_update' user.id %}" class="btn btn-sm btn-outline-warning"><i
+                                    class="fa fa-edit"></i></a>
+                            <button type="button" class="btn btn-sm btn-outline-danger" data-toggle="modal"
+                                    data-target="#deleteModal{{ user.id }}"><i class="fa fa-trash-can"></i></button>
+                        {% else %}
+                            <a class="btn btn-sm btn-outline-secondary"><i
+                                    class="fa fa-edit"></i></a>
+                            <a type="button" class="btn btn-sm btn-outline-secondary"><i
+                                    class="fa fa-trash-can"></i></a>
+                        {% endif %}
                         <div class="modal fade" id="deleteModal{{ user.id }}" tabindex="-1" role="dialog"
                              aria-labelledby="deleteModalLabel" aria-hidden="true">
                             <div class="modal-dialog" role="document">

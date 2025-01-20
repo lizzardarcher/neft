@@ -35,7 +35,7 @@
                     <a href="{% url 'equipment_list' %}" class="m-1 btn btn-outline-info">Просмотреть</a>
                 </div>
             </div>
-            {% if request.user.is_superuser %}
+            {% if user|has_group:"Управляющий" or user|has_group:"Администратор" %}
                 <div class="col-md-4 mb-3">
                     <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
                         <div class="card-header"><i class="fa fa-user"></i> Пользователи: {{ users.count }}</div>
