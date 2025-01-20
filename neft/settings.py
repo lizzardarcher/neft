@@ -31,6 +31,15 @@ DEBUG = False
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
 CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS').split(',')
 
+COOKIE_CONSENT_ENABLED = True
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_SAMESITE = 'Strict'
+
+SECURE_HSTS_SECONDS = 31536000 # 1 год
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+X_FRAME_OPTIONS = 'DENY'
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -53,6 +62,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'dashboard.middleware.UserActionLoggerMiddleware',
+    'home.middleware.SecurityMiddleware',
+    'home.middleware.ReferrerPolicyMiddleware',
+    'home.middleware.CSPMiddleware',
 ]
 
 ROOT_URLCONF = 'neft.urls'
