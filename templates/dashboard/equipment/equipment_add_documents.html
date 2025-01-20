@@ -23,8 +23,40 @@
                     <ol>
                         {% for doc in equipment.documents.all %}
                             <li>
-                                <a href="{{ doc.file.url }}">{{ doc.title }} | {{ doc.file.name }}</a>
+                                <div class="row">
+                                    <div class="col-11">
+                                        <a href="{{ doc.file.url }}">{{ doc.title }} | {{ doc.file.name }}</a>
+                                    </div>
+                                    <div class="col-1">
+                                        <button type="button" class="btn btn-sm btn-outline-danger" data-toggle="modal"
+                                                data-target="#deleteModal{{ doc.id }}"><i class="fa fa-trash-can"></i>
+                                        </button>
+
+                                        <div class="modal fade" id="deleteModal{{ doc.id }}" tabindex="-1" role="dialog"
+                                             aria-labelledby="deleteModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="deleteModalLabel">Подтверждение
+                                                            удаления</h5>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        Вы уверены, что хотите удалить документ "{{ doc.title }}"?
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary"
+                                                                data-dismiss="modal">Отмена
+                                                        </button>
+                                                        <a href="{% url 'document_delete' doc.id %}"
+                                                           class="btn btn-danger">Удалить</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </li>
+                            <hr>
                         {% endfor %}
                     </ol>
                 </div>

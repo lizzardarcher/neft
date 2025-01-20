@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
@@ -131,3 +132,14 @@ def equipment_delete(request, equipment_id):
     equipment.delete()
     messages.success(request, 'Оборудование успешно удалено!')
     return redirect('equipment_list')
+
+
+def document_delete(request, document_id):
+    document = get_object_or_404(Document, id=document_id)
+    document.delete()
+    messages.success(request, 'Документ успешно удален!')
+    referer_url = request.META.get('HTTP_REFERER')
+    if referer_url:
+        return HttpResponseRedirect(referer_url)
+    else:
+        return redirect('equipment_list')

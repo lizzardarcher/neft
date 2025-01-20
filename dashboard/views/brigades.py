@@ -52,13 +52,13 @@ class BrigadeDetailView(LoginRequiredMixin, SuccessMessageMixin, DetailView):
 
         if sort_by:
             if order == 'desc':
-                sort_by = f"-{sort_by}"  # ставим минус, если обратный порядок
+                sort_by = f"-{sort_by}"
                 equipments = equipments.order_by(sort_by)
             else:
                 equipments = equipments.order_by(sort_by)
 
         # Добавляем пагинацию
-        paginator = Paginator(equipments, 10)  # 10 элементов на странице
+        paginator = Paginator(equipments, 30)
         page_number = self.request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
