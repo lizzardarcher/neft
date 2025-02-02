@@ -18,12 +18,15 @@ class BrigadeForm(forms.ModelForm):
 class EquipmentCreateForm(forms.ModelForm):
     class Meta:
         model = Equipment
-        fields = ['category','brigade', 'serial', 'name', 'condition', 'documents', 'date_release', 'date_exploitation']
+        fields = ['category','brigade', 'serial',
+                  'name', 'manufacturer', 'documents',
+                  'date_release', 'date_exploitation' ,'condition']
         widgets = {
             'category': forms.Select(attrs={'class': 'form-control'}),
             'brigade': forms.Select(attrs={'class': 'form-control'}),
             'serial': forms.TextInput(attrs={'class': 'form-control'}),
             'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'manufacturer': forms.TextInput(attrs={'class': 'form-control'}),
             'condition': forms.Select(attrs={'class': 'form-control'}),
             'date_release': forms.DateTimeInput(format='%Y-%m-%d',
                                                 attrs={'class': 'form-control text-info', 'type': 'date'}),
@@ -32,15 +35,22 @@ class EquipmentCreateForm(forms.ModelForm):
                                                             'multiple': 'multiple'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['category'].queryset = Category.objects.order_by('name')
+        self.fields['brigade'].queryset = Brigade.objects.order_by('name')
 
 class EquipmentCreateByBrigadeForm(forms.ModelForm):
     class Meta:
         model = Equipment
-        fields = ['category', 'serial', 'name', 'condition', 'documents', 'date_release', 'date_exploitation']
+        fields = ['category', 'serial', 'name',
+                  'condition', 'documents', 'date_release',
+                  'date_exploitation', 'manufacturer']
         widgets = {
             'category': forms.Select(attrs={'class': 'form-control'}),
             'serial': forms.TextInput(attrs={'class': 'form-control'}),
             'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'manufacturer': forms.TextInput(attrs={'class': 'form-control'}),
             'condition': forms.Select(attrs={'class': 'form-control'}),
             'date_release': forms.DateTimeInput(format='%Y-%m-%d',
                                                 attrs={'class': 'form-control text-info', 'type': 'date'}),
@@ -48,6 +58,10 @@ class EquipmentCreateByBrigadeForm(forms.ModelForm):
                                                      attrs={'class': 'form-control text-info', 'type': 'date',
                                                             'multiple': 'multiple'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['category'].queryset = Category.objects.order_by('name')
 
 
 class DocumentForm(forms.ModelForm):
@@ -128,3 +142,22 @@ class CategoryCreateViewForm(forms.ModelForm):
             'parent': forms.Select(attrs={'class': 'form-control'}),
             'description': forms.TextInput(attrs={'class': 'form-control'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['parent'].queryset = Category.objects.order_by('name')
+
+
+from django.contrib.auth.models import Group, Permission
+
+
+class GroupForm(forms.ModelForm):
+    permissions = forms.ModelMultipleChoiceField(
+        queryset=Permission.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False
+    )
+
+    class Meta:
+        model = Group
+        fields = ['name', 'permissions']

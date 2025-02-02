@@ -14,6 +14,7 @@ class BrigadeListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
     context_object_name = 'brigades'
     template_name = 'dashboard/brigades/brigade_list.html'
     paginate_by = 30
+    ordering = 'name'
 
     def get_queryset(self):
         """Поиск по имени и описанию бригады"""

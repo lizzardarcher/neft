@@ -46,3 +46,18 @@ def has_group(user, group_name):
     Проверяет, принадлежит ли пользователь к указанной группе.
     """
     return user.groups.filter(name=group_name).exists()
+
+@register.filter(name='trunc_slash')
+def trunc_slash(value):
+    try:
+        return str(value).split('/')[-1]
+    except:
+        return value
+
+@register.filter
+def filesize_mb(size_bytes):
+    """Преобразует размер файла из байтов в мегабайты."""
+    if not size_bytes:
+        return "0 MB"
+    size_mb = size_bytes / (1024 * 1024)
+    return f"{size_mb:.2f} MB"

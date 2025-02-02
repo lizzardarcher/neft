@@ -21,4 +21,9 @@
             <a href="{% url 'category_list' %}" class="btn btn-secondary">Отмена</a>
         </form>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('id_name').focus();
+        });
+    </script>
 {% endblock content %}

@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse
@@ -28,21 +29,9 @@ class CategoryListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
 
     def get_context_data(self, **kwargs):
         """Отображает список всех категорий с количеством оборудования."""
-        categories = Category.objects.filter(parent=None)
-
-        # Подготавливаем словарь с количеством оборудования для каждой категории
-        category_counts = {}
-        for category in categories:
-            def get_all_subcategories(category):
-                subcategories = [category]
-                for sub in category.subcategories.all():
-                    subcategories.extend(get_all_subcategories(sub))
-                return subcategories
-
-            all_categories = get_all_subcategories(category)
-            category_counts[category.id] = Equipment.objects.filter(category__in=all_categories).count()
+        categories = Category.objects.annotate(equipment_count=Count('equipment')).order_by('name')
         context = super().get_context_data()
-        context["category_counts"] = category_counts
+        context["categories"] = categories
         return context
 
 class CategoryCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):

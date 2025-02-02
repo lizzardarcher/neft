@@ -1,12 +1,12 @@
 {% extends 'layouts/base.html' %}
 {% block title %}Оборудование{% endblock title %}
 {% block content %}
-    <div class="container bg-light p-4 mt-4 rounded">
+    <div class="bg-light p-4 m-4 rounded">
         <h2>Список Оборудования</h2>
         {% include 'includes/search.html' %}
         <div class="d-flex justify-content-between mt-4 mb-4">
             <div class="p-0">
-                <a href="{% url 'equipment_create' %}" class="btn btn-outline-success m-1"><i class="fa fa-plus-square"></i>Добавить оборудование</a>
+                <a href="{% url 'equipment_create' %}" class="btn btn-outline-success m-1"><i class="fa fa-plus-square"></i> Добавить оборудование</a>
             </div>
             <div class="p-0">
                 <a class="btn btn-success m-1" href="{% url 'equipment_export_excel' %}"><i class="fa fa-file-excel"></i>

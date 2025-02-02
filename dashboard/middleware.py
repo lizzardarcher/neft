@@ -1,6 +1,7 @@
-from .models import UserActionLog, Equipment, Category
 from django.contrib.contenttypes.models import ContentType
 from django.urls import resolve
+
+from .models import UserActionLog, Equipment, Category
 
 
 class UserActionLoggerMiddleware:
@@ -53,4 +54,3 @@ class UserActionLoggerMiddleware:
             log.save()
 
         return response
-

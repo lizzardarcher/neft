@@ -1,24 +1,32 @@
+{% load static %}
 <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
-        <a class="navbar-brand" href="{% url 'home' %}">Главная</a>
+        
+{#        <a class="navbar-brand fw-bold" href="{% url 'home' %}">Главная</a>#}
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText"
                 aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarText">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'dashboard' %}">Управление</a>
+        <div class="collapse navbar-collapse justify-content-between" id="navbarText">
+            <ul class="navbar-nav mb-2 mb-lg-0 mx-auto">  <!-- mx-auto для центрирования -->
+                <li class="nav-item mx-3">  <!-- mx-3 добавляет горизонтальный отступ -->
+                    <a class="nav-link fw-bold" href="{% url 'dashboard' %}">Управление</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'instructions' %}">Помощь</a>
+                <li class="nav-item mx-3">
+                    <a class="nav-link fw-bold" href="{% url 'instructions' %}">Помощь</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'user_detail' request.user.id %}">Личный кабинет
+                <li class="nav-item mx-3">
+                   <a class="nav-link fw-bold" href="{% url 'user_detail' request.user.id %}">
+                        Личный кабинет
                         {% for group in user.groups.all %}
-                            {{ group.name }}
+                        <span class="mx-2">
+                        {{ group.name }}
+                        </span>
                         {% endfor %}</a>
+
                 </li>
+            </ul>
+            <ul class="navbar-nav mb-2 mb-lg-0"> <!-- для выравнивания "Выход" вправо -->
                 <li class="nav-item">
                     <form action="{% url 'logout' %}" method="post">
                         {% csrf_token %}
@@ -29,7 +37,6 @@
                     </form>
                 </li>
             </ul>
-            {#            <span class="navbar-text">Navbar text with an inline element</span>#}
         </div>
     </div>
 </nav>

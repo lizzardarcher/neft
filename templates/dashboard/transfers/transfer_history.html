@@ -9,21 +9,23 @@
         <table class="table table-bordered table-striped">
             <thead class="thead-dark">
                 <tr>
-                    <th>ID</th>
+{#                    <th>ID</th>#}
                     <th>Оборудование</th>
                     <th>Из бригады</th>
                     <th>В бригаду</th>
                     <th>Дата перемещения</th>
+{#                    <th>Пользователь</th>#}
                 </tr>
             </thead>
             <tbody>
                 {% for transfer in transfers %}
                 <tr>
-                    <td>{{ transfer.id }}</td>
+{#                    <td>{{ transfer.id }}</td>#}
                     <td><a href="{% url 'equipment_detail' transfer.equipment.id %}">{{ transfer.equipment.name }}</a></td>
                     <td>{{ transfer.from_brigade|default:"-" }}</td>
                     <td>{{ transfer.to_brigade|default:"-" }}</td>
                     <td>{{ transfer.transfer_date }}</td>
+{#                    <td>{{ transfer.user }}</td>#}
                 </tr>
                 {% empty %}
                     <tr>

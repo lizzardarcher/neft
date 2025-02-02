@@ -1,4 +1,5 @@
 {% extends 'layouts/base.html' %}
+{% load custom_filters %}
 {% block content %}
     {% include 'includes/form_errors.html' %}
     <div class="container bg-light p-4 mt-4 rounded">
@@ -25,7 +26,7 @@
                             <li>
                                 <div class="row">
                                     <div class="col-11">
-                                        <a href="{{ doc.file.url }}">{{ doc.title }} | {{ doc.file.name }}</a>
+                                        <a href="{{ doc.file.url }}">{{ doc.title }} | {{ doc.file.name|trunc_slash }} {{ doc.file.size|filesize_mb }}</a>
                                     </div>
                                     <div class="col-1">
                                         <button type="button" class="btn btn-sm btn-outline-danger" data-toggle="modal"

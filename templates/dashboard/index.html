@@ -7,6 +7,7 @@
     <div class="container bg-light p-5 mt-5 rounded">
         <h1>Система учета оборудования</h1>
         <p>Добро пожаловать, {{ user.username }}!</p>
+
         <div class="row">
             <div class="col-md-4 mb-3">
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
@@ -17,6 +18,7 @@
                     <a href="{% url 'brigade_list' %}" class="m-1 btn btn-outline-info">Просмотреть</a>
                 </div>
             </div>
+
             <div class="col-md-4 mb-3">
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
                     <div class="card-header"><i class="fa fa-list-alt"></i> Категории: {{ categories.count }}</div>
@@ -26,6 +28,7 @@
                     <a href="{% url 'category_list' %}" class="m-1 btn btn-outline-info">Просмотреть</a>
                 </div>
             </div>
+
             <div class="col-md-4 mb-3">
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
                     <div class="card-header"><i class="fa fa-hammer"></i> Оборудование: {{ equipment.count }}</div>
@@ -35,7 +38,18 @@
                     <a href="{% url 'equipment_list' %}" class="m-1 btn btn-outline-info">Просмотреть</a>
                 </div>
             </div>
-            {% if user|has_group:"Управляющий" or user|has_group:"Администратор" %}
+
+            <div class="col-md-4 mb-3">
+                <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
+                    <div class="card-header"><i class="fa fa-file"></i> Документы: {{ document.count }}</div>
+                    <div class="card-body">
+                        <h5 class="card-title">Полный список документов</h5>
+                    </div>
+                    <a href="{% url 'document_list' %}" class="m-1 btn btn-outline-info">Просмотреть</a>
+                </div>
+            </div>
+
+            {% if user|has_group:"Руководитель" or user|has_group:"Администратор" %}
                 <div class="col-md-4 mb-3">
                     <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
                         <div class="card-header"><i class="fa fa-user"></i> Пользователи: {{ users.count }}</div>
@@ -45,22 +59,27 @@
                         <a href="{% url 'user_list' %}" class="m-1 btn btn-outline-info">Просмотреть</a>
                     </div>
                 </div>
+
             {% endif %}
-            {% if user|has_group:"Управляющий" or user|has_group:"Администратор" %}
+
+            {% if user|has_group:"Руководитель" or user|has_group:"Администратор" %}
                 <div class="col-md-4 mb-3">
                     <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
-                        <div class="card-header"><i class="fa fa-down-left-and-up-right-to-center"></i> Перемещений: {{ transfers.count }}</div>
+                        <div class="card-header"><i class="fa fa-down-left-and-up-right-to-center"></i>
+                            Перемещений: {{ transfers.count }}</div>
                         <div class="card-body">
-                            <h5 class="card-title">Перемещение оборудования</h5>
+                            <h5 class="card-title">Журнал перемещения оборудования</h5>
                         </div>
                         <a href="{% url 'transfer_history' %}" class="m-1 btn btn-outline-info">Просмотреть</a>
                     </div>
                 </div>
             {% endif %}
+
             {% if request.user.is_superuser %}
                 <div class="col-md-4 mb-3">
                     <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
-                        <div class="card-header"><i class="fa fa-font-awesome-logo-full"></i> Записей: {{ user_log.count }}</div>
+                        <div class="card-header"><i class="fa fa-font-awesome-logo-full"></i>
+                            Записей: {{ user_log.count }}</div>
                         <div class="card-body">
                             <h5 class="card-title">Журнал действий пользователей</h5>
                         </div>
@@ -68,6 +87,7 @@
                     </div>
                 </div>
             {% endif %}
+
         </div>
     </div>
 {% endblock %}

@@ -18,10 +18,12 @@ urlpatterns = [
     path('categories/<int:category_id>/delete/', categories.CategoryDeleteView.as_view(), name='category_delete'),
 
     path('equipment/', equipment.EquipmentListView.as_view(), name='equipment_list'),
+    path('document/', equipment.DocumentListView.as_view(), name='document_list'),
     path('equipment/create/', equipment.EquipmentCreateView.as_view(), name='equipment_create'),
     path('equipment/<int:brigade_id>/create/', equipment.EquipmentCreateByBrigadeIdView.as_view(),
          name='equipment_create_by_brigade'),
-    path('equipment/<int:equipment_id>/<int:brigade_id>/add_document/', equipment.EquipmentAddDocumentsView.as_view(), name='equipment_add_document'),
+    path('equipment/<int:equipment_id>/<int:brigade_id>/add_document/', equipment.EquipmentAddDocumentsView.as_view(),
+         name='equipment_add_document'),
     path('document/<int:document_id>/delete/', equipment.document_delete, name='document_delete'),
     path('equipment/<int:pk>/update/', equipment.EquipmentUpdateView.as_view(), name='equipment_update'),
     path('equipment/<int:pk>/<int:brigade_id>/update_by_brigade/', equipment.EquipmentUpdateByBrigadeView.as_view(),
@@ -37,7 +39,13 @@ urlpatterns = [
     path('user/<int:pk>/update/', users.UserAccountUpdateView.as_view(), name='account_update'),
     path('users/<int:user_id>/delete/', users.user_delete, name='user_delete'),
     path('user/<int:pk>/detail', users.UserDetailView.as_view(), name='user_detail'),
+
     path('action-log/', users.UserActionLogView.as_view(), name='user_action_log'),
+
+    path('groups/', users.GroupListView.as_view(), name='group_list'),
+    path('groups/create/', users.GroupCreateView.as_view(), name='group_create'),
+    path('groups/<int:pk>/edit/', users.GroupUpdateView.as_view(), name='group_edit'),
+    path('groups/<int:pk>/delete/', users.GroupDeleteView.as_view(), name='group_delete'),
 
     path('reports/', reports.ReportListView.as_view(), name='report_list'),
     path('reports/summary/', reports.ReportSummaryView.as_view(), name='report_summary'),
@@ -45,6 +53,7 @@ urlpatterns = [
 
     path('brigade/export/csv/', index.BrigadeCSVExportView.as_view(), name='brigade_export_csv'),
     path('brigade/export/excel/', index.BrigadeExcelExportView.as_view(), name='brigade_export_excel'),
+
     path('equipment/export/csv/', index.EquipmentCSVExportView.as_view(), name='equipment_export_csv'),
     path('equipment/export/excel/', index.EquipmentExcelExportView.as_view(), name='equipment_export_excel'),
 

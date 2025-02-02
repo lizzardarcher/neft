@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.views.generic.detail import SingleObjectMixin
@@ -110,6 +110,35 @@ class EquipmentUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     def get_success_url(self):
         return reverse('equipment_list')
 
+    def form_valid(self, form):
+        try:
+            return super().form_valid(form)
+        except Exception as e:
+            messages.error(self.request, f"Произошла ошибка при обновлении оборудования: {e}")
+            return self.form_invalid(form)
+
+    def form_invalid(self, form):
+        """
+        Обработка случая, когда форма невалидна. Добавляем сообщение об ошибке
+        и рендерим форму с ошибками.
+        """
+        messages.error(self.request, f"Пожалуйста, исправьте ошибки в форме. {form.errors}")
+        return super().form_invalid(form)
+
+    def get(self, request, *args, **kwargs):
+        try:
+            return super().get(request, *args, **kwargs)
+        except Exception as e:
+            messages.error(self.request, f"Произошла ошибка при загрузке формы: {e}")
+            return render(request, self.template_name, {'form': EquipmentCreateForm()})  # Render blank form with error
+
+    def post(self, request, *args, **kwargs):
+        try:
+            return super().post(request, *args, **kwargs)
+        except Exception as e:
+            messages.error(self.request, f"Произошла ошибка при отправке формы: {e}")
+            return render(request, self.template_name, {
+                'form': EquipmentCreateForm(request.POST, instance=self.get_object())})  # Render form with error
 
 class EquipmentUpdateByBrigadeView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Equipment
@@ -132,6 +161,32 @@ def equipment_delete(request, equipment_id):
     equipment.delete()
     messages.success(request, 'Оборудование успешно удалено!')
     return redirect('equipment_list')
+
+
+class DocumentListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
+    model = Document
+    context_object_name = 'documents'
+    template_name = 'dashboard/equipment/document_list.html'
+    paginate_by = 100
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        search_request = self.request.GET.get("search")
+        title = self.request.GET.get("title")
+        sort_by = self.request.GET.get('sort_by', 'title')
+        order = self.request.GET.get('order', 'asc')
+        if search_request:
+            equipment_by_name = Document.objects.filter(title__icontains=search_request)
+            queryset = equipment_by_name
+        if title:
+            queryset = queryset.filter(title=title)
+        if sort_by:
+            if order == 'desc':
+                sort_by = f"-{sort_by}"
+                queryset = queryset.order_by(sort_by)
+            else:
+                queryset = queryset.order_by(sort_by)
+        return queryset
 
 
 def document_delete(request, document_id):

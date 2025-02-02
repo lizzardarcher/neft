@@ -3,7 +3,8 @@
 
     <div class="container mt-4">
         <h1>Список пользователей</h1>
-        <a href="{% url 'user_create' %}" class="btn btn-success mb-2">Создать пользователя</a>
+        <p><a href="{% url 'group_list' %}" class="btn btn-outline-dark mb-2">Редактировать группы</a></p>
+        <p><a href="{% url 'user_create' %}" class="btn btn-outline-success mb-2"><i class="fa fa-plus-square"></i> Создать пользователя</a></p>
         <table class="table table-bordered table-striped">
             <thead class="thead-dark">
             <tr>

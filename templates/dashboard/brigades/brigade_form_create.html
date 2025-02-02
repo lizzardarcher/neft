@@ -1,7 +1,7 @@
 {% extends 'layouts/base.html' %}
 {% block content %}
     {% include 'includes/form_errors.html' %}
-	<div class="container bg-light p-4 mt-4 rounded">
+  <div class="container bg-light p-4 mt-4 rounded">
         <h2>Создание новой бригады</h2>
         <form method="post">
             {% csrf_token %}
@@ -18,4 +18,11 @@
              <a href="{% url 'brigade_list' %}" class="btn btn-secondary">Отмена</a>
         </form>
     </div>
+    
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('id_name').focus();
+      });
+    </script>
 {% endblock content %}
+

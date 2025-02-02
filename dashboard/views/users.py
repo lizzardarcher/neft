@@ -1,13 +1,14 @@
 from django.contrib import messages
 from django.contrib.admin.models import LogEntry
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 
-from dashboard.forms import UserCreateForm, UserUpdateForm
+from dashboard.forms import UserCreateForm, UserUpdateForm, GroupForm
 from dashboard.models import UserActionLog
 
 
@@ -72,3 +73,28 @@ class UserActionLogView(ListView):
     context_object_name = 'logs'
     ordering = ['-action_time']
     paginate_by = 10
+
+
+class GroupListView(ListView):
+    model = Group
+    template_name = 'dashboard/users/group_list.html'
+    context_object_name = 'groups'
+
+
+class GroupCreateView(CreateView):
+    model = Group
+    form_class = GroupForm
+    template_name = 'dashboard/users/group_form.html'
+    success_url = reverse_lazy('group_list')
+
+
+class GroupUpdateView(UpdateView):
+    model = Group
+    form_class = GroupForm
+    template_name = 'dashboard/users/group_form.html'
+    success_url = reverse_lazy('group_list')
+
+class GroupDeleteView(DeleteView):
+    model = Group
+    template_name = 'dashboard/users/group_confirm_delete.html'
+    success_url = reverse_lazy('group_list')

@@ -2,37 +2,6 @@
 {% load custom_filters %}
 {% block title %}Детали оборудования: {{ equipment.name }}{% endblock %}
 {% block extrastyle %}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css">
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css">
-    <style>
-        .bi {
-            vertical-align: -0.125em;
-            fill: currentColor;
-        }
-
-        .my-container {
-            margin-top: 20px;
-        }
-
-        .owl-carousel .item {
-            text-align: center;
-            display: flex;
-            justify-content: center; /* Center horizontally */
-            align-items: center; /* Center vertically */
-            height: 200px;
-
-        }
-
-        .owl-carousel .item img {
-            max-height: 100%; /* Set max height for the image */
-            max-width: 100%; /* Set max width for the image */
-            display: block;
-            object-fit: contain;
-        }
-    </style>
 {% endblock extrastyle %}
 {% block content %}
     <div class="container mt-4 bg-light p-4 rounded">
@@ -55,9 +24,9 @@
                                href="{% url 'equipment_add_document' equipment.id equipment.brigade.id %}">Добавить
                                 +</a>
 
-                            <div class="owl-carousel owl-theme mt-2">
+                            <ol class="mt-2">
                                 {% for document in equipment.documents.all %}
-                                    <div class="item">
+                                    <li class="link-offset-3 item m-2">
                                         {% if document.file.name|is_image %}
                                             <a href="{{ document.file.url }}"
                                                target="_blank">
@@ -66,26 +35,26 @@
                                         {% elif document.file.name|is_pdf %}
                                             <a href="{{ document.file.url }}"
                                                target="_blank">
-                                                <i class="fa fa-file-pdf file-icon"></i><br>
-                                                {{ document.file.name|get_filename }}</a>
+                                                <i class="fa fa-file-pdf file-icon"></i> 
+                                                {{ document.file.name|get_filename }} {{ document.file.size|filesize_mb }}</a>
                                         {% elif document.file.name|is_excel %}
                                             <a href="{{ document.file.url }}"
                                                target="_blank"><i
-                                                    class="fas fa-file-excel file-icon"></i><br> {{ document.file.name|get_filename }}
+                                                    class="fas fa-file-excel file-icon"></i> {{ document.file.name|get_filename }} {{ document.file.size|filesize_mb }}
                                             </a>
                                         {% elif document.file.name|is_word %}
                                             <a href="{{ document.file.url }}"
                                                target="_blank"><i
-                                                    class="fas fa-file-word file-icon"></i><br> {{ document.file.name|get_filename }}
+                                                    class="fas fa-file-word file-icon"></i>  {{ document.file.name|get_filename }} {{ document.file.size|filesize_mb }}
                                             </a>
                                         {% else %}
                                             <a href="{{ document.file.url }}"
                                                target="_blank"><i class="fas fa-file file-icon"></i>
-                                                <br> {{ document.file.name|get_filename }}</a>
+                                                  {{ document.file.name|get_filename }} {{ document.file.size|filesize_mb }}</a>
                                         {% endif %}
-                                    </div>
+                                    </li>
                                 {% endfor %}
-                            </div>
+                            </ol>
 
                         </li>
                     {% else %}
@@ -100,7 +69,7 @@
                 </ul>
             </div>
         </div>
-        <a href="{% url 'brigade_detail' equipment.brigade.id %}" class="btn btn-secondary mt-3">
+        <a href="{% url 'brigade_detail' equipment.brigade.id %}" class="btn btn-outline-secondary mt-3">
             <i class="bi bi-arrow-left"></i> Назад к списку оборудования
         </a>
     </div>
@@ -108,27 +77,4 @@
 
 {% endblock content %}
 {% block extrascript %}
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            $('.owl-carousel').owlCarousel({
-                loop: true,
-                margin: 10,
-                nav: true,
-                responsive: {
-                    0: {
-                        items: 1
-                    },
-                    600: {
-                        items: 3
-                    },
-                    1000: {
-                        items: 4
-                    }
-                }
-            });
-        });
-    </script>
 {% endblock extrascript %}

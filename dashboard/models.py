@@ -36,17 +36,20 @@ class Document(models.Model):
 
 
 class Equipment(models.Model):
+    CONDITION = (('work', 'Рабочее'), ('faulty', 'Неисправное'), ('repair', 'В ремонте'))
 
-    CONDITION = (('work','Рабочее'),('faulty', 'Неисправное'), ('repair', 'В ремонте'))
-
-    serial = models.CharField(max_length=200, null=False, blank=False, verbose_name='Идентификатор оборудования')
+    serial = models.CharField(max_length=200, null=False, blank=False, verbose_name='Серийный номер')
     name = models.CharField(max_length=200, null=False, blank=False, verbose_name='Название')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=False, verbose_name='Категория')
     brigade = models.ForeignKey(Brigade, on_delete=models.SET_NULL, null=True, blank=False, verbose_name='Бригада')
     documents = models.ManyToManyField(Document, blank=True, verbose_name='Документы для оборудования')
-    date_release = models.DateField(auto_now_add=False, auto_now=False, null=False, blank=False, verbose_name='Дата выпуска')
-    date_exploitation = models.DateField(auto_now_add=False, auto_now=False, null=False, blank=False, verbose_name='Дата ввода в эксплуатацию')
-    condition = models.CharField(max_length=100, null=False, blank=False, default='work', choices=CONDITION, verbose_name='Состояние оборудования')
+    date_release = models.DateField(auto_now_add=False, auto_now=False, null=False, blank=False,
+                                    verbose_name='Дата выпуска')
+    date_exploitation = models.DateField(auto_now_add=False, auto_now=False, null=False, blank=False,
+                                         verbose_name='Дата ввода в эксплуатацию')
+    condition = models.CharField(max_length=100, null=False, blank=False, default='work', choices=CONDITION,
+                                 verbose_name='Состояние оборудования')
+    manufacturer = models.CharField(max_length=200, null=False, blank=False, default='', verbose_name='Изготовитель')
 
     def __str__(self):
         return f"{self.name} ({self.category})"
@@ -54,17 +57,19 @@ class Equipment(models.Model):
 
 @receiver(pre_save, sender=Equipment)
 def equipment_pre_save(sender, instance, **kwargs):
-  """
-  Ловим pre_save сигнал для модели equipment, и сохраняем данные о перемещении оборудования в модель Transfers
-  """
-  if instance.pk:
-    old_instance = Equipment.objects.get(pk=instance.pk)
-    if old_instance.brigade != instance.brigade:
-      Transfer.objects.create(
-          equipment=instance,
-          from_brigade=old_instance.brigade,
-          to_brigade=instance.brigade,
-        )
+    """
+    Ловим pre_save сигнал для модели equipment, и сохраняем данные о перемещении оборудования в модель Transfers
+    """
+    if instance.pk:
+        old_instance = Equipment.objects.get(pk=instance.pk)
+        if old_instance.brigade != instance.brigade:
+            Transfer.objects.create(
+                equipment=instance,
+                from_brigade=old_instance.brigade,
+                to_brigade=instance.brigade,
+            )
+
+
 
 class Transfer(models.Model):
     equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE)
@@ -75,7 +80,6 @@ class Transfer(models.Model):
 
     def __str__(self):
         return f"{self.equipment} from {self.from_brigade if self.from_brigade else 'Неизвестно'} to {self.to_brigade}"
-
 
 
 class UserActionLog(models.Model):
@@ -89,10 +93,9 @@ class UserActionLog(models.Model):
     content_object = GenericForeignKey('content_type', 'object_id')
     description = models.TextField(blank=True, null=True, verbose_name='Описание')
 
-
     def str(self):
         return f'{self.user} - {self.action_type} - {self.action_time.strftime("%Y-%m-%d %H:%M:%S")}'
 
     class Meta:
-         verbose_name = 'История действий пользователя'
-         verbose_name_plural = 'История действий пользователей'
+        verbose_name = 'История действий пользователя'
+        verbose_name_plural = 'История действий пользователей'
