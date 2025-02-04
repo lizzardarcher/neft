@@ -8,14 +8,13 @@
         <table class="table table-bordered table-striped">
             <thead class="thead-dark">
             <tr>
-                <th>ID</th>
                 <th>Имя пользователя</th>
                 <th>Имя</th>
                 <th>Фамилия</th>
+                <th>Должность</th>
+                <th>Тел.</th>
                 <th>Email</th>
                 <th>Группы</th>
-                <th>Активный</th>
-                <th>Персонал</th>
                 <th>Суперпользователь</th>
                 <th>Действия</th>
 
@@ -24,10 +23,11 @@
             <tbody>
             {% for user in users %}
                 <tr>
-                    <td>{{ user.id }}</td>
                     <td>{{ user.username }}</td>
                     <td>{{ user.first_name }}</td>
                     <td>{{ user.last_name }}</td>
+                    <td>{% if user.profile.position %}{{ user.profile.position }}{% else %}---{% endif %}</td>
+                    <td>{% if user.profile.phone_number %}{{ user.profile.phone_number }}{% else %}---{% endif %}</td>
                     <td>{{ user.email }}</td>
                     <td>
                         {% for group in user.groups.all %}
@@ -36,8 +36,6 @@
                             ---
                         {% endfor %}
                     </td>
-                    <td>{{ user.is_active|yesno:"✅,🛑" }}</td>
-                    <td>{{ user.is_staff|yesno:"✅,🛑" }}</td>
                     <td>{{ user.is_superuser|yesno:"✅,🛑" }}</td>
                     <td>
                         {% if request.user|has_group:"Администратор" %}

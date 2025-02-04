@@ -20,7 +20,7 @@ class UserListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['content_types'] = ContentType.objects.all()
-        context['users'] = User.objects.all()
+        context['users'] = User.objects.all().order_by('username')
         context['logs'] = UserActionLog.objects.all().order_by('-action_time')[:10]
         return context
 

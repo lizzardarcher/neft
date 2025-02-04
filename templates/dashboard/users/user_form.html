@@ -44,6 +44,17 @@
                 {% endif %}
                 <small><code>(Необязательно)</code></small>
             </div>
+            <div class="form-group mt-4">
+                <label for="position">Должность:</label>
+                {{ form.position }}
+                <small><code>(Необязательно)</code></small>
+            </div>
+
+            <div class="form-group mt-4">
+                <label for="phone_number">Телефон:</label>
+                {{ form.phone_number }}
+                <small><code>(Необязательно)</code></small>
+            </div>
 
             <div class="form-group mt-4">
                 <label for="email">Email:</label>
@@ -58,9 +69,10 @@
                 <small><code>(Необязательно)</code></small>
             </div>
 
+            {% if form.password %}
             <div class="form-group mt-4">
                 <label for="password">Пароль:</label>
-                {{ form.password|add_class:"form-control" }}
+                {{ form.password }}
                 {% if form.password.errors %}
                     <div class="alert alert-danger mt-2">
                         {% for error in form.password.errors %}
@@ -70,6 +82,7 @@
                 {% endif %}
                 <small><code>(Обязательное поле. Не более 150 символов. Только буквы, цифры и символы @/./+/-/_.)</code></small>
             </div>
+            {% endif %}
 
             <div class="form-group mt-4 mb-4">
                 <label for="is_superuser">Группа пользователей:</label>
@@ -84,8 +97,8 @@
                 <small><code>(Выберите только одну группу пользователей)</code></small>
             </div>
 
-                {{ form.is_active }}
-                {{ form.is_staff }}
+            {{ form.is_active }}
+            {{ form.is_staff }}
 
             <div class="form-group mt-4 mb-4">
                 <label for="is_superuser">Администратор:</label>

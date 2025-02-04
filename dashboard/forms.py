@@ -1,8 +1,10 @@
+from MySQLdb import IntegrityError
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
+from django.db import models
 
-from dashboard.models import Brigade, Equipment, Document, Category
+from dashboard.models import Brigade, Equipment, Document, Category, UserProfile
 
 
 class BrigadeForm(forms.ModelForm):
@@ -18,9 +20,9 @@ class BrigadeForm(forms.ModelForm):
 class EquipmentCreateForm(forms.ModelForm):
     class Meta:
         model = Equipment
-        fields = ['category','brigade', 'serial',
+        fields = ['category', 'brigade', 'serial',
                   'name', 'manufacturer', 'documents',
-                  'date_release', 'date_exploitation' ,'condition']
+                  'date_release', 'date_exploitation', 'condition']
         widgets = {
             'category': forms.Select(attrs={'class': 'form-control'}),
             'brigade': forms.Select(attrs={'class': 'form-control'}),
@@ -39,6 +41,7 @@ class EquipmentCreateForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['category'].queryset = Category.objects.order_by('name')
         self.fields['brigade'].queryset = Brigade.objects.order_by('name')
+
 
 class EquipmentCreateByBrigadeForm(forms.ModelForm):
     class Meta:
@@ -83,23 +86,52 @@ class EquipmentAddDocumentsForm(forms.ModelForm):
 class UserCreateForm(forms.ModelForm):
     """Форма для создания пользователя с группами."""
 
+    position = forms.CharField(
+        max_length=100,
+        required=False,  # Сделайте поле необязательным, если нужно
+        label="Должность",
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    phone_number = forms.CharField(
+        max_length=20,
+        required=False,  # Сделайте поле необязательным, если нужно
+        label="Номер телефона",
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email', 'password', 'groups', 'is_active', 'is_staff', 'is_superuser']
+        fields = ['username', 'first_name', 'last_name', 'email', 'password', 'groups', 'is_active', 'is_staff',
+                  'is_superuser', 'position', 'phone_number']
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control'}),
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            # 'position': forms.TextInput(attrs={'class': 'form-control'}),
+            # 'phone_number': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
             'password': forms.PasswordInput(attrs={'class': 'form-control'}),
-            'is_active': forms.CheckboxInput(attrs={'class': 'required checkbox', 'checked': 'checked', 'hidden': 'hidden'}),
-            'is_staff': forms.CheckboxInput(attrs={'class': 'required checkbox', 'checked': 'checked', 'hidden': 'hidden'}),
+            'is_active': forms.CheckboxInput(
+                attrs={'class': 'required checkbox', 'checked': 'checked', 'hidden': 'hidden'}),
+            'is_staff': forms.CheckboxInput(
+                attrs={'class': 'required checkbox', 'checked': 'checked', 'hidden': 'hidden'}),
             'is_superuser': forms.CheckboxInput(attrs={'class': 'required checkbox'}),
             'groups': forms.CheckboxSelectMultiple(),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # if self.instance and self.instance.pk:  # Проверяем,
+        # что это редактирование существующего объекта
+        #     del self.fields['password']  # Удаляем поле 'password' из формы
+
+        if self.instance:  # Если форма редактирует существующего пользователя
+            self.fields['position'].initial = getattr(self.instance, 'position', self.instance.profile.position)
+            self.fields['phone_number'].initial = getattr(self.instance, 'phone_number',
+                                                          self.instance.profile.phone_number)
+
     def clean_password(self):
-        password = self.cleaned_data.get('password')
+        password = self.cleaned_data['password']
         if not password:
             raise forms.ValidationError("Поле пароль обязательно для заполнения")
         validate_password(password)
@@ -113,11 +145,20 @@ class UserCreateForm(forms.ModelForm):
 
     def save(self, commit=True):
         user = super(UserCreateForm, self).save(commit=False)
+        position = self.cleaned_data['position']
+        phone_number = self.cleaned_data['phone_number']
         password = self.cleaned_data.get('password')
         user.set_password(password)
         if commit:
             user.save()
             self.save_m2m()
+            try:
+                UserProfile.objects.create(user=user, position=str(position), phone_number=str(phone_number))
+            except:
+                profile = UserProfile.objects.get(user=user)
+                profile.phone_number = phone_number
+                profile.position = position
+                profile.save()
         return user
 
 
