@@ -9,7 +9,7 @@
     <div class="container bg-light p-4 mt-4 rounded">
 
         <h1>Список категорий</h1>
-        {% if request.user.is_superuser %}
+        {% if user|has_perm_in_group:"Dashboard.add_category" %}
             <a class="btn btn-outline-success mb-2 mt-2" href="{% url 'category_create' %}">Добавить категорию</a>
         {% endif %}
         <ul class="list-group">
@@ -17,21 +17,24 @@
                 <li class="list-group-item">
                     <div class="row">
                         <div class="col-lg-11 col-sm-10">
-                            <a class="link-offset-3" href="{% url 'equipment_list' %}?category={{ category.name }}">{{ category.name }} <span class="badge text-success">[{{ category.equipment_count }}]</span></a>
+                            <a class="link-offset-3"
+                               href="{% url 'equipment_list' %}?category={{ category.name }}">{{ category.name }} <span
+                                    class="badge text-success">[{{ category.equipment_count }}]</span></a>
                         </div>
                         <div class="col-lg-1 col-sm-2">
-                            {% if user|has_group:"Руководитель" or user|has_group:"Администратор" %}
-                                                            <a href="{% url 'category_update' category.id %}"
-                               class="btn btn-sm btn-outline-warning"><i
-                                    class="fa fa-edit"></i> </a>
-                            <button type="button" class="btn btn-sm btn-outline-danger" data-toggle="modal"
-                                    data-target="#deleteModal{{ category.id }}"><i class="fa fa-trash-can"></i>
-                            </button>
+                            {% if user|has_perm_in_group:"Dashboard.change_category" %}
+
+                                <a href="{% url 'category_update' category.id %}"
+                                   class="btn btn-sm btn-outline-warning"><i
+                                        class="fa fa-edit"></i> </a>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-toggle="modal"
+                                        data-target="#deleteModal{{ category.id }}"><i class="fa fa-trash-can"></i>
+                                </button>
                             {% else %}
 
-                            <a class="btn btn-sm btn-outline-secondary" disabled><i class="fa fa-edit"></i></a>
-                            <a class="btn btn-sm btn-outline-secondary" disabled><i
-                                    class="fa fa-trash-can"></i></a>
+                                <a class="btn btn-sm btn-outline-secondary" disabled><i class="fa fa-edit"></i></a>
+                                <a class="btn btn-sm btn-outline-secondary" disabled><i
+                                        class="fa fa-trash-can"></i></a>
                             {% endif %}
                         </div>
                     </div>

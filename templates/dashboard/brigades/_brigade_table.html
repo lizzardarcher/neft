@@ -3,18 +3,23 @@
     <h2>Список бригад</h2>
     {% include 'dashboard/brigades/brigade_search.html' %}
     <div class="d-flex justify-content-between mt-4 mb-4">
+        {% if user|has_perm_in_group:"Dashboard.add_brigade" %}
+            <div class="p-0">
+                <a href="{% url 'brigade_create' %}" class="btn btn-outline-success m-1"> Добавить бригаду <i
+                        class="fa fa-plus-square"></i></a>
+            </div>
+        {% endif %}
         <div class="p-0">
-            <a href="{% url 'brigade_create' %}" class="btn btn-outline-success m-1"> Добавить бригаду <i class="fa fa-plus-square"></i></a>
-        </div>
-        <div class="p-0">
-            <a class="btn btn-success m-1" href="{% url 'brigade_export_excel' %}"><i class="fa fa-download"></i>Выгрузить в EXCEL</a>
-            <a class="btn btn-success m-1" href="{% url 'brigade_export_csv' %}"><i class="fa fa-download"></i>Выгрузить в CSV</a>
+            <a class="btn btn-success m-1" href="{% url 'brigade_export_excel' %}"><i class="fa fa-download"></i>Выгрузить
+                в EXCEL</a>
+            <a class="btn btn-success m-1" href="{% url 'brigade_export_csv' %}"><i class="fa fa-download"></i>Выгрузить
+                в CSV</a>
         </div>
     </div>
     <table class="table table-bordered table-striped">
         <thead class="thead-dark">
         <tr>
-{#            <th>ID</th>#}
+            {#            <th>ID</th>#}
             <th>Бригада</th>
             <th>Описание</th>
             <th>Всего оборудования (Ед.)</th>
@@ -24,7 +29,7 @@
         <tbody>
         {% for brigade in brigades %}
             <tr>
-{#                <td>{{ brigade.id }}</td>#}
+                {#                <td>{{ brigade.id }}</td>#}
                 <td><b><a href="{% url 'brigade_detail' brigade.id %}" class="link-offset-2 bg-light-subtle p-1 rounded"
                           style="text-decoration: none;">{{ brigade.name }}</a></b></td>
                 <td>
@@ -62,7 +67,7 @@
                        style="text-decoration: none;">{{ brigade.equipment_set.count }}</a>
                 </td>
                 <td>
-                    {% if user|has_group:"Руководитель" or user|has_group:"Администратор" %}
+                    {% if user|has_perm_in_group:"Dashboard.delete_brigade" %}
                         <a href="{% url 'brigade_update' brigade.id %}" class="btn btn-sm btn-outline-warning"><i
                                 class="fa fa-edit"></i></a>
                         <button type="button" class="btn btn-sm btn-outline-danger" data-toggle="modal"

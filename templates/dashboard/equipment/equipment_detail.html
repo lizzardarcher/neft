@@ -20,10 +20,11 @@
                     {% if equipment.documents.all %}
                         <li class="list-group-item">
                             <strong>Документы:</strong>
-                            <a class="btn btn-outline-success"
-                               href="{% url 'equipment_add_document' equipment.id equipment.brigade.id %}">Добавить
-                                +</a>
-
+                            {% if user|has_perm_in_group:"Dashboard.add_document" %}
+                                <a class="btn btn-outline-success"
+                                   href="{% url 'equipment_add_document' equipment.id equipment.brigade.id %}">Добавить
+                                    +</a>
+                            {% endif %}
                             <ol class="mt-2">
                                 {% for document in equipment.documents.all %}
                                     <li class="link-offset-3 item m-2">
@@ -35,8 +36,9 @@
                                         {% elif document.file.name|is_pdf %}
                                             <a href="{{ document.file.url }}"
                                                target="_blank">
-                                                <i class="fa fa-file-pdf file-icon"></i> 
-                                                {{ document.file.name|get_filename }} {{ document.file.size|filesize_mb }}</a>
+                                                <i class="fa fa-file-pdf file-icon"></i>
+                                                {{ document.file.name|get_filename }} {{ document.file.size|filesize_mb }}
+                                            </a>
                                         {% elif document.file.name|is_excel %}
                                             <a href="{{ document.file.url }}"
                                                target="_blank"><i
@@ -45,12 +47,13 @@
                                         {% elif document.file.name|is_word %}
                                             <a href="{{ document.file.url }}"
                                                target="_blank"><i
-                                                    class="fas fa-file-word file-icon"></i>  {{ document.file.name|get_filename }} {{ document.file.size|filesize_mb }}
+                                                    class="fas fa-file-word file-icon"></i> {{ document.file.name|get_filename }} {{ document.file.size|filesize_mb }}
                                             </a>
                                         {% else %}
                                             <a href="{{ document.file.url }}"
                                                target="_blank"><i class="fas fa-file file-icon"></i>
-                                                  {{ document.file.name|get_filename }} {{ document.file.size|filesize_mb }}</a>
+                                                {{ document.file.name|get_filename }} {{ document.file.size|filesize_mb }}
+                                            </a>
                                         {% endif %}
                                     </li>
                                 {% endfor %}
@@ -65,7 +68,9 @@
                                 +</a>
                         </li>
                     {% endif %}
-                    <a class="btn btn-outline-success" href="{% url 'equipment_update' equipment.id %}">Изменить</a>
+                    {% if user|has_perm_in_group:"Dashboard.change_equipment" %}
+                        <a class="btn btn-outline-success" href="{% url 'equipment_update' equipment.id %}">Изменить</a>
+                    {% endif %}
                 </ul>
             </div>
         </div>

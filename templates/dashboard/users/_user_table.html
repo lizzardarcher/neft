@@ -3,7 +3,7 @@
 
     <div class="container mt-4">
         <h1>Список пользователей</h1>
-        <p><a href="{% url 'group_list' %}" class="btn btn-outline-dark mb-2">Редактировать группы</a></p>
+        <p><a href="{% url 'group_list' %}" class="btn btn-outline-dark mb-2">Группы пользователей</a></p>
         <p><a href="{% url 'user_create' %}" class="btn btn-outline-success mb-2"><i class="fa fa-plus-square"></i> Создать пользователя</a></p>
         <table class="table table-bordered table-striped">
             <thead class="thead-dark">
@@ -28,7 +28,7 @@
                     <td>{{ user.last_name }}</td>
                     <td>{% if user.profile.position %}{{ user.profile.position }}{% else %}---{% endif %}</td>
                     <td>{% if user.profile.phone_number %}{{ user.profile.phone_number }}{% else %}---{% endif %}</td>
-                    <td>{{ user.email }}</td>
+                    <td>{% if user.email %}{{ user.email }}{% else %}---{% endif %}</td>
                     <td>
                         {% for group in user.groups.all %}
                             <span class="badge bg-info">{{ group.name }}</span>

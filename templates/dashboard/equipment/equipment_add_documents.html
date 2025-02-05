@@ -3,20 +3,21 @@
 {% block content %}
     {% include 'includes/form_errors.html' %}
     <div class="container bg-light p-4 mt-4 rounded">
-        <div class="card mt-5">
-            <div class="card-body">
-                <h2>Добавить документ</h2>
-                <p class="small">{{ equipment.name }} {{ equipment.serial }}</p>
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    {{ document_form.as_p }}
-                    <hr>
-                    <button class="btn btn-outline-success" type="submit">Добавить новый</button>
-                    <a href="{% url 'brigade_detail' brigade.id %}" class="btn btn-secondary">Назад</a>
-                </form>
+        {% if user|has_perm_in_group:"Dashboard.add_document" %}
+            <div class="card mt-5">
+                <div class="card-body">
+                    <h2>Добавить документ</h2>
+                    <p class="small">{{ equipment.name }} {{ equipment.serial }}</p>
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ document_form.as_p }}
+                        <hr>
+                        <button class="btn btn-outline-success" type="submit">Добавить новый</button>
+                        <a href="{% url 'brigade_detail' brigade.id %}" class="btn btn-secondary">Назад</a>
+                    </form>
+                </div>
             </div>
-        </div>
-
+        {% endif %}
         {% if equipment.documents.all %}
             <div class="card mt-5">
                 <div class="card-body">
@@ -26,12 +27,19 @@
                             <li>
                                 <div class="row">
                                     <div class="col-11">
-                                        <a href="{{ doc.file.url }}">{{ doc.title }} | {{ doc.file.name|trunc_slash }} {{ doc.file.size|filesize_mb }}</a>
+                                        <a href="{{ doc.file.url }}">{{ doc.title }}
+                                            | {{ doc.file.name|trunc_slash }} {{ doc.file.size|filesize_mb }}</a>
                                     </div>
                                     <div class="col-1">
-                                        <button type="button" class="btn btn-sm btn-outline-danger" data-toggle="modal"
-                                                data-target="#deleteModal{{ doc.id }}"><i class="fa fa-trash-can"></i>
-                                        </button>
+
+                                        {% if user|has_perm_in_group:"Dashboard.delete_document" %}
+
+                                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                                    data-toggle="modal"
+                                                    data-target="#deleteModal{{ doc.id }}"><i
+                                                    class="fa fa-trash-can"></i>
+                                            </button>
+                                        {% endif %}
 
                                         <div class="modal fade" id="deleteModal{{ doc.id }}" tabindex="-1" role="dialog"
                                              aria-labelledby="deleteModalLabel" aria-hidden="true">
@@ -63,6 +71,6 @@
                 </div>
             </div>
         {% endif %}
-
+        <a href="{{ request.META.HTTP_REFERER }}" class="btn btn-sm btn-outline-dark mt-2 mb-2">НАЗАД</a>
     </div>
 {% endblock content %}

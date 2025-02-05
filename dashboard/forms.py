@@ -124,11 +124,11 @@ class UserCreateForm(forms.ModelForm):
         # if self.instance and self.instance.pk:  # Проверяем,
         # что это редактирование существующего объекта
         #     del self.fields['password']  # Удаляем поле 'password' из формы
-
-        if self.instance:  # Если форма редактирует существующего пользователя
-            self.fields['position'].initial = getattr(self.instance, 'position', self.instance.profile.position)
-            self.fields['phone_number'].initial = getattr(self.instance, 'phone_number',
-                                                          self.instance.profile.phone_number)
+        try:
+            if self.instance:
+                self.fields['position'].initial = getattr(self.instance, 'position', self.instance.profile.position)
+                self.fields['phone_number'].initial = getattr(self.instance, 'phone_number', self.instance.profile.phone_number)
+        except: pass
 
     def clean_password(self):
         password = self.cleaned_data['password']
@@ -141,6 +141,8 @@ class UserCreateForm(forms.ModelForm):
         groups = self.cleaned_data.get('groups')
         if groups and len(groups) > 1:
             raise forms.ValidationError("Можно выбрать только одну группу.")
+        elif len(groups) == 0:
+            raise forms.ValidationError("Необходимо выбрать хотя бы одну группу.")
         return groups
 
     def save(self, commit=True):

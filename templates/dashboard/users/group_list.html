@@ -1,10 +1,14 @@
 {% extends 'layouts/base.html' %}
+{% load custom_filters %}
 
 {% block content %}
     <div class="container bg-light p-4 mt-4 rounded">
         <h1>Список групп</h1>
-        <a href="{% url 'group_create' %}" class="btn btn-outline-success mb-3"><i class="fa fa-plus-square"></i> Создать новую группу</a>
+        {% if request.user|has_group:"Администратор" %}
 
+            <a href="{% url 'group_create' %}" class="btn btn-outline-success mb-3"><i class="fa fa-plus-square"></i>
+                Создать новую группу</a>
+        {% endif %}
         {% if groups %}
             <table class="table">
                 <thead>
@@ -26,11 +30,18 @@
                             {% endfor %}
                         </td>
                         <td>
-                            <a href="{% url 'group_edit' pk=group.pk %}" class="btn btn-sm btn-outline-warning"><i
-                                    class="fa fa-edit"></i></a>
-                            <a href="{% url 'group_delete' pk=group.pk %}" class="btn btn-sm btn-outline-danger"
-                               onclick="return confirm('Вы уверены, что хотите удалить группу {{ group.name }}?');"><i
-                                    class="fa fa-trash-can"></i></a>
+                            {% if request.user|has_group:"Администратор" %}
+                                <a href="{% url 'group_edit' pk=group.pk %}" class="btn btn-sm btn-outline-warning"><i
+                                        class="fa fa-edit"></i></a>
+                                <a href="{% url 'group_delete' pk=group.pk %}" class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('Вы уверены, что хотите удалить группу {{ group.name }}?');"><i
+                                        class="fa fa-trash-can"></i></a>
+                            {% else %}
+                                <a class="btn btn-sm btn-outline-secondary"><i
+                                        class="fa fa-edit"></i></a>
+                                <a type="button" class="btn btn-sm btn-outline-secondary"><i
+                                        class="fa fa-trash-can"></i></a>
+                            {% endif %}
                         </td>
                     </tr>
                 {% endfor %}

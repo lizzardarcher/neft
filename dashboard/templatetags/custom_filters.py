@@ -1,4 +1,6 @@
 from django import template
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
 from django.utils.safestring import mark_safe
 import os
 
@@ -61,3 +63,36 @@ def filesize_mb(size_bytes):
         return "0 MB"
     size_mb = size_bytes / (1024 * 1024)
     return f"{size_mb:.2f} MB"
+
+
+@register.filter(name='has_perm_in_group')
+def has_perm_in_group(user, perm_code):
+    """
+    Checks if *any* of the user's groups have a specific permission.
+    Assumes perm_code is in the format "app_label.codename".  For example:
+    "myapp.change_widget".
+    """
+
+    if not user.is_authenticated:
+        return False
+
+    app_label, codename = perm_code.split('.')
+
+    try:
+        # Get the ContentType for the model that the permission applies to.
+        content_type = ContentType.objects.get(app_label=app_label, model=codename.split('_')[1])
+
+        # Try to get the Permission object
+        permission = Permission.objects.get(codename=codename, content_type=content_type)
+
+        for group in user.groups.all():
+            if permission in group.permissions.all():
+                return True  # User's group has the permission
+
+    except (ContentType.DoesNotExist, Permission.DoesNotExist, ValueError) as e:
+        # Handle cases where the ContentType or Permission doesn't exist.
+        # You might want to log this or raise an exception in some cases.
+        print(f"Error checking permission: {e}")  # For debugging
+        pass
+
+    return False  # User does not have the permission in any of their groups

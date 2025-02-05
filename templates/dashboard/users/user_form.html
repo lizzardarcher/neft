@@ -70,18 +70,19 @@
             </div>
 
             {% if form.password %}
-            <div class="form-group mt-4">
-                <label for="password">Пароль:</label>
-                {{ form.password }}
-                {% if form.password.errors %}
-                    <div class="alert alert-danger mt-2">
-                        {% for error in form.password.errors %}
-                            {{ error }}
-                        {% endfor %}
-                    </div>
-                {% endif %}
-                <small><code>(Обязательное поле. Не более 150 символов. Только буквы, цифры и символы @/./+/-/_.)</code></small>
-            </div>
+                <div class="form-group mt-4">
+                    <label for="password">Пароль:</label>
+                    {{ form.password }}
+                    {% if form.password.errors %}
+                        <div class="alert alert-danger mt-2">
+                            {% for error in form.password.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <small><code>(Обязательное поле. Не более 150 символов. Только буквы, цифры и символы
+                        @/./+/-/_.)</code></small>
+                </div>
             {% endif %}
 
             <div class="form-group mt-4 mb-4">
@@ -111,4 +112,58 @@
             <a href="{% url 'user_list' %}" class="btn btn-secondary">Назад к списку пользователей</a>
         </form>
     </div>
+ <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const isSuperuserCheckbox = document.getElementById('id_is_superuser'); // Изменил id на правильный
+            let groupsCheckbox; // Declare groupsCheckbox outside toggleAdminGroup and the change handler
+
+            // Function to find the "Администратор" option and select/deselect it
+            function toggleAdminGroup(checked) {
+                groupsCheckbox = document.getElementById('id_groups'); // Ensure groupsCheckbox has a value before using it.
+                if (!groupsCheckbox) {
+                    console.warn("Groups select element not found!"); // For debugging
+                    return;
+                }
+
+                const adminGroupOption = Array.from(groupsCheckbox.options).find(option => option.textContent.trim() === 'Администратор');
+
+                if (adminGroupOption) {
+                    adminGroupOption.selected = checked;
+                }
+            }
+
+            // Link is_superuser checkbox to the "Администратор" group selection
+            if (isSuperuserCheckbox){
+                isSuperuserCheckbox.addEventListener('change', function() {
+                    toggleAdminGroup(this.checked);
+                });
+            }
+
+
+             // Initial state sync (if editing)
+            toggleAdminGroup(isSuperuserCheckbox.checked);
+
+             // Group selection logic
+             groupsCheckbox = document.getElementById('id_groups'); // get groupsCheckbox here
+             if(groupsCheckbox){
+                const groupOptions = groupsCheckbox.querySelectorAll('option');
+                groupsCheckbox.addEventListener('change', function() {
+                    let selectedCount = 0;
+                    groupOptions.forEach(option => {
+                        if(option.selected){
+                           selectedCount++;
+                        }
+                    })
+                   groupOptions.forEach(option => {
+                        if (selectedCount > 0 && !option.selected) {
+                            option.disabled = true;
+                        } else {
+                            option.disabled = false;
+                        }
+                    });
+                });
+             }
+        });
+    </script>
+
 {% endblock content %}

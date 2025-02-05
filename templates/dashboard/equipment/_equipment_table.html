@@ -2,7 +2,6 @@
 <table class="table table-bordered table-striped">
     <thead class="thead-dark">
     <tr>
-        {#            <th><a href="?sort_by=id{% if request.GET.sort_by == 'id' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'id' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">ID</a></th>#}
         <th>
             <a href="?sort_by=serial{% if request.GET.sort_by == 'serial' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'serial' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Идентификатор
                 оборудования</a></th>
@@ -15,7 +14,8 @@
         {% if not 'brigade' in request.path %}
             <th>
                 <a href="?sort_by=brigade{% if request.GET.sort_by == 'brigade' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'brigade' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Бригада</a>
-            </th>{% endif %}
+            </th>
+        {% endif %}
         <th>
             <a href="?sort_by=manufacturer{% if request.GET.sort_by == 'brigade' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'brigade' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Изготовитель</a>
         </th>
@@ -33,38 +33,61 @@
     <tbody>
     {% for equipment in equipments %}
         <tr>
-            {#                <td>{{ equipment.id }}</td>#}
+
             <td><a class="link-success link-offset-2"
                    href="{% url 'equipment_detail' equipment.id %}"><b>{{ equipment.serial }}</b></a></td>
+
             <td>{{ equipment.name }}</td>
+
             <td>{{ equipment.category }}</td>
+
             {% if not 'brigade' in request.path %}
                 <td>{% if equipment.brigade %}{{ equipment.brigade }}{% else %}---{% endif %}</td>{% endif %}
             <td>{% if equipment.manufacturer %}{{ equipment.manufacturer }}{% else %}---{% endif %}</td>
+
             <td>
                 {% if equipment.brigade %}
-                    {{ equipment.documents.count }}
-                    <a href="{% url 'equipment_add_document' equipment.id equipment.brigade.id %}"
-                       class="link-underline-opacity-100-hover link-success"><i class="fa fa-circle-info"></i></a>
+
+                    {% if equipment.documents.count %}
+                        {{ equipment.documents.count }}
+                        <a href="{% url 'equipment_add_document' equipment.id equipment.brigade.id %}"
+                           class="link-underline-opacity-100-hover link-success"><i class="fa fa-circle-info"></i></a>
+                    {% else %}
+                        ---
+
+                    {% endif %}
+
                 {% else %}
+
                     <a href="{% url 'equipment_update' equipment.id %}"
                        class="link-underline-opacity-100-hover link-warning">Нет Бригады</a>
+
                 {% endif %}
             </td>
+
             <td><small>{{ equipment.date_release|date:"d-m-Y" }}</small></td>
+
             <td><small>{{ equipment.date_exploitation|date:"d-m-Y" }}</small></td>
+
             <td>
                 {% if equipment.condition == 'work' %}
+
                     <span class="badge bg-success rounded">{{ equipment.get_condition_display }}</span>
+
                 {% elif equipment.condition == 'repair' %}
+
                     <span class="badge bg-warning rounded">{{ equipment.get_condition_display }}</span>
+
                 {% elif equipment.condition == 'faulty' %}
+
                     <span class="badge bg-danger rounded">{{ equipment.get_condition_display }}</span>
+
                 {% endif %}
             </td>
+
             <td>
 
-                {% if request.user|has_group:"Администратор" or request.user|has_group:"Руководитель" %}
+                {% if user|has_perm_in_group:"Dashboard.change_equipment" %}
                     <a href="
                             {% if 'brigade' in request.path %}{% url 'equipment_update_by_brigade' equipment.id equipment.brigade.id %}{% else %}{% url 'equipment_update' equipment.id %}{% endif %}"
                        class="btn btn-sm btn-outline-warning"><i

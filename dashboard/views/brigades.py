@@ -8,7 +8,6 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView, D
 from dashboard.forms import BrigadeForm
 from dashboard.models import Brigade, Equipment
 
-
 class BrigadeListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
     model = Brigade
     context_object_name = 'brigades'
