@@ -20,6 +20,7 @@
                 <label for="manufacturer">Изготовитель:</label>
                 {{ form.manufacturer }}
             </div>
+                {{ form.documents }}
             <div class="form-group">
                 <label for="name">Название:</label>
                 {{ form.name }}
@@ -38,7 +39,7 @@
             </div>
             <hr>
             <button type="submit" class="btn btn-primary">Обновить</button>
-            <a href="{% url 'equipment_list' %}" class="btn btn-secondary">Отмена</a>
+            <a href="{{ request.META.HTTP_REFERER }}" class="btn btn-secondary">Отмена</a>
         </form>
     </div>
 {% endblock content %}

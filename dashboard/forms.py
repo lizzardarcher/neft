@@ -1,8 +1,7 @@
-from MySQLdb import IntegrityError
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
-from django.db import models
+from django.contrib.auth.models import Group, Permission
 
 from dashboard.models import Brigade, Equipment, Document, Category, UserProfile
 
@@ -28,6 +27,7 @@ class EquipmentCreateForm(forms.ModelForm):
             'brigade': forms.Select(attrs={'class': 'form-control'}),
             'serial': forms.TextInput(attrs={'class': 'form-control'}),
             'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'documents': forms.SelectMultiple(attrs={'class': 'form-control', 'hidden': 'hidden'}),
             'manufacturer': forms.TextInput(attrs={'class': 'form-control'}),
             'condition': forms.Select(attrs={'class': 'form-control'}),
             'date_release': forms.DateTimeInput(format='%Y-%m-%d',
@@ -41,6 +41,14 @@ class EquipmentCreateForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['category'].queryset = Category.objects.order_by('name')
         self.fields['brigade'].queryset = Brigade.objects.order_by('name')
+        self.fields['documents'].queryset = Document.objects.all()
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if commit:
+            instance.save()
+            self.save_m2m()  # Сохраняем ManyToMany поля
+        return instance
 
 
 class EquipmentCreateByBrigadeForm(forms.ModelForm):
@@ -54,6 +62,7 @@ class EquipmentCreateByBrigadeForm(forms.ModelForm):
             'serial': forms.TextInput(attrs={'class': 'form-control'}),
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'manufacturer': forms.TextInput(attrs={'class': 'form-control'}),
+            'documents': forms.SelectMultiple(attrs={'class': 'form-control', 'hidden': 'hidden'}),
             'condition': forms.Select(attrs={'class': 'form-control'}),
             'date_release': forms.DateTimeInput(format='%Y-%m-%d',
                                                 attrs={'class': 'form-control text-info', 'type': 'date'}),
@@ -65,7 +74,14 @@ class EquipmentCreateByBrigadeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['category'].queryset = Category.objects.order_by('name')
+        self.fields['documents'].queryset = Document.objects.all() # Устанавливаем queryset для документов
 
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if commit:
+            instance.save()
+            self.save_m2m()  # Сохраняем ManyToMany поля
+        return instance
 
 class DocumentForm(forms.ModelForm):
     class Meta:
@@ -189,9 +205,6 @@ class CategoryCreateViewForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['parent'].queryset = Category.objects.order_by('name')
-
-
-from django.contrib.auth.models import Group, Permission
 
 
 class GroupForm(forms.ModelForm):

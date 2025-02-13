@@ -111,17 +111,9 @@ class EquipmentUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return reverse('equipment_list')
 
     def form_valid(self, form):
-        try:
-            return super().form_valid(form)
-        except Exception as e:
-            messages.error(self.request, f"Произошла ошибка при обновлении оборудования: {e}")
-            return self.form_invalid(form)
+        return super().form_valid(form)
 
     def form_invalid(self, form):
-        """
-        Обработка случая, когда форма невалидна. Добавляем сообщение об ошибке
-        и рендерим форму с ошибками.
-        """
         messages.error(self.request, f"Пожалуйста, исправьте ошибки в форме. {form.errors}")
         return super().form_invalid(form)
 
@@ -130,7 +122,7 @@ class EquipmentUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
             return super().get(request, *args, **kwargs)
         except Exception as e:
             messages.error(self.request, f"Произошла ошибка при загрузке формы: {e}")
-            return render(request, self.template_name, {'form': EquipmentCreateForm()})  # Render blank form with error
+            return render(request, self.template_name, {'form': EquipmentCreateForm()})
 
     def post(self, request, *args, **kwargs):
         try:
@@ -138,16 +130,40 @@ class EquipmentUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         except Exception as e:
             messages.error(self.request, f"Произошла ошибка при отправке формы: {e}")
             return render(request, self.template_name, {
-                'form': EquipmentCreateForm(request.POST, instance=self.get_object())})  # Render form with error
+                'form': EquipmentCreateForm(request.POST, instance=self.get_object())})
+
 
 class EquipmentUpdateByBrigadeView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Equipment
     form_class = EquipmentCreateForm
-    template_name = 'dashboard/equipment/equipment_update.html'
+    template_name = 'dashboard/equipment/equipment_update_by_brigade.html'
     success_message = 'Оборудование успешно обновлено!'
 
     def get_success_url(self):
         return reverse('brigade_detail', args=[self.kwargs.get('brigade_id')])
+
+    def form_valid(self, form):
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, f"Пожалуйста, исправьте ошибки в форме. {form.errors}")
+        return super().form_invalid(form)
+
+    def get(self, request, *args, **kwargs):
+        try:
+            return super().get(request, *args, **kwargs)
+        except Exception as e:
+            messages.error(self.request, f"Произошла ошибка при загрузке формы: {e}")
+            return render(request, self.template_name, {'form': EquipmentCreateForm()})
+
+    def post(self, request, *args, **kwargs):
+        try:
+            return super().post(request, *args, **kwargs)
+        except Exception as e:
+            messages.error(self.request, f"Произошла ошибка при отправке формы: {e}")
+            return render(request, self.template_name, {
+                'form': EquipmentCreateForm(request.POST, instance=self.get_object())
+            })
 
 
 class EquipmentDetailView(LoginRequiredMixin, SuccessMessageMixin, DetailView):
