@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from django.views import View
 import csv
 from openpyxl import Workbook
-from dashboard.models import Brigade, Category, Equipment, UserActionLog, Transfer
+from dashboard.models import Brigade, Category, Equipment, UserActionLog, Transfer, Document
 
 
 class DashboardView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
@@ -20,6 +20,7 @@ class DashboardView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
         context['users'] = User.objects.all()
         context['user_log'] = UserActionLog.objects.all()
         context['transfers'] = Transfer.objects.all()
+        context['document'] = Document.objects.all()
         return context
 
 
