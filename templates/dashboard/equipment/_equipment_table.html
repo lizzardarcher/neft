@@ -2,12 +2,14 @@
 <table class="table table-bordered table-striped">
     <thead class="thead-dark">
     <tr>
-        <th>
-            <a href="?sort_by=serial{% if request.GET.sort_by == 'serial' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'serial' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Идентификатор
-                оборудования</a></th>
-        <th>
+            <th>
             <a href="?sort_by=name{% if request.GET.sort_by == 'name' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'name' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Название</a>
         </th>
+        <th>
+            <a href="?sort_by=serial{% if request.GET.sort_by == 'serial' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'serial' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">
+                Серийный номер</a>
+        </th>
+
         <th>
             <a href="?sort_by=category{% if request.GET.sort_by == 'category' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'category' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Категория</a>
         </th>
@@ -72,10 +74,10 @@
     {% for equipment in equipments %}
         <tr>
 
-            <td><a class="link-success link-offset-2"
-                   href="{% url 'equipment_detail' equipment.id %}"><b>{{ equipment.serial }}</b></a></td>
 
-            <td>{{ equipment.name }}</td>
+            <td><a class="link-success link-offset-2" href="{% url 'equipment_detail' equipment.id %}"><b>{{ equipment.name }}</b></a></td>
+            <td>{{ equipment.serial }}</td>
+
 
             <td>{{ equipment.category }}</td>
 

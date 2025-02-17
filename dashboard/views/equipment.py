@@ -32,14 +32,17 @@ class EquipmentListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
             equipment_by_name = Equipment.objects.filter(name__icontains=search_request)
             equipment_by_serial = Equipment.objects.filter(name__icontains=search_request)
             queryset = (equipment_by_name | equipment_by_serial)
-        if category:
-            queryset = queryset.filter(category__name=category)
         if sort_by:
             if order == 'desc':
                 sort_by = f"-{sort_by}"  # ставим минус, если обратный порядок
                 queryset = queryset.order_by(sort_by)
             else:
                 queryset = queryset.order_by(sort_by)
+        if category:
+            if sort_by:
+                queryset = queryset.filter(category__name=category).order_by(f'{sort_by}name')
+            else:
+                queryset = queryset.filter(category__name=category).order_by(f'name')
         return queryset
 
 
