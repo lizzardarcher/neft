@@ -18,8 +18,42 @@
             </div>
             <div class="form-group">
                 <label for="manufacturer">Изготовитель:</label>
-                {{ form.manufacturer }}
+                <select class="form-control" id="id_manufacturer" name="manufacturer">
+                    <option value="{% if form.manufacturer.value is not None  %}{{ form.manufacturer.value }}{% endif %}">{% if form.manufacturer.value is not None  %}{{ form.manufacturer.value }}{% endif %}</option>
+                    {% for mfr in manufacturer %}
+                            <option value="{{ mfr.name }}">{{ mfr.name }}</option>
+                    {% endfor %}
+                    <option value="other">Другой изготовитель</option>
+                    <option value="">--- Очистить ---</option>
+                </select>
+                <input type="text" class="form-control mt-2" id="new_manufacturer" name="new_manufacturer"
+                       style="display: none;" placeholder="Введите название изготовителя">
             </div>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const selectElement = document.getElementById('id_manufacturer');
+                    const inputElement = document.getElementById('new_manufacturer');
+
+                    selectElement.addEventListener('change', function () {
+                        if (this.value === 'other') {
+                            inputElement.style.display = 'block';
+                        } else {
+                            inputElement.style.display = 'none';
+                        }
+                    });
+
+                    const form = selectElement.closest('form');
+                    if (form) {
+                        form.addEventListener('submit', function (event) {
+                            if (selectElement.value === 'other' && inputElement.value.trim() === '') {
+                                alert('Пожалуйста, введите название изготовителя.');
+                                event.preventDefault();
+                            }
+                        });
+                    }
+                });
+            </script>
                 {{ form.documents }}
             <div class="form-group">
                 <label for="name">Название:</label>

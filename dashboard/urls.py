@@ -31,6 +31,7 @@ urlpatterns = [
     path('equipment/<int:equipment_id>/delete/', equipment.equipment_delete, name='equipment_delete'),
     path('equipment/<int:pk>/', equipment.EquipmentDetailView.as_view(), name='equipment_detail'),
 
+    path('manufacturer_delete/<int:manufacturer_id>/', equipment.manufacturer_delete, name='manufacturer_delete'),
     path('transfers/history/', transfers.TransferHistoryView.as_view(), name='transfer_history'),
 
     path('users/', users.UserListView.as_view(), name='user_list'),

@@ -6,7 +6,8 @@ from django.shortcuts import  get_object_or_404, redirect
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 
 from dashboard.forms import BrigadeForm
-from dashboard.models import Brigade, Equipment
+from dashboard.models import Brigade, Equipment, Manufacturer
+
 
 class BrigadeListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
     model = Brigade
@@ -65,6 +66,8 @@ class BrigadeDetailView(LoginRequiredMixin, SuccessMessageMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context['equipments'] = page_obj
         context['page_obj'] = page_obj
+
+        context['manufacturers'] = Manufacturer.objects.all().order_by('name')
         return context
 
 class BrigadeCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):

@@ -36,6 +36,11 @@ class Document(models.Model):
     def __str__(self):
         return f"{self.file.url} ({self.upload_date.strftime('%Y-%m-%d %H:%M')})"
 
+class Manufacturer(models.Model):
+    name = models.CharField(max_length=200, unique=True, null=False, blank=False,                                       verbose_name='Название производителя')
+
+    def __str__(self):
+        return self.name
 
 class Equipment(models.Model):
     CONDITION = (('work', 'Рабочее'), ('faulty', 'Неисправное'), ('repair', 'В ремонте'))
@@ -49,10 +54,13 @@ class Equipment(models.Model):
     date_exploitation = models.DateField(auto_now_add=False, auto_now=False, null=False, blank=False,                   verbose_name='Дата ввода в эксплуатацию')
     condition = models.CharField(max_length=100, null=False, blank=False, default='work', choices=CONDITION,            verbose_name='Состояние оборудования')
     manufacturer = models.CharField(max_length=200, null=True, blank=True, default='',                                  verbose_name='Изготовитель')
-    certificate_start = models.DateField(auto_now_add=False, auto_now=False, null=False, blank=False, default=None,     verbose_name='Дата начала сертификата')
-    certificate_end = models.DateField(auto_now_add=False, auto_now=False, null=False, blank=False, default=None,       verbose_name='Дата окончания сертификата')
+    certificate_start = models.DateField(auto_now_add=False, auto_now=False, null=True, blank=True, default=None,       verbose_name='Дата начала сертификата')
+    certificate_end = models.DateField(auto_now_add=False, auto_now=False, null=True, blank=True, default=None,         verbose_name='Дата окончания сертификата')
+
     def __str__(self):
         return f"{self.name} ({self.category})"
+
+
 
 
 @receiver(pre_save, sender=Equipment)
@@ -112,12 +120,6 @@ class UserProfile(models.Model):
     def __str__(self):
         return self.user.username
 
-
-class Manufacturer(models.Model):
-    name = models.CharField(max_length=200, unique=True, null=False, blank=False,                                       verbose_name='Название производителя')
-
-    def __str__(self):
-        return self.name
 
 ### DEPRECATED / DO NOT USE
 class WorkTypes(models.Model):

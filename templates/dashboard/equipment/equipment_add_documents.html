@@ -27,8 +27,11 @@
                             <li>
                                 <div class="row">
                                     <div class="col-11">
-                                        <a href="{{ doc.file.url }}">{{ doc.title }}
-                                            | {{ doc.file.name|trunc_slash }} {{ doc.file.size|filesize_mb }}</a>
+                                        {% if user|has_perm_in_group:"Dashboard.view_document" %}
+                                            <a href="{{ doc.file.url }}">{{ doc.title }} <small>{{ doc.file.size|filesize_mb }}</small></a>
+                                        {% else %}
+                                            <a href="#">{{ doc.title }} <small>{{ doc.file.size|filesize_mb }}</small></a>
+                                        {% endif %}
                                     </div>
                                     <div class="col-1">
 
@@ -41,7 +44,7 @@
                                             </button>
                                         {% endif %}
 
-                                        <div class="modal fade" id="deleteModal{{ doc.id }}" tabindex="-1" role="dialog"
+                                        <div class="modal fade" id="deleteModal{{ doc.id doc. }}" tabindex="-1" role="dialog"
                                              aria-labelledby="deleteModalLabel" aria-hidden="true">
                                             <div class="modal-dialog" role="document">
                                                 <div class="modal-content">

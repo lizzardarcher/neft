@@ -18,6 +18,44 @@
         {% endif %}
         <th>
             <a href="?sort_by=manufacturer{% if request.GET.sort_by == 'brigade' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'brigade' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Изготовитель</a>
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal"
+                    data-target="#manufacturers-modal">
+                <i class="fa fa-edit"></i>
+            </button>
+            <div class="modal fade" id="manufacturers-modal" tabindex="-1" role="dialog"
+                 aria-labelledby="manufacturers-modal-label" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="manufacturers-modal-label">Изготовители</h5>
+                        </div>
+                        <div class="modal-body">
+                            <table class="table table-striped">
+                                <thead>
+                                <tr>
+                                    <th>Изготовитель</th>
+                                    <th>Удалить</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for manufacturer in manufacturers %}
+                                    <tr>
+                                        <td>{{ manufacturer.name }}</td>
+                                        <td>
+                                            <a href="{% url 'manufacturer_delete' manufacturer.id %}"
+                                               class="btn btn-danger btn-sm">
+                                                <i class="fa fa-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </th>
         <th>Документы</th>
         <th>
@@ -89,6 +127,8 @@
 
                 {% if user|has_perm_in_group:"Dashboard.change_equipment" %}
                     <a href="
+
+
                             {% if 'brigade' in request.path %}{% url 'equipment_update_by_brigade' equipment.id equipment.brigade.id %}{% else %}{% url 'equipment_update' equipment.id %}{% endif %}"
                        class="btn btn-sm btn-outline-warning"><i
                             class="fa fa-edit"></i> </a>

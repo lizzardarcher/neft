@@ -8,7 +8,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView, D
 from django.views.generic.detail import SingleObjectMixin
 
 from dashboard.forms import EquipmentCreateByBrigadeForm, EquipmentAddDocumentsForm, DocumentForm, EquipmentCreateForm
-from dashboard.models import Equipment, Brigade, Document
+from dashboard.models import Equipment, Brigade, Document, Manufacturer
 
 
 class EquipmentListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
@@ -16,6 +16,11 @@ class EquipmentListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
     context_object_name = 'equipments'
     template_name = 'dashboard/equipment/equipment_list.html'
     paginate_by = 50
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['manufacturers'] = Manufacturer.objects.all().order_by('name')
+        return context
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -44,9 +49,24 @@ class EquipmentCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     template_name = 'dashboard/equipment/equipment_form.html'
     success_message = 'Оборудование успешно добавлено!'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        context['manufacturer'] = Manufacturer.objects.all().order_by('name')
+        return context
+
     def get_success_url(self):
         return reverse('equipment_list')
 
+    def form_valid(self, form):
+        manufacturer_id = self.request.POST.get('id_manufacturer')
+        new_manufacturer_name = self.request.POST.get('new_manufacturer')
+
+        if new_manufacturer_name:
+            form.instance.manufacturer = new_manufacturer_name
+            Manufacturer.objects.get_or_create(name=new_manufacturer_name)
+        elif manufacturer_id:
+            form.instance.manufacturer = manufacturer_id
+        return super().form_valid(form)
 
 class EquipmentCreateByBrigadeIdView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Equipment
@@ -57,12 +77,22 @@ class EquipmentCreateByBrigadeIdView(LoginRequiredMixin, SuccessMessageMixin, Cr
     def get_context_data(self, **kwargs):
         context = super().get_context_data()
         context['brigade'] = Brigade.objects.get(pk=self.kwargs['brigade_id'])
+        context['manufacturer'] = Manufacturer.objects.all().order_by('name')
         return context
 
     def form_valid(self, form):
         brigade_id = self.kwargs.get('brigade_id')
         brigade = get_object_or_404(Brigade, pk=brigade_id)
         form.instance.brigade = brigade
+
+        manufacturer_id = self.request.POST.get('id_manufacturer')
+        new_manufacturer_name = self.request.POST.get('new_manufacturer')
+
+        if new_manufacturer_name:
+            form.instance.manufacturer = new_manufacturer_name
+            Manufacturer.objects.get_or_create(name=new_manufacturer_name)
+        elif manufacturer_id:
+            form.instance.manufacturer = manufacturer_id
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -107,10 +137,22 @@ class EquipmentUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'dashboard/equipment/equipment_update.html'
     success_message = 'Оборудование успешно обновлено!'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        context['manufacturer'] = Manufacturer.objects.all().order_by('name')
+        return context
+
     def get_success_url(self):
         return reverse('equipment_list')
 
     def form_valid(self, form):
+        manufacturer_id = self.request.POST.get('id_manufacturer')
+        new_manufacturer_name = self.request.POST.get('new_manufacturer')
+        if new_manufacturer_name:
+            form.instance.manufacturer = new_manufacturer_name
+            Manufacturer.objects.get_or_create(name=new_manufacturer_name)
+        elif manufacturer_id:
+            form.instance.manufacturer = manufacturer_id
         return super().form_valid(form)
 
     def form_invalid(self, form):
@@ -139,10 +181,22 @@ class EquipmentUpdateByBrigadeView(LoginRequiredMixin, SuccessMessageMixin, Upda
     template_name = 'dashboard/equipment/equipment_update_by_brigade.html'
     success_message = 'Оборудование успешно обновлено!'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        context['manufacturer'] = Manufacturer.objects.all().order_by('name')
+        return context
+
     def get_success_url(self):
-        return reverse('brigade_detail', args=[self.kwargs.get('brigade_id')])
+        return  reverse('brigade_detail', args=[self.kwargs.get('brigade_id')])
 
     def form_valid(self, form):
+        manufacturer_id = self.request.POST.get('id_manufacturer')
+        new_manufacturer_name = self.request.POST.get('new_manufacturer')
+        if new_manufacturer_name:
+            form.instance.manufacturer = new_manufacturer_name
+            Manufacturer.objects.get_or_create(name=new_manufacturer_name)
+        elif manufacturer_id:
+            form.instance.manufacturer = manufacturer_id
         return super().form_valid(form)
 
     def form_invalid(self, form):
@@ -214,3 +268,16 @@ def document_delete(request, document_id):
         return HttpResponseRedirect(referer_url)
     else:
         return redirect('equipment_list')
+
+
+def manufacturer_delete(request, manufacturer_id):
+    manufacturer = get_object_or_404(Manufacturer, id=manufacturer_id)
+    manufacturer.delete()
+    messages.success(request, 'Изготовитель успешно удален!')
+    referer_url = request.META.get('HTTP_REFERER')
+    if referer_url:
+        return HttpResponseRedirect(referer_url)
+    else:
+        return redirect('equipment_list')
+
+

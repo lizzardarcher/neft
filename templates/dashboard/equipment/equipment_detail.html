@@ -13,10 +13,12 @@
                     <li class="list-group-item"><strong>Название:</strong> {{ equipment.name }}</li>
                     <li class="list-group-item"><strong>Категория:</strong> {{ equipment.category.name }}</li>
                     <li class="list-group-item"><strong>Бригада:</strong> {{ equipment.brigade.name }}</li>
+                    <li class="list-group-item"><strong>Изготовитель:</strong> {% if equipment.manufacturer %}{{ equipment.manufacturer }}{% else %}-{% endif %}</li>
                     <li class="list-group-item"><strong>Состояние:</strong> {{ equipment.get_condition_display }}</li>
-                    <li class="list-group-item"><strong>Дата выпуска:</strong> {{ equipment.date_release }}</li>
-                    <li class="list-group-item"><strong>Дата ввода в
-                        эксплуатацию:</strong> {{ equipment.date_exploitation }}</li>
+                    <li class="list-group-item"><strong>Дата выпуска:</strong> {% if equipment.date_release  %}{{ equipment.date_release }}{% else %}-{% endif %}</li>
+                    <li class="list-group-item"><strong>Дата ввода в эксплуатацию:</strong> {% if equipment.date_exploitation %}{{ equipment.date_exploitation }}{% else %}-{% endif %}</li>
+                    <li class="list-group-item"><strong>Начало действия сертификата:</strong> {% if equipment.certificate_start  %}{{ equipment.certificate_start }}{% else %}-{% endif %}</li>
+                    <li class="list-group-item"><strong>Окончание действия сертификата:</strong> {% if equipment.certificate_end %}{{ equipment.certificate_end }}{% else %}-{% endif %}</li>
                     {% if equipment.documents.all %}
                         <li class="list-group-item">
                             <strong>Документы:</strong>
@@ -25,35 +27,20 @@
                                    href="{% url 'equipment_add_document' equipment.id equipment.brigade.id %}">Добавить
                                     +</a>
                             {% endif %}
+
                             <ol class="mt-2">
                                 {% for document in equipment.documents.all %}
                                     <li class="link-offset-3 item m-2">
                                         {% if document.file.name|is_image %}
-                                            <a href="{{ document.file.url }}"
-                                               target="_blank">
-                                                <img src="{{ document.file.url }}"
-                                                     alt="{{ document.file.name|get_filename }}"></a>
+                                            <a {% if user|has_perm_in_group:"Dashboard.view_document" %} href="{{ document.file.url }}" target="_blank"{% else %}href="#" target="_self"{% endif %}><img src="{{ document.file.url }}" alt="{{ document.title }}"></a>
                                         {% elif document.file.name|is_pdf %}
-                                            <a href="{{ document.file.url }}"
-                                               target="_blank">
-                                                <i class="fa fa-file-pdf file-icon"></i>
-                                                {{ document.file.name|get_filename }} {{ document.file.size|filesize_mb }}
-                                            </a>
+                                            <a {% if user|has_perm_in_group:"Dashboard.view_document" %}href="{{ document.file.url }}" target="_blank" {% else %}href="#" target="_self"{% endif %}><i class="fa fa-file-pdf file-icon"></i>{{ document.title }} <small>{{ document.file.size|filesize_mb }}</small></a>
                                         {% elif document.file.name|is_excel %}
-                                            <a href="{{ document.file.url }}"
-                                               target="_blank"><i
-                                                    class="fas fa-file-excel file-icon"></i> {{ document.file.name|get_filename }} {{ document.file.size|filesize_mb }}
-                                            </a>
+                                            <a {% if user|has_perm_in_group:"Dashboard.view_document" %}href="{{ document.file.url }}" target="_blank" {% else %}href="#" target="_self"{% endif %}><i class="fas fa-file-excel file-icon"></i> {{ document.title }} <small>{{ document.file.size|filesize_mb }}</small></a>
                                         {% elif document.file.name|is_word %}
-                                            <a href="{{ document.file.url }}"
-                                               target="_blank"><i
-                                                    class="fas fa-file-word file-icon"></i> {{ document.file.name|get_filename }} {{ document.file.size|filesize_mb }}
-                                            </a>
+                                            <a {% if user|has_perm_in_group:"Dashboard.view_document" %}href="{{ document.file.url }}" target="_blank" {% else %}href="#" target="_self"{% endif %}><i class="fas fa-file-word file-icon"></i> {{ document.title }} <small>{{ document.file.size|filesize_mb }}</small></a>
                                         {% else %}
-                                            <a href="{{ document.file.url }}"
-                                               target="_blank"><i class="fas fa-file file-icon"></i>
-                                                {{ document.file.name|get_filename }} {{ document.file.size|filesize_mb }}
-                                            </a>
+                                            <a {% if user|has_perm_in_group:"Dashboard.view_document" %}href="{{ document.file.url }}" target="_blank" {% else %}href="#" target="_self"{% endif %}><i class="fas fa-file file-icon"></i>{{ document.title }} <small>{{ document.file.size|filesize_mb }}</small></a>
                                         {% endif %}
                                     </li>
                                 {% endfor %}

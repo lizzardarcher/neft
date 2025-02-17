@@ -34,3 +34,20 @@ class UserActionLogAdmin(admin.ModelAdmin):
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
     ...
+
+@admin.register(Manufacturer)
+class ManufacturerAdmin(admin.ModelAdmin):
+    ...
+
+@admin.register(WorkerActivity)
+class WorkerActivityAdmin(admin.ModelAdmin):
+    ...
+
+@admin.register(WorkObject)
+class WorkObjectAdmin(admin.ModelAdmin):
+    ...
+
+@admin.register(BrigadeActivity)
+class BrigadeActivityAdmin(admin.ModelAdmin):
+    ...
+

@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.models import Group, Permission
 
-from dashboard.models import Brigade, Equipment, Document, Category, UserProfile
+from dashboard.models import Brigade, Equipment, Document, Category, UserProfile, Manufacturer
 
 
 class BrigadeForm(forms.ModelForm):
@@ -28,13 +28,10 @@ class EquipmentCreateForm(forms.ModelForm):
             'serial': forms.TextInput(attrs={'class': 'form-control'}),
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'documents': forms.SelectMultiple(attrs={'class': 'form-control', 'hidden': 'hidden'}),
-            'manufacturer': forms.TextInput(attrs={'class': 'form-control'}),
+            'manufacturer': forms.Select(attrs={'class': 'form-select'}),
             'condition': forms.Select(attrs={'class': 'form-control'}),
-            'date_release': forms.DateTimeInput(format='%Y-%m-%d',
-                                                attrs={'class': 'form-control text-info', 'type': 'date'}),
-            'date_exploitation': forms.DateTimeInput(format='%Y-%m-%d',
-                                                     attrs={'class': 'form-control text-info', 'type': 'date',
-                                                            'multiple': 'multiple'}),
+            'date_release': forms.DateTimeInput(format='%Y-%m-%d', attrs={'class': 'form-control text-info', 'type': 'date'}),
+            'date_exploitation': forms.DateTimeInput(format='%Y-%m-%d', attrs={'class': 'form-control text-info', 'type': 'date', 'multiple': 'multiple'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -61,20 +58,17 @@ class EquipmentCreateByBrigadeForm(forms.ModelForm):
             'category': forms.Select(attrs={'class': 'form-control'}),
             'serial': forms.TextInput(attrs={'class': 'form-control'}),
             'name': forms.TextInput(attrs={'class': 'form-control'}),
-            'manufacturer': forms.TextInput(attrs={'class': 'form-control'}),
+            'manufacturer': forms.Select(attrs={'class': 'form-control'}),
             'documents': forms.SelectMultiple(attrs={'class': 'form-control', 'hidden': 'hidden'}),
             'condition': forms.Select(attrs={'class': 'form-control'}),
-            'date_release': forms.DateTimeInput(format='%Y-%m-%d',
-                                                attrs={'class': 'form-control text-info', 'type': 'date'}),
-            'date_exploitation': forms.DateTimeInput(format='%Y-%m-%d',
-                                                     attrs={'class': 'form-control text-info', 'type': 'date',
-                                                            'multiple': 'multiple'}),
+            'date_release': forms.DateTimeInput(format='%Y-%m-%d', attrs={'class': 'form-control text-info', 'type': 'date'}),
+            'date_exploitation': forms.DateTimeInput(format='%Y-%m-%d', attrs={'class': 'form-control text-info', 'type': 'date', 'multiple': 'multiple'}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['category'].queryset = Category.objects.order_by('name')
-        self.fields['documents'].queryset = Document.objects.all() # Устанавливаем queryset для документов
+        self.fields['documents'].queryset = Document.objects.all()
 
     def save(self, commit=True):
         instance = super().save(commit=False)
