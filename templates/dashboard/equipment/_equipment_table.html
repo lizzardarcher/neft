@@ -2,12 +2,12 @@
 <table class="table table-bordered table-striped">
     <thead class="thead-dark">
     <tr>
-            <th>
+        <th>
             <a href="?sort_by=name{% if request.GET.sort_by == 'name' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'name' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Название</a>
         </th>
         <th>
-            <a href="?sort_by=serial{% if request.GET.sort_by == 'serial' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'serial' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">
-                Серийный номер</a>
+            <a href="?sort_by=serial{% if request.GET.sort_by == 'serial' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'serial' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Серийный
+                номер</a>
         </th>
 
         <th>
@@ -57,15 +57,24 @@
                     </div>
                 </div>
             </div>
-
         </th>
         <th>Документы</th>
         <th>
             <a href="?sort_by=date_release{% if request.GET.sort_by == 'date_release' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'date_release' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Дата
-                выпуска оборудования</a></th>
+                выпуска оборудования</a>
+        </th>
         <th>
             <a href="?sort_by=date_exploitation{% if request.GET.sort_by == 'date_exploitation' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'date_exploitation' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Дата
-                ввода в эксплуатацию</a></th>
+                ввода в эксплуатацию</a>
+        </th>
+        <th>
+            <a href="?sort_by=certificate_start{% if request.GET.sort_by == 'certificate_start' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'certificate_start' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Сертификат
+                от</a>
+        </th>
+        <th>
+            <a href="?sort_by=certificate_end{% if request.GET.sort_by == 'certificate_end' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'certificate_end' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Сертификат
+                до</a>
+        </th>
         <th>Состояние</th>
         <th>Действия</th>
     </tr>
@@ -75,7 +84,8 @@
         <tr>
 
 
-            <td><a class="link-success link-offset-2" href="{% url 'equipment_detail' equipment.id %}"><b>{{ equipment.name }}</b></a></td>
+            <td><a class="link-success link-offset-2"
+                   href="{% url 'equipment_detail' equipment.id %}"><b>{{ equipment.name }}</b></a></td>
             <td>{{ equipment.serial }}</td>
 
 
@@ -106,8 +116,15 @@
             </td>
 
             <td><small>{{ equipment.date_release|date:"d-m-Y" }}</small></td>
-
             <td><small>{{ equipment.date_exploitation|date:"d-m-Y" }}</small></td>
+            <td><small>{{ equipment.certificate_start|date:"d-m-Y" }}</small></td>
+            <td>
+                {% if equipment.certificate_end < now_date %}
+                    <small class="text-danger fw-bold">{{ equipment.certificate_end|date:"d-m-Y" }}</small>
+                {% else %}
+                    <small>{{ equipment.certificate_end|date:"d-m-Y" }}</small>
+                {% endif %}
+            </td>
 
             <td>
                 {% if equipment.condition == 'work' %}
@@ -129,6 +146,8 @@
 
                 {% if user|has_perm_in_group:"Dashboard.change_equipment" %}
                     <a href="
+
+
 
 
                             {% if 'brigade' in request.path %}{% url 'equipment_update_by_brigade' equipment.id equipment.brigade.id %}{% else %}{% url 'equipment_update' equipment.id %}{% endif %}"

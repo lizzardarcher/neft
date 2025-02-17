@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
@@ -20,6 +22,7 @@ class EquipmentListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(**kwargs)
         context['manufacturers'] = Manufacturer.objects.all().order_by('name')
+        context['now_date'] = date.today()
         return context
 
     def get_queryset(self):

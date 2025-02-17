@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
@@ -66,7 +68,7 @@ class BrigadeDetailView(LoginRequiredMixin, SuccessMessageMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context['equipments'] = page_obj
         context['page_obj'] = page_obj
-
+        context['now_date'] = date.today()
         context['manufacturers'] = Manufacturer.objects.all().order_by('name')
         return context
 

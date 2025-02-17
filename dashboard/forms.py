@@ -21,7 +21,7 @@ class EquipmentCreateForm(forms.ModelForm):
         model = Equipment
         fields = ['category', 'brigade', 'serial',
                   'name', 'manufacturer', 'documents',
-                  'date_release', 'date_exploitation', 'condition']
+                  'date_release', 'date_exploitation', 'condition', 'certificate_start', 'certificate_end']
         widgets = {
             'category': forms.Select(attrs={'class': 'form-control'}),
             'brigade': forms.Select(attrs={'class': 'form-control'}),
@@ -32,6 +32,9 @@ class EquipmentCreateForm(forms.ModelForm):
             'condition': forms.Select(attrs={'class': 'form-control'}),
             'date_release': forms.DateTimeInput(format='%Y-%m-%d', attrs={'class': 'form-control text-info', 'type': 'date'}),
             'date_exploitation': forms.DateTimeInput(format='%Y-%m-%d', attrs={'class': 'form-control text-info', 'type': 'date', 'multiple': 'multiple'}),
+            'certificate_start': forms.DateTimeInput(format='%Y-%m-%d', attrs={'class': 'form-control text-info', 'type': 'date'}),
+            'certificate_end': forms.DateTimeInput(format='%Y-%m-%d', attrs={'class': 'form-control text-info', 'type': 'date'}),
+
         }
 
     def __init__(self, *args, **kwargs):
@@ -53,7 +56,7 @@ class EquipmentCreateByBrigadeForm(forms.ModelForm):
         model = Equipment
         fields = ['category', 'serial', 'name',
                   'condition', 'documents', 'date_release',
-                  'date_exploitation', 'manufacturer']
+                  'date_exploitation', 'manufacturer', 'certificate_start', 'certificate_end']
         widgets = {
             'category': forms.Select(attrs={'class': 'form-control'}),
             'serial': forms.TextInput(attrs={'class': 'form-control'}),
@@ -63,6 +66,8 @@ class EquipmentCreateByBrigadeForm(forms.ModelForm):
             'condition': forms.Select(attrs={'class': 'form-control'}),
             'date_release': forms.DateTimeInput(format='%Y-%m-%d', attrs={'class': 'form-control text-info', 'type': 'date'}),
             'date_exploitation': forms.DateTimeInput(format='%Y-%m-%d', attrs={'class': 'form-control text-info', 'type': 'date', 'multiple': 'multiple'}),
+            'certificate_start': forms.DateTimeInput(format='%Y-%m-%d', attrs={'class': 'form-control text-info', 'type': 'date'}),
+            'certificate_end': forms.DateTimeInput(format='%Y-%m-%d', attrs={'class': 'form-control text-info', 'type': 'date'}),
         }
 
     def __init__(self, *args, **kwargs):
