@@ -63,7 +63,18 @@ def filesize_mb(size_bytes):
         return "0 MB"
     size_mb = size_bytes / (1024 * 1024)
     return f"{size_mb:.2f} MB"
-
+@register.filter
+def get_work_type(value):
+    if value == 'Y':
+        return 'Я'
+    elif value == 'G':
+        return 'Г'
+    elif value == 'O':
+        return 'О'
+    elif value == 'S':
+        return 'С'
+    else:
+        return value
 
 @register.filter(name='has_perm_in_group')
 def has_perm_in_group(user, perm_code):

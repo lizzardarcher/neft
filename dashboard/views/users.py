@@ -121,6 +121,7 @@ class WorkerActivityCreateView(CreateView):
     def get_success_url(self):
         return reverse('brigade_staff', args=[self.kwargs.get('brigade_id')])
 
+
 @csrf_exempt
 def create_worker_activity(request):
     if request.method == 'POST':
@@ -128,14 +129,23 @@ def create_worker_activity(request):
         user = get_object_or_404(User, id=request.GET.get('user_id').split('/')[0])
         work_type = request.POST.get('work_type')
         date = request.POST.get('date')
+
         if brigade and user and work_type and date:
-            WorkerActivity.objects.create(user=user, brigade=brigade, work_type=work_type, date=date)
-            messages.success(request, 'Активность успешно создана!')
-            return redirect('brigade_staff' , pk=request.GET.get('brigade_id'))
+            # Обновление или создание активности
+            worker_activity, created = WorkerActivity.objects.update_or_create(
+                user=user,
+                brigade=brigade,
+                date=date,
+                defaults={'work_type': work_type}
+            )
+            if created:
+                messages.success(request, 'Активность успешно создана!')
+            else:
+                messages.success(request, 'Активность успешно обновлена!')
+            return redirect('brigade_staff', pk=request.GET.get('brigade_id'))
         else:
             messages.error(request, 'Произошла ошибка при создании активности!')
-            return redirect('brigade_staff' , pk=request.GET.get('brigade_id'))
+            return redirect('brigade_staff', pk=request.GET.get('brigade_id'))
     else:
         messages.error(request, 'Произошла ошибка при создании активности!')
-        return redirect('brigade_staff' , pk=request.GET.get('brigade_id'))
-
+        return redirect('brigade_staff', pk=request.GET.get('brigade_id'))

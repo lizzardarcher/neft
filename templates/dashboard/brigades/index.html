@@ -14,7 +14,7 @@
                     <div class="card-body">
                         <h5 class="card-title">Персонал</h5>
                     </div>
-                    <a href="{% url 'brigade_staff' brigade.id %}" class="m-1 btn btn-outline-info">Просмотреть</a>
+                    <a href="{% url 'brigade_staff' brigade.id %}?month={{ month }}&year={{ year }}" class="m-1 btn btn-outline-info">Просмотреть</a>
                 </div>
             </div>
 

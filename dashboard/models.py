@@ -148,7 +148,7 @@ class WorkerActivity(models.Model):
         return self.user.username
 
     class Meta:
-        unique_together = ('user', 'date')
+        unique_together = ['user', 'date', 'brigade']
 
 
 

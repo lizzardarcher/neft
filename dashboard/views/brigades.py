@@ -81,8 +81,11 @@ class BrigadeStaffView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         brigade = get_object_or_404(Brigade, pk=self.request.path.split('/')[-2])
         context['brigade'] = brigade
+        context['month'] = self.request.GET.get('month', datetime.now().strftime('%m'))
+        context['year'] = self.request.GET.get('year', datetime.now().strftime('%Y'))
+        context['date_m_y'] = datetime.now().strftime('%m-%Y')
         context['users'] = User.objects.filter(profile__brigade=brigade).order_by('username')
-        context['worker_activity'] = WorkerActivity.objects.filter(brigade=brigade).order_by('date')
+        context['wa'] = WorkerActivity.objects.filter(brigade=brigade).order_by('date')
         return context
 
 class BrigadeWorkView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
@@ -93,6 +96,8 @@ class BrigadeIndexView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['month'] = datetime.now().strftime('%m')
+        context['year'] = datetime.now().strftime('%Y')
         context['brigade'] = get_object_or_404(Brigade, pk=self.request.path.split('/')[-1])
         return context
 
