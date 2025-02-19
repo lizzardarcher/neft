@@ -7,7 +7,11 @@ urlpatterns = [
     path('instructions', index.InstructionView.as_view(), name='instructions'),
 
     path('brigades/', brigades.BrigadeListView.as_view(), name='brigade_list'),
-    path('brigade/<int:pk>/detail', brigades.BrigadeDetailView.as_view(), name='brigade_detail'),
+
+    path('brigade_index/<int:pk>', brigades.BrigadeIndexView.as_view(), name='brigade_index'),
+    path('brigade/<int:pk>/equipment', brigades.BrigadeDetailView.as_view(), name='brigade_detail'),
+    path('brigade/<int:pk>/staff', brigades.BrigadeStaffView.as_view(), name='brigade_staff'),
+    path('brigade/<int:pk>/work', brigades.BrigadeWorkView.as_view(), name='brigade_work'),
     path('brigades/create/', brigades.BrigadeCreateView.as_view(), name='brigade_create'),
     path('brigades/<int:pk>/update/', brigades.BrigadeUpdateView.as_view(), name='brigade_update'),
     path('brigades/<int:brigade_id>/delete/', brigades.brigade_delete, name='brigade_delete'),
@@ -41,6 +45,7 @@ urlpatterns = [
     path('users/<int:user_id>/delete/', users.user_delete, name='user_delete'),
     path('user/<int:pk>/detail', users.UserDetailView.as_view(), name='user_detail'),
 
+    path('user/update_by_brigade/<int:pk>/<int:brigade_id>/', users.UserUpdateByBrigadeView.as_view(), name='user_update_by_brigade'),
     path('action-log/', users.UserActionLogView.as_view(), name='user_action_log'),
 
     path('groups/', users.GroupListView.as_view(), name='group_list'),

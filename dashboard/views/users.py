@@ -5,10 +5,10 @@ from django.contrib.auth.models import User, Group
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 
-from dashboard.forms import UserCreateForm, UserUpdateForm, GroupForm
+from dashboard.forms import UserCreateForm, UserUpdateForm, GroupForm, UserUpdateByBrigadeForm
 from dashboard.models import UserActionLog
 
 
@@ -58,6 +58,20 @@ class UserAccountUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView)
             return self.success_url
         else:
             return f'/dashboard/user/{self.request.user.id}/detail'
+
+class UserUpdateByBrigadeView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = User
+    form_class = UserUpdateByBrigadeForm
+    template_name = 'dashboard/users/user_by_brigade_form.html'
+    success_message = 'Данные пользователя успешно обновлены!'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['brigade_id'] = self.kwargs.get('brigade_id')
+        return context
+
+    def get_success_url(self):
+        return reverse('brigade_staff', args=[self.kwargs.get('brigade_id')])
 
 
 def user_delete(request, user_id):

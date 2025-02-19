@@ -8,14 +8,19 @@
         <table class="table table-bordered table-striped">
             <thead class="thead-dark">
             <tr>
-                <th>Имя пользователя</th>
+                <th>Логин</th>
                 <th>Имя</th>
                 <th>Фамилия</th>
                 <th>Должность</th>
                 <th>Тел.</th>
                 <th>Email</th>
                 <th>Группы</th>
-                <th>Суперпользователь</th>
+                <th>Админ</th>
+                <th>Бригада</th>
+                <th>Работа_с</th>
+                <th>Работа_по</th>
+                <th>Работа/Отпуск</th>
+                <th>Примечания</th>
                 <th>Действия</th>
 
             </tr>
@@ -37,6 +42,11 @@
                         {% endfor %}
                     </td>
                     <td>{{ user.is_superuser|yesno:"✅,🛑" }}</td>
+                    <td>{% if user.profile.brigade %}<a href="{% url 'brigade_detail' user.profile.brigade.id %}">{{ user.profile.brigade }}</a>{% else %}---{% endif %}</td>
+                    <td>{% if user.profile.brigade_start_date %}{{ user.profile.brigade_start_date|date:"d-m-Y" }}{% else %}---{% endif %}</td>
+                    <td>{% if user.profile.brigade_end_date %}{{ user.profile.brigade_end_date|date:"d-m-Y" }}{% else %}---{% endif %}</td>
+                    <td>{% if user.profile.status %}Работа{% else %}Отпуск{% endif %}</td>
+                    <td>{% if user.profile.notes %}{{ user.profile.notes }}{% else %}---{% endif %}</td>
                     <td>
                         {% if request.user|has_group:"Администратор" %}
                             <a href="{% url 'user_update' user.id %}" class="btn btn-sm btn-outline-warning"><i

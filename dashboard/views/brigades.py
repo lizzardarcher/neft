@@ -2,10 +2,11 @@ from datetime import date
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.paginator import Paginator
 from django.shortcuts import  get_object_or_404, redirect
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView, TemplateView
 
 from dashboard.forms import BrigadeForm
 from dashboard.models import Brigade, Equipment, Manufacturer
@@ -70,6 +71,28 @@ class BrigadeDetailView(LoginRequiredMixin, SuccessMessageMixin, DetailView):
         context['page_obj'] = page_obj
         context['now_date'] = date.today()
         context['manufacturers'] = Manufacturer.objects.all().order_by('name')
+        return context
+
+
+class BrigadeStaffView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
+    template_name = 'dashboard/brigades/brigade_staff.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        brigade = get_object_or_404(Brigade, pk=self.request.path.split('/')[-2])
+        context['brigade'] = brigade
+        context['users'] = User.objects.filter(profile__brigade=brigade).order_by('username')
+        return context
+
+class BrigadeWorkView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
+    template_name = 'dashboard/brigades/brigade_work.html'
+
+class BrigadeIndexView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
+    template_name = 'dashboard/brigades/index.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['brigade'] = get_object_or_404(Brigade, pk=self.request.path.split('/')[-1])
         return context
 
 class BrigadeCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
