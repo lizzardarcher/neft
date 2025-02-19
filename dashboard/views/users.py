@@ -1,15 +1,15 @@
 from django.contrib import messages
-from django.contrib.admin.models import LogEntry
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User, Group
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.messages.views import SuccessMessageMixin
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy, reverse
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 
-from dashboard.forms import UserCreateForm, UserUpdateForm, GroupForm, UserUpdateByBrigadeForm
-from dashboard.models import UserActionLog
+from dashboard.forms import UserCreateForm, UserUpdateForm, GroupForm, UserUpdateByBrigadeForm, WorkerActivityForm
+from dashboard.models import UserActionLog, WorkerActivity, Brigade
 
 
 class UserListView(LoginRequiredMixin, ListView):
@@ -112,3 +112,30 @@ class GroupDeleteView(DeleteView):
     model = Group
     template_name = 'dashboard/users/group_confirm_delete.html'
     success_url = reverse_lazy('group_list')
+
+class WorkerActivityCreateView(CreateView):
+    model = WorkerActivity
+    form_class = WorkerActivityForm
+    template_name = 'dashboard/users/worker_activity_form.html'
+
+    def get_success_url(self):
+        return reverse('brigade_staff', args=[self.kwargs.get('brigade_id')])
+
+@csrf_exempt
+def create_worker_activity(request):
+    if request.method == 'POST':
+        brigade = get_object_or_404(Brigade, id=request.GET.get('brigade_id'))
+        user = get_object_or_404(User, id=request.GET.get('user_id').split('/')[0])
+        work_type = request.POST.get('work_type')
+        date = request.POST.get('date')
+        if brigade and user and work_type and date:
+            WorkerActivity.objects.create(user=user, brigade=brigade, work_type=work_type, date=date)
+            messages.success(request, 'Активность успешно создана!')
+            return redirect('brigade_staff' , pk=request.GET.get('brigade_id'))
+        else:
+            messages.error(request, 'Произошла ошибка при создании активности!')
+            return redirect('brigade_staff' , pk=request.GET.get('brigade_id'))
+    else:
+        messages.error(request, 'Произошла ошибка при создании активности!')
+        return redirect('brigade_staff' , pk=request.GET.get('brigade_id'))
+

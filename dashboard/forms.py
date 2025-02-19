@@ -1,10 +1,8 @@
 from django import forms
 from django.contrib.auth.models import User
-from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.models import Group, Permission
-from django.contrib.messages.context_processors import messages
 
-from dashboard.models import Brigade, Equipment, Document, Category, UserProfile, Manufacturer
+from dashboard.models import Brigade, Equipment, Document, Category, UserProfile, Manufacturer, WorkerActivity
 
 
 class BrigadeForm(forms.ModelForm):
@@ -342,3 +340,18 @@ class GroupForm(forms.ModelForm):
     class Meta:
         model = Group
         fields = ['name', 'permissions']
+
+
+class WorkerActivityForm(forms.ModelForm):
+    class Meta:
+        model = WorkerActivity
+        fields = ('user', 'date', 'work_type', 'brigade')
+        widgets = {
+            'user': forms.Select(attrs={'class': 'form-control'}),
+            'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'work_type': forms.Select(attrs={'class': 'form-control'}),
+            'brigade': forms.Select(attrs={'class': 'form-control'}),
+        }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['brigade'].queryset = Brigade.objects.order_by('name')

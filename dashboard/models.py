@@ -147,6 +147,10 @@ class WorkerActivity(models.Model):
     def __str__(self):
         return self.user.username
 
+    class Meta:
+        unique_together = ('user', 'date')
+
+
 
 class WorkObject(models.Model):
     name = models.CharField(max_length=200, unique=True, null=False, blank=False,                                       verbose_name='Название объекта')

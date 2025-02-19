@@ -44,8 +44,9 @@ urlpatterns = [
     path('user/<int:pk>/update/', users.UserAccountUpdateView.as_view(), name='account_update'),
     path('users/<int:user_id>/delete/', users.user_delete, name='user_delete'),
     path('user/<int:pk>/detail', users.UserDetailView.as_view(), name='user_detail'),
-
     path('user/update_by_brigade/<int:pk>/<int:brigade_id>/', users.UserUpdateByBrigadeView.as_view(), name='user_update_by_brigade'),
+    path('user/worker_activity_create/', users.WorkerActivityCreateView.as_view(), name='worker_activity_create'),
+    path('user/user_worker_activity_create/', users.create_worker_activity, name='user_worker_activity_create'),
     path('action-log/', users.UserActionLogView.as_view(), name='user_action_log'),
 
     path('groups/', users.GroupListView.as_view(), name='group_list'),

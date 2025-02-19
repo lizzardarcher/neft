@@ -7,9 +7,9 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.core.paginator import Paginator
 from django.shortcuts import  get_object_or_404, redirect
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView, TemplateView
-
+from django.utils.timezone import datetime
 from dashboard.forms import BrigadeForm
-from dashboard.models import Brigade, Equipment, Manufacturer
+from dashboard.models import Brigade, Equipment, Manufacturer, WorkerActivity
 
 
 class BrigadeListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
@@ -82,6 +82,7 @@ class BrigadeStaffView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
         brigade = get_object_or_404(Brigade, pk=self.request.path.split('/')[-2])
         context['brigade'] = brigade
         context['users'] = User.objects.filter(profile__brigade=brigade).order_by('username')
+        context['worker_activity'] = WorkerActivity.objects.filter(brigade=brigade).order_by('date')
         return context
 
 class BrigadeWorkView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
