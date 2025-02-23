@@ -12,7 +12,8 @@
             <div class="row">
             <div class="col-md-4 mb-3">
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
-                    <div class="card-header"><i class="fa fa-helmet-safety"></i> <b>Бригады:</b> <span class="badge bg-secondary-subtle text-dark">{{ brigades.count }}</span></div>
+                    <div class="card-header"><i class="fa fa-helmet-safety"></i> <b>Бригады:</b> <span
+                            class="badge bg-secondary-subtle text-dark">{{ brigades.count }}</span></div>
                     <div class="card-body">
                         <h5 class="card-title">Список бригад</h5>
                     </div>
@@ -24,7 +25,8 @@
         {% if user|has_perm_in_group:"Dashboard.view_category" %}
             <div class="col-md-4 mb-3">
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
-                    <div class="card-header"><i class="fa fa-list-alt"></i> <b>Категории:</b> <span class="badge bg-secondary-subtle text-dark">{{ categories.count }}</span></div>
+                    <div class="card-header"><i class="fa fa-list-alt"></i> <b>Категории:</b> <span
+                            class="badge bg-secondary-subtle text-dark">{{ categories.count }}</span></div>
                     <div class="card-body">
                         <h5 class="card-title">Оборудование по категориям</h5>
                     </div>
@@ -36,7 +38,8 @@
         {% if user|has_perm_in_group:"Dashboard.view_equipment" %}
             <div class="col-md-4 mb-3">
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
-                    <div class="card-header"><i class="fa fa-hammer"></i> <b>Оборудование:</b> <span class="badge bg-secondary-subtle text-dark">{{ equipment.count }}</span></div>
+                    <div class="card-header"><i class="fa fa-hammer"></i> <b>Оборудование:</b> <span
+                            class="badge bg-secondary-subtle text-dark">{{ equipment.count }}</span></div>
                     <div class="card-body">
                         <h5 class="card-title">Полный список доступного оборудования</h5>
                     </div>
@@ -44,11 +47,12 @@
                 </div>
             </div>
         {% endif %}
-    
+
         {% if user|has_perm_in_group:"Dashboard.view_document" %}
             <div class="col-md-4 mb-3">
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
-                    <div class="card-header"><i class="fa fa-file"></i> <b>Документы:</b> <span class="badge bg-secondary-subtle text-dark">{{ document.count }}</span></div>
+                    <div class="card-header"><i class="fa fa-file"></i> <b>Документы:</b> <span
+                            class="badge bg-secondary-subtle text-dark">{{ document.count }}</span></div>
                     <div class="card-body">
                         <h5 class="card-title">Полный список документов</h5>
                     </div>
@@ -56,25 +60,38 @@
                 </div>
             </div>
         {% endif %}
-    
+
         {% if user|has_group:"Руководитель" or user|has_group:"Администратор" %}
             <div class="col-md-4 mb-3">
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
-                    <div class="card-header"><i class="fa fa-user"></i> <b>Пользователи:</b> <span class="badge bg-secondary-subtle text-dark">{{ users.count }}</span></div>
+                    <div class="card-header"><i class="fa fa-user"></i> <b>Пользователи:</b> <span
+                            class="badge bg-secondary-subtle text-dark">{{ users.count }}</span></div>
                     <div class="card-body">
                         <h5 class="card-title">Список пользователей</h5>
                     </div>
                     <a href="{% url 'user_list' %}" class="m-1 btn btn-outline-info">Просмотреть</a>
                 </div>
             </div>
+        {% endif %}
 
+        {% if user|has_group:"Руководитель" or user|has_group:"Администратор" %}
+            <div class="col-md-4 mb-3">
+                <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
+                    <div class="card-header"><i class="fa fa-user"></i> <b>Табель</b></div>
+                    <div class="card-body">
+                        <h5 class="card-title">Рабочая нагрузка</h5>
+                    </div>
+                    <a href="{% url 'staff_table_total' %}" class="m-1 btn btn-outline-info">Просмотреть</a>
+                </div>
+            </div>
         {% endif %}
 
         {% if user|has_group:"Руководитель" or user|has_group:"Администратор" %}
             <div class="col-md-4 mb-3">
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
                     <div class="card-header"><i class="fa fa-down-left-and-up-right-to-center"></i>
-                        <b>Перемещений:</b> <span class="badge bg-secondary-subtle text-dark">{{ transfers.count }}</span></div>
+                        <b>Перемещений:</b> <span
+                                class="badge bg-secondary-subtle text-dark">{{ transfers.count }}</span></div>
                     <div class="card-body">
                         <h5 class="card-title">Журнал перемещения оборудования</h5>
                     </div>
@@ -87,7 +104,8 @@
             <div class="col-md-4 mb-3">
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
                     <div class="card-header"><i class="fa fa-font-awesome-logo-full"></i>
-                        <b>Записей:</b> <span class="badge bg-secondary-subtle text-dark">{{ user_log.count }}</span></div>
+                        <b>Записей:</b> <span class="badge bg-secondary-subtle text-dark">{{ user_log.count }}</span>
+                    </div>
                     <div class="card-body">
                         <h5 class="card-title">Журнал действий пользователей</h5>
                     </div>

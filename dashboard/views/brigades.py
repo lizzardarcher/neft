@@ -105,19 +105,11 @@ class BrigadeStaffView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
         context['next_month'] = str(next_month)
         context['prev_year']  = prev_year
         context['next_year']  = next_year
-        # context['users'] = User.objects.filter(profile__brigade=brigade).order_by('username')
         context['users'] = User.objects.annotate(
             total_wa=Count('workeractivity',
             filter=Q(workeractivity__date__year=context['year'],
                      workeractivity__date__month=context['month'],
                      workeractivity__brigade=brigade,))).filter(profile__brigade=brigade).order_by('username')
-        wa = []
-        for day in context['days']:
-            wa.append(
-                {'day':day, 'wa':WorkerActivity.objects.filter(brigade=context['brigade'], date__month=context['month'], date__year=context['year'], date__day=day).last()}
-            )
-        context['wa'] = wa
-
         employee_data = [
             {
                 'user': user,
@@ -126,12 +118,8 @@ class BrigadeStaffView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
                     {'day': day, 'wa': WorkerActivity.objects.filter(user=user, date__month=context['month'], date__year=context['year'], date__day=day).last()} for day in context['days']
                 ],
             } for user in context['users']
-
         ]
-
         context['employee_data'] = employee_data
-
-
         return context
 
 class BrigadeWorkView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):

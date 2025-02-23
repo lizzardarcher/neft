@@ -303,6 +303,92 @@ class UserUpdateByBrigadeForm(forms.ModelForm):
         return user
 
 
+class UserUpdateStaffForm(forms.ModelForm):
+    position = forms.CharField(
+        max_length=100,
+        required=False,
+        label="Должность",
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    brigade = forms.ModelChoiceField(
+        queryset=Brigade.objects.all(),
+        label="Бригада",
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    phone_number = forms.CharField(
+        max_length=20,
+        required=False,
+        label="Номер телефона",
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    brigade_start_date = forms.DateField(
+        label="Дата начала работы в бригаде",
+        widget=forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date', 'class': 'form-control text-info'}),
+        required=False
+    )
+    brigade_end_date = forms.DateField(
+        label="Дата окончания работы в бригаде",
+        widget=forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date', 'class': 'form-control text-info'}),
+        required=False
+    )
+    status = forms.BooleanField(
+        required=False,
+        label="Работа/Отпуск",
+        widget=forms.CheckboxInput(attrs={'class': 'required checkbox', 'checked': 'checked'}))
+    notes = forms.CharField(
+        max_length=200,
+        required=False,
+        label="Примечания",
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'brigade','position', 'phone_number',
+                  'brigade_start_date', 'brigade_end_date', 'status', 'notes']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        try:
+            if self.instance:
+                self.fields['position'].initial = getattr(self.instance, 'position', self.instance.profile.position)
+                self.fields['phone_number'].initial = getattr(self.instance, 'phone_number', self.instance.profile.phone_number)
+                self.fields['brigade'].initial = getattr(self.instance, 'brigade', self.instance.profile.brigade)
+                self.fields['brigade_start_date'].initial = getattr(self.instance, 'brigade_start_date', self.instance.profile.brigade_start_date)
+                self.fields['brigade_end_date'].initial = getattr(self.instance, 'brigade_end_date', self.instance.profile.brigade_end_date)
+                self.fields['status'].initial = getattr(self.instance, 'status', self.instance.profile.status)
+                self.fields['notes'].initial = getattr(self.instance, 'notes', self.instance.profile.notes)
+        except: pass
+
+
+    def save(self, commit=True):
+        user = super(UserUpdateStaffForm, self).save(commit=False)
+        position = self.cleaned_data['position']
+        phone_number = self.cleaned_data['phone_number']
+        brigade_start_date = self.cleaned_data.get('brigade_start_date')
+        brigade_end_date = self.cleaned_data.get('brigade_end_date')
+        status = self.cleaned_data.get('status')
+        notes = self.cleaned_data.get('notes')
+        if commit:
+            user.save()
+            self.save_m2m()
+            profile = UserProfile.objects.get(user=user)
+            profile.phone_number = phone_number
+            profile.position = position
+            profile.brigade_start_date = brigade_start_date
+            profile.brigade_end_date = brigade_end_date
+            profile.status = status
+            profile.notes = notes
+            profile.save()
+        return user
+
+
 class UserUpdateForm(forms.ModelForm):
     class Meta:
         model = User

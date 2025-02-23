@@ -1,0 +1,88 @@
+{% extends 'layouts/base.html' %}
+{% load custom_filters %}
+{% block content %}
+    <div class="container bg-light p-4 mt-4 rounded">
+        <h1 class="text-center">Форма пользователя</h1>
+        <form class="form-control-lg" method="post">
+            {% csrf_token %}
+
+            <div class="form-group mt-4">
+                <label for="position">Должность:</label>
+                {{ form.position }}
+            </div>
+
+            <div class="form-group mt-4">
+                <label for="first_name">Имя:</label>
+                {{ form.first_name|add_class:"form-control" }}
+                {% if form.first_name.errors %}
+                    <div class="alert alert-danger mt-2">
+                        {% for error in form.first_name.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group mt-4">
+                <label for="last_name">Фамилия:</label>
+                {{ form.last_name|add_class:"form-control" }}
+                {% if form.last_name.errors %}
+                    <div class="alert alert-danger mt-2">
+                        {% for error in form.last_name.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group mt-4">
+                <label for="phone_number">Телефон:</label>
+                {{ form.phone_number }}
+            </div>
+
+            <div class="form-group mt-4">
+                <label for="email">Email:</label>
+                {{ form.email|add_class:"form-control" }}
+                {% if form.email.errors %}
+                    <div class="alert alert-danger mt-2">
+                        {% for error in form.email.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group mt-4">
+                <label for="brigade_start_date">Бригада:</label>
+                {{ form.brigade }}
+            </div>
+
+            <div class="form-group mt-4">
+                <label for="brigade_start_date">Начало работы в бригаде:</label>
+                {{ form.brigade_start_date }}
+            </div>
+
+            <div class="form-group mt-4">
+                <label for="brigade_end_date">Окончание работы в бригаде:</label>
+                {{ form.brigade_end_date }}
+            </div>
+
+            <div class="form-group mt-4">
+                <label for="status">Работа <i class="fa fa-check"></i> /Отпуск:</label><br>
+                {{ form.status }}
+            </div>
+
+            <div class="form-group mt-4">
+                <label for="notes">Примечания:</label>
+                {{ form.notes }}
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">{% if 'create' in request.path %}Создать{% else %}
+                    Обновить{% endif %}</button>
+                <a href="{% url 'staff_table_total' %}" class="btn btn-secondary">Назад к списку пользователей</a>
+            </div>
+        </form>
+
+    </div>
+
+{% endblock content %}

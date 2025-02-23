@@ -1,17 +1,21 @@
 from calendar import month
+from datetime import datetime
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User, Group
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.messages.views import SuccessMessageMixin
+from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy, reverse
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView, TemplateView
 
-from dashboard.forms import UserCreateForm, UserUpdateForm, GroupForm, UserUpdateByBrigadeForm, WorkerActivityForm
+from dashboard.forms import UserCreateForm, UserUpdateForm, GroupForm, UserUpdateByBrigadeForm, WorkerActivityForm, \
+    UserUpdateStaffForm
 from dashboard.models import UserActionLog, WorkerActivity, Brigade
+from dashboard.utils.utils import get_days_in_month
 
 
 class UserListView(LoginRequiredMixin, ListView):
@@ -48,6 +52,7 @@ class UserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     success_message = 'Данные пользователя успешно обновлены'
     success_url = '/dashboard/users'
 
+
 class UserAccountUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = User
     form_class = UserUpdateForm
@@ -60,6 +65,7 @@ class UserAccountUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView)
             return self.success_url
         else:
             return f'/dashboard/user/{self.request.user.id}/detail'
+
 
 class UserUpdateByBrigadeView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = User
@@ -74,6 +80,16 @@ class UserUpdateByBrigadeView(LoginRequiredMixin, SuccessMessageMixin, UpdateVie
 
     def get_success_url(self):
         return reverse('brigade_staff', args=[self.kwargs.get('brigade_id')])
+
+
+class UserStaffUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = User
+    form_class = UserUpdateStaffForm
+    template_name = 'dashboard/users/user_staff_form.html'
+    success_message = 'Данные пользователя успешно обновлены!'
+
+    def get_success_url(self):
+        return reverse('staff_table_total')
 
 
 def user_delete(request, user_id):
@@ -110,10 +126,12 @@ class GroupUpdateView(UpdateView):
     template_name = 'dashboard/users/group_form.html'
     success_url = reverse_lazy('group_list')
 
+
 class GroupDeleteView(DeleteView):
     model = Group
     template_name = 'dashboard/users/group_confirm_delete.html'
     success_url = reverse_lazy('group_list')
+
 
 class WorkerActivityCreateView(CreateView):
     model = WorkerActivity
@@ -136,7 +154,6 @@ def create_worker_activity(request):
         month = request.POST.get('month')
         year = request.POST.get('year')
 
-
         if brigade and user and work_type and date:
             # Обновление или создание активности
             worker_activity, created = WorkerActivity.objects.update_or_create(
@@ -156,3 +173,51 @@ def create_worker_activity(request):
     else:
         messages.error(request, 'Произошла ошибка при создании активности!')
         return redirect('brigade_staff', pk=request.GET.get('brigade_id'))
+
+
+class StaffTableTotalView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
+    template_name = 'dashboard/users/staff_table_total.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['month'] = self.request.GET.get('month', datetime.now().strftime('%m'))
+        context['year'] = self.request.GET.get('year', datetime.now().strftime('%Y'))
+        context['days'] = get_days_in_month(int(context['month']), int(context['year']))
+        context['date_m_y'] = datetime.now().strftime('%m-%Y')
+        prev_month = int(context['month']) - 1
+        next_month = int(context['month']) + 1
+        prev_year = int(context['year'])
+        next_year = int(context['year'])
+        if prev_month < 1:
+            prev_month = 12
+            prev_year = int(context['year']) - 1
+        if str(prev_month).__len__() == 1:
+            prev_month = '0' + str(prev_month)
+        if next_month > 12:
+            next_month = 1
+            next_year = int(context['year']) + 1
+        if str(next_month).__len__() == 1:
+            next_month = '0' + str(next_month)
+        context['prev_month'] = str(prev_month)
+        context['next_month'] = str(next_month)
+        context['prev_year'] = prev_year
+        context['next_year'] = next_year
+        context['users'] = User.objects.annotate(
+            total_wa=Count('workeractivity',
+                           filter=Q(workeractivity__date__year=context['year'],
+                                    workeractivity__date__month=context['month'],
+                                    ))).all().order_by('first_name')
+        employee_data = [
+            {
+                'user': user,
+                'total_wa': WorkerActivity.objects.filter(user=user, date__month=context['month'],
+                                                          date__year=context['year']).count(),
+                'wa': [
+                    {'day': day, 'wa': WorkerActivity.objects.filter(user=user, date__month=context['month'],
+                                                                     date__year=context['year'], date__day=day).last()}
+                    for day in context['days']
+                ],
+            } for user in context['users']
+        ]
+        context['employee_data'] = employee_data
+        return context
