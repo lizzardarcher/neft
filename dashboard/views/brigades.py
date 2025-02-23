@@ -10,7 +10,7 @@ from django.db.models import Count, Q
 from django.shortcuts import  get_object_or_404, redirect
 from django.views.generic import ListView, CreateView, UpdateView, DetailView, TemplateView
 from django.utils.timezone import datetime
-from dashboard.forms import BrigadeForm
+from dashboard.forms import BrigadeForm, BrigadeActivityForm
 from dashboard.models import Brigade, Equipment, Manufacturer, WorkerActivity, BrigadeActivity
 from dashboard.utils.utils import get_days_in_month
 
@@ -125,8 +125,16 @@ class BrigadeStaffView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
 class BrigadeWorkView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
     template_name = 'dashboard/brigades/brigade_work.html'
 
+    def form_valid(self, form):
+        form = BrigadeActivityForm(brigade_id=int(self.request.path.split('/')[-5]), data=self.request.POST)
+        if form.is_valid():
+            form.save()
+        return super().form_valid(form)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        context['form'] = BrigadeActivityForm()
 
         brigade_id = int(self.request.path.split('/')[-5])
         year = int(self.kwargs.get('year', datetime.now().year))
@@ -209,3 +217,28 @@ def brigade_delete(request, brigade_id):
     return redirect('brigade_list')
 
 
+def brigade_activity_create(request, brigade_id):
+    brigade = get_object_or_404(Brigade, id=brigade_id)
+    form = BrigadeActivityForm(request.POST)
+    date = request.POST.get('date')
+    work_type = request.POST.get('work_type')
+    if brigade and work_type and date:
+        brigade_activity, created = BrigadeActivity.objects.update_or_create(
+            brigade=brigade,
+            date=date,
+            defaults={'work_type': work_type}
+        )
+        if created:
+            messages.success(request, 'Активность успешно создана!')
+        else:
+            messages.success(request, 'Активность успешно обновлена!')
+        return redirect(request.META.get('HTTP_REFERER'))
+    else:
+        if form.is_valid():
+            activity = form.save(commit=False)
+            activity.brigade = brigade
+            activity.save()
+            messages.success(request, 'Активность успешно создана!')
+        else:
+            messages.error(request, 'Произошла ошибка при создании активности!')
+        return redirect(request.META.get('HTTP_REFERER'))

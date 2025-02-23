@@ -2,7 +2,8 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group, Permission
 
-from dashboard.models import Brigade, Equipment, Document, Category, UserProfile, Manufacturer, WorkerActivity
+from dashboard.models import Brigade, Equipment, Document, Category, UserProfile, Manufacturer, WorkerActivity, \
+    BrigadeActivity
 
 
 class BrigadeForm(forms.ModelForm):
@@ -465,3 +466,21 @@ class WorkerActivityForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['brigade'].queryset = Brigade.objects.order_by('name')
+
+
+class BrigadeActivityForm(forms.ModelForm):
+    class Meta:
+        model = BrigadeActivity
+        fields = ('date', 'work_type')
+        widgets = {
+            'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'work_type': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def save(self, commit=True):
+        brigade_activity = super(BrigadeActivityForm, self).save(commit=False)
+        brigade_activity.save()
+        return brigade_activity

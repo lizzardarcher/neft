@@ -17,51 +17,119 @@
     .activity-day a {
         text-decoration: none;
     }
+    .li {
+        padding: 5px;
+        margin: 5px;
+    }
 </style>
 
-<div class="container">
 
-
-    <div class="mb-3">
-        <h1>Brigade Calendar: {{ brigade.name }}</h1>
-        <h2>{{ month }} - {{ year }}</h2>
-        <a href="{{ prev_month_url }}" class="btn btn-primary"><<<</a>
-        <a href="{{ next_month_url }}" class="btn btn-primary">>>></a>
+<div class="mb-3">
+    <h1>Календарь работ:</h1>
+    <h2> {{ brigade.name }}</h2>
+    <h2>{{ month }} - {{ year }}</h2>
+    <a href="{{ prev_month_url }}" class="btn btn-primary"><<<</a>
+    <a href="{{ next_month_url }}" class="btn btn-primary">>>></a>
+    <button type="button" class="btn btn-outline-success" data-toggle="modal"
+            data-target="#wa-modal{{ brigade.id }}">
+        <i class="fa fa-add"></i> Добавить активность бригады
+    </button>
+    <div class="modal fade" id="wa-modal{{ brigade.id }}" tabindex="-1" role="dialog"
+         aria-labelledby="wa-modal{{ brigade.id }}-label" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="wa-modal{{ brigade.id }}-label">Добавить тип работы
+                        для пользователя: <br> {{ brigade.name }} </h5>
+                </div>
+                <div class="modal-body">
+                    <form method="post"
+                          action="{% url 'brigade_activity_create' brigade.id %}?month={{ month }}&year={{ year }}/">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit" class="mt-4 btn btn-primary">Добавить</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
+</div>
 
 
-    <table class="table table-bordered calendar-table">
-        <thead>
+<table class="table table-bordered calendar-table">
+    <thead>
+    <tr>
+        <th>Вс</th>
+        <th>Пн</th>
+        <th>Вт</th>
+        <th>Ср</th>
+        <th>Чт</th>
+        <th>Пт</th>
+        <th>Сб</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for week in calendar %}
         <tr>
-            <th>Sun</th>
-            <th>Mon</th>
-            <th>Tue</th>
-            <th>Wed</th>
-            <th>Thu</th>
-            <th>Fri</th>
-            <th>Sat</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for week in calendar %}
-            <tr>
-                {% for day in week %}
-                    {% if day == 0 %}
-                        <td></td>
-                    {% else %}
-                        <td {% if activities_by_day|get_item:day %}class="activity-day"{% endif %}>
-                            {{ day }}
-                            {% if activities_by_day|get_item:day %}
-                                <ul>
-                                    {% for activity in activities_by_day|get_item:day %}
+            {% for day in week %}
+                {% if day == 0 %}
+                    <td></td>
+                {% else %}
+                    <td {% if activities_by_day|get_item:day %}class="activity-day"{% endif %}>
+                        <small class="text-secondary">{{ day }}</small>
+                        {% if activities_by_day|get_item:day %}
+                            <ul>
+                                {% for activity in activities_by_day|get_item:day %}
+                                    {% if activity.get_work_type_display == '(ЗБС) Бурение'%}
+                                        <li style="background-color: #e4c89c" class="li rounded">{{ activity.get_work_type_display }}</li>
+                                    {% elif activity.get_work_type_display == '(ЗБС) бурение горизонта'%}
+                                        <li style="background-color: #d6ab8f" class="li rounded">{{ activity.get_work_type_display }}</li>
+                                    {% elif activity.get_work_type_display == '(ЗБС) шаблонирование + ГИС'%}
+                                        <li style="background-color: #ae7e59" class="li rounded">{{ activity.get_work_type_display }}</li>
+                                    {% elif activity.get_work_type_display == '(ЗБС) спуск хвостовика'%}
+                                        <li style="background-color: #673412" class="li rounded">{{ activity.get_work_type_display }}</li>
+
+                                    {% elif activity.get_work_type_display == '(ВНС) бурение кондуктора'%}
+                                        <li style="background-color: #bfe3e2" class="li rounded">{{ activity.get_work_type_display }}</li>
+                                    {% elif activity.get_work_type_display == '(ВНС) бурение ЭК'%}
+                                        <li style="background-color: #29b4c6" class="li rounded">{{ activity.get_work_type_display }}</li>
+                                    {% elif activity.get_work_type_display == '(ВНС) бурение горизонта'%}
+                                        <li style="background-color: #168898" class="li rounded">{{ activity.get_work_type_display }}</li>
+                                    {% elif activity.get_work_type_display == '(ВНС) спуск хвостовика'%}
+                                        <li style="background-color: #0e5e7a" class="li rounded">{{ activity.get_work_type_display }}</li>
+
+                                    {% elif activity.get_work_type_display == 'Переезд'%}
+                                        <li style="background-color: #399c3a" class="li rounded">{{ activity.get_work_type_display }}</li>
+                                    {% elif activity.get_work_type_display == 'Простой'%}
+                                        <li style="background-color: #faf8f9" class="li rounded">{{ activity.get_work_type_display }}</li>
+                                    {% elif activity.get_work_type_display == 'Авария'%}
+                                        <li style="background-color: #bf423f" class="li rounded">{{ activity.get_work_type_display }}</li>
+                                    {% else %}
                                         <li>{{ activity.get_work_type_display }}</li>
-                                    {% endfor %}
-                                </ul>
-                            {% endif %}
-                        </td>
-                    {% endif %}
-                {% endfor %}
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </td>
+                {% endif %}
+            {% endfor %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<ul>
+    <li><span style="background-color: #e4c89c" class="li badge rounded text-dark border"> (ЗБС) Бурение                </span></li>
+    <li><span style="background-color: #d6ab8f" class="li badge rounded text-dark border"> (ЗБС) бурение горизонта      </span></li>
+    <li><span style="background-color: #ae7e59" class="li badge rounded text-dark border"> (ЗБС) шаблонирование + ГИС   </span></li>
+    <li><span style="background-color: #673412" class="li badge rounded text-light border">(ЗБС) спуск хвостовика       </span></li>
+
+    <li><span style="background-color: #bfe3e2" class="li badge rounded text-dark border"> (ВНС) бурение кондуктора     </span></li>
+    <li><span style="background-color: #29b4c6" class="li badge rounded text-dark border"> (ВНС) бурение ЭК             </span></li>
+    <li><span style="background-color: #168898" class="li badge rounded text-dark border"> (ВНС) бурение горизонта      </span></li>
+    <li><span style="background-color: #0e5e7a" class="li badge rounded text-light border">(ВНС) спуск хвостовика       </span></li>
+
+    <li><span style="background-color: #399c3a" class="li badge rounded text-dark border"> Переезд                      </span></li>
+    <li><span style="background-color: #faf8f9" class="li badge rounded text-dark border"> Простой                      </span></li>
+    <li><span style="background-color: #bf423f" class="li badge rounded text-dark border"> Авария                       </span></li>
+</ul>
+<a class="btn btn-sm btn-outline-secondary mt-2 mb-2" href="{% url 'brigade_index' brigade.id %}">НАЗАД</a>
