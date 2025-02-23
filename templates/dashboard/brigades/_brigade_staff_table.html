@@ -1,9 +1,8 @@
 {% load custom_filters %}
 {% block content %}
-
     <div class="p-5 bg-light-subtle">
         <h3 class="mb-5">Сотрудники {{ brigade }}</h3>
-        <table class="table table-bordered table-striped table-hover">
+        <table class="table table-bordered table-striped table-hover mb-5">
             <thead class="thead-dark">
             <tr>
                 <th>ФИО</th>
@@ -36,24 +35,28 @@
                             <a href="{% url 'user_update_by_brigade' user.id user.profile.brigade.id %}"
                                class="btn btn-sm btn-outline-warning"><i class="fa fa-edit"></i></a>
                             <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal"
-                                    data-target="#wa-modal{{user}}">
+                                    data-target="#wa-modal{{ user }}">
                                 <i class="fa fa-add"></i>
                             </button>
-                            <div class="modal fade" id="wa-modal{{user}}" tabindex="-1" role="dialog"
-                                 aria-labelledby="wa-modal{{user}}-label" aria-hidden="true">
+                            <div class="modal fade" id="wa-modal{{ user }}" tabindex="-1" role="dialog"
+                                 aria-labelledby="wa-modal{{ user }}-label" aria-hidden="true">
                                 <div class="modal-dialog" role="document">
                                     <div class="modal-content">
                                         <div class="modal-header">
-                                            <h5 class="modal-title" id="wa-modal{{user}}-label">Добавить тип работы для пользователя: <br> {{ user.get_full_name }} </h5>
+                                            <h5 class="modal-title" id="wa-modal{{ user }}-label">Добавить тип работы
+                                                для пользователя: <br> {{ user.get_full_name }} </h5>
                                         </div>
                                         <div class="modal-body">
-                                            <form method="post" action="/dashboard/user/user_worker_activity_create/?brigade_id={{ user.profile.brigade.id }}&user_id={{ user.id }}/">
+                                            <form method="post"
+                                                  action="/dashboard/user/user_worker_activity_create/?brigade_id={{ user.profile.brigade.id }}&user_id={{ user.id }}&month={{ month }}&year={{ year }}/">
                                                 {% csrf_token %}
                                                 <label for="id_date">Дата:</label>
-                                                <input type="date" id="id_date" name="date" class="form-control" placeholder="YYYY-MM-DD" required>
+                                                <input type="date" id="id_date" name="date" class="form-control"
+                                                       placeholder="YYYY-MM-DD" required>
 
                                                 <label for="id_work_type">Тип работы:</label>
-                                                <select id="id_work_type" name="work_type" class="form-control" required>
+                                                <select id="id_work_type" name="work_type" class="form-control"
+                                                        required>
                                                     <option value="Y">Обычная работа (Я)</option>
                                                     <option value="G">Работа по геологии (Г)</option>
                                                     <option value="O">Обслуживание (О)</option>
@@ -81,89 +84,62 @@
             </tbody>
         </table>
 
-        <h2 class="text-center">Табель {{ month }}-{{ year }}</h2>
+        <h2 class="text-center mt-5">
+            <a href="{% url 'brigade_staff' brigade.id %}?month={{ prev_month }}&year={{ prev_year }}"
+               class="btn btn-outline-secondary"><<<</a>
+            Табель {{ month }}-{{ year }}
+            <a href="{% url 'brigade_staff' brigade.id %}?month={{ next_month }}&year={{ next_year }}"
+               class="btn btn-outline-secondary">>>></a>
+        </h2>
+        <table class="table table-bordered table-responsive">
 
-        <table class="table table-bordered">
             <thead>
             <tr>
                 <th class="bg-dark-subtle">ФИО</th>
                 <th class="bg-dark-subtle">Должность</th>
-                <th class="bg-dark-subtle">1</th>
-                <th class="bg-dark-subtle">2</th>
-                <th class="bg-dark-subtle">3</th>
-                <th class="bg-dark-subtle">4</th>
-                <th class="bg-dark-subtle">5</th>
-                <th class="bg-dark-subtle">6</th>
-                <th class="bg-dark-subtle">7</th>
-                <th class="bg-dark-subtle">8</th>
-                <th class="bg-dark-subtle">9</th>
-                <th class="bg-dark-subtle">10</th>
-                <th class="bg-dark-subtle">11</th>
-                <th class="bg-dark-subtle">12</th>
-                <th class="bg-dark-subtle">13</th>
-                <th class="bg-dark-subtle">14</th>
-                <th class="bg-dark-subtle">15</th>
-                <th class="bg-dark-subtle">16</th>
-                <th class="bg-dark-subtle">17</th>
-                <th class="bg-dark-subtle">18</th>
-                <th class="bg-dark-subtle">19</th>
-                <th class="bg-dark-subtle">20</th>
-                <th class="bg-dark-subtle">21</th>
-                <th class="bg-dark-subtle">22</th>
-                <th class="bg-dark-subtle">23</th>
-                <th class="bg-dark-subtle">24</th>
-                <th class="bg-dark-subtle">25</th>
-                <th class="bg-dark-subtle">26</th>
-                <th class="bg-dark-subtle">27</th>
-                <th class="bg-dark-subtle">28</th>
-                <th class="bg-dark-subtle">29</th>
-                <th class="bg-dark-subtle">30</th>
-                <th class="bg-dark-subtle">31</th>
+                {% for day in days %}
+                    <th class="bg-dark-subtle">{{ day }}</th>
+                {% endfor %}
                 <th class="bg-dark-subtle">Всего дней</th>
             </tr>
             </thead>
             <tbody>
-            {% for user in users %}
+            {% for data in employee_data %}
                 <tr>
-                    <td class="bg-light-subtle">{{ user.get_full_name }}</td>
-                    <td class="bg-light-subtle">{{ user.profile.position }}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '01' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '01' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '02' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '02' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '03' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '03' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '04' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '04' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '05' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '05' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '06' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '06' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '07' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '07' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '08' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '08' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '09' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '09' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '10' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '10' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '11' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '11' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '12' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '12' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '13' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '13' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '14' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '14' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '15' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '15' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '16' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '16' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '17' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '17' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '18' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '18' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '19' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '19' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '20' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '20' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '21' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '21' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '22' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '22' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '23' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '23' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '24' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '24' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '25' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '25' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '26' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '26' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '27' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '27' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '28' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '28' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '29' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '29' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '30' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '30' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-                    <td class="bg-{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '31' and w.work_type == 'Y' %}warning-subtle{% endif %}{% endfor %}">{% for w in wa %}{% if w.user == user and w.date|date:'m' == month and w.date|date:'d' == '31' %}{{ w.work_type|get_work_type }}{% endif %}{% endfor %}</td>
-
-                    <td>000</td>
+                    <td class="bg-light-subtle">{{ data.user.get_full_name }}</td>
+                    <td class="bg-light-subtle">{{ data.user.profile.position }}</td>
+                    {% for wa in data.wa %}
+                        {% if wa.wa %}
+                            {% if wa.wa.work_type == 'Y' %}
+                                <td class="bg-warning">Я</td>
+                            {% elif wa.wa.work_type == 'G' %}
+                                <td class="bg-warning-subtle">Г</td>
+                            {% elif wa.wa.work_type == 'O' %}
+                                <td class="bg-info-subtle">О</td>
+                            {% elif wa.wa.work_type == 'S' %}
+                                <td class="bg-success-subtle">С</td>
+                            {% endif %}
+                        {% else %}
+                            <td class="bg-light-subtle">-</td>
+                        {% endif %}
+                    {% endfor %}
+                    <td>
+                        {{ data.total_wa }}
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal"
+                                data-target="#wa-modal{{ data.user }}">
+                            <i class="fa fa-add"></i>
+                        </button>
+                    </td>
                 </tr>
             {% endfor %}
             </tbody>
         </table>
+        <ul>
+            <li>Я - Обычная работа</li>
+            <li>Г - Работа по геологии</li>
+            <li>О - Обслуживание</li>
+            <li>С - Работа стажера</li>
+        </ul>
         <a href="{% url 'brigade_index' brigade.id %}" class="btn btn-secondary mb-2">Назад</a>
     </div>
 {% endblock content %}

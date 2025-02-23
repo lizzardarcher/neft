@@ -5,11 +5,13 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.paginator import Paginator
+from django.db.models import Count, Q
 from django.shortcuts import  get_object_or_404, redirect
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView, TemplateView
 from django.utils.timezone import datetime
 from dashboard.forms import BrigadeForm
 from dashboard.models import Brigade, Equipment, Manufacturer, WorkerActivity
+from dashboard.utils.utils import get_days_in_month
 
 
 class BrigadeListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
@@ -83,9 +85,53 @@ class BrigadeStaffView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
         context['brigade'] = brigade
         context['month'] = self.request.GET.get('month', datetime.now().strftime('%m'))
         context['year'] = self.request.GET.get('year', datetime.now().strftime('%Y'))
+        context['days'] = get_days_in_month(int(context['month']), int(context['year']))
         context['date_m_y'] = datetime.now().strftime('%m-%Y')
-        context['users'] = User.objects.filter(profile__brigade=brigade).order_by('username')
-        context['wa'] = WorkerActivity.objects.filter(brigade=brigade).order_by('date')
+        prev_month = int(context['month']) - 1
+        next_month = int(context['month']) + 1
+        prev_year = int(context['year'])
+        next_year = int(context['year'])
+        if prev_month < 1:
+            prev_month = 12
+            prev_year = int(context['year']) - 1
+        if str(prev_month).__len__() == 1:
+            prev_month = '0' + str(prev_month)
+        if next_month > 12:
+            next_month = 1
+            next_year = int(context['year']) + 1
+        if str(next_month).__len__() == 1:
+            next_month = '0' + str(next_month)
+        context['prev_month'] = str(prev_month)
+        context['next_month'] = str(next_month)
+        context['prev_year']  = prev_year
+        context['next_year']  = next_year
+        # context['users'] = User.objects.filter(profile__brigade=brigade).order_by('username')
+        context['users'] = User.objects.annotate(
+            total_wa=Count('workeractivity',
+            filter=Q(workeractivity__date__year=context['year'],
+                     workeractivity__date__month=context['month'],
+                     workeractivity__brigade=brigade,))).filter(profile__brigade=brigade).order_by('username')
+        wa = []
+        for day in context['days']:
+            wa.append(
+                {'day':day, 'wa':WorkerActivity.objects.filter(brigade=context['brigade'], date__month=context['month'], date__year=context['year'], date__day=day).last()}
+            )
+        context['wa'] = wa
+
+        employee_data = [
+            {
+                'user': user,
+                'total_wa': WorkerActivity.objects.filter(user=user, date__month=context['month'], date__year=context['year'], brigade=context['brigade']).count(),
+                'wa': [
+                    {'day': day, 'wa': WorkerActivity.objects.filter(user=user, date__month=context['month'], date__year=context['year'], date__day=day).last()} for day in context['days']
+                ],
+            } for user in context['users']
+
+        ]
+
+        context['employee_data'] = employee_data
+
+
         return context
 
 class BrigadeWorkView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
@@ -126,6 +172,5 @@ def brigade_delete(request, brigade_id):
     brigade.delete()
     messages.success(request, 'Бригада успешно удалена!')
     return redirect('brigade_list')
-
 
 

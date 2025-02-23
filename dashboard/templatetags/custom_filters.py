@@ -1,3 +1,5 @@
+from itertools import count
+
 from django import template
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
@@ -5,6 +7,22 @@ from django.utils.safestring import mark_safe
 import os
 
 register = template.Library()
+
+
+@register.filter
+def split(value):
+    return value.split(' ')
+
+
+@register.filter
+def get_day(value, day):
+    return value.get(day.strftime('%m-%Y'), [])
+
+
+@register.filter
+def get_item(dictionary, key):
+    """Получает элемент из словаря по ключу."""
+    return dictionary.get(key)
 
 
 @register.filter
@@ -49,12 +67,14 @@ def has_group(user, group_name):
     """
     return user.groups.filter(name=group_name).exists()
 
+
 @register.filter(name='trunc_slash')
 def trunc_slash(value):
     try:
         return str(value).split('/')[-1]
     except:
         return value
+
 
 @register.filter
 def filesize_mb(size_bytes):
@@ -63,6 +83,8 @@ def filesize_mb(size_bytes):
         return "0 MB"
     size_mb = size_bytes / (1024 * 1024)
     return f"{size_mb:.2f} MB"
+
+
 @register.filter
 def get_work_type(value):
     if value == 'Y':
@@ -75,6 +97,7 @@ def get_work_type(value):
         return 'С'
     else:
         return value
+
 
 @register.filter(name='has_perm_in_group')
 def has_perm_in_group(user, perm_code):

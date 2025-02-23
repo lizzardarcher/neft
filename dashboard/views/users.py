@@ -1,3 +1,5 @@
+from calendar import month
+
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User, Group
@@ -119,7 +121,9 @@ class WorkerActivityCreateView(CreateView):
     template_name = 'dashboard/users/worker_activity_form.html'
 
     def get_success_url(self):
-        return reverse('brigade_staff', args=[self.kwargs.get('brigade_id')])
+        month = self.kwargs.get('month')  # Получаем месяц из kwargs
+        year = self.kwargs.get('year')  # Получаем год из kwargs
+        return reverse('brigade_staff', args=[self.kwargs.get('brigade_id'), month, year])
 
 
 @csrf_exempt
@@ -129,6 +133,9 @@ def create_worker_activity(request):
         user = get_object_or_404(User, id=request.GET.get('user_id').split('/')[0])
         work_type = request.POST.get('work_type')
         date = request.POST.get('date')
+        month = request.POST.get('month')
+        year = request.POST.get('year')
+
 
         if brigade and user and work_type and date:
             # Обновление или создание активности
@@ -142,7 +149,7 @@ def create_worker_activity(request):
                 messages.success(request, 'Активность успешно создана!')
             else:
                 messages.success(request, 'Активность успешно обновлена!')
-            return redirect('brigade_staff', pk=request.GET.get('brigade_id'))
+            return redirect(request.META.get('HTTP_REFERER'))
         else:
             messages.error(request, 'Произошла ошибка при создании активности!')
             return redirect('brigade_staff', pk=request.GET.get('brigade_id'))
