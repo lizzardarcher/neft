@@ -29,10 +29,15 @@ class EquipmentCreateForm(forms.ModelForm):
             'documents': forms.SelectMultiple(attrs={'class': 'form-control', 'hidden': 'hidden'}),
             'manufacturer': forms.Select(attrs={'class': 'form-select'}),
             'condition': forms.Select(attrs={'class': 'form-control'}),
-            'date_release': forms.DateTimeInput(format='%Y-%m-%d', attrs={'class': 'form-control text-info', 'type': 'date'}),
-            'date_exploitation': forms.DateTimeInput(format='%Y-%m-%d', attrs={'class': 'form-control text-info', 'type': 'date', 'multiple': 'multiple'}),
-            'certificate_start': forms.DateTimeInput(format='%Y-%m-%d', attrs={'class': 'form-control text-info', 'type': 'date'}),
-            'certificate_end': forms.DateTimeInput(format='%Y-%m-%d', attrs={'class': 'form-control text-info', 'type': 'date'}),
+            'date_release': forms.DateTimeInput(format='%Y-%m-%d',
+                                                attrs={'class': 'form-control text-info', 'type': 'date'}),
+            'date_exploitation': forms.DateTimeInput(format='%Y-%m-%d',
+                                                     attrs={'class': 'form-control text-info', 'type': 'date',
+                                                            'multiple': 'multiple'}),
+            'certificate_start': forms.DateTimeInput(format='%Y-%m-%d',
+                                                     attrs={'class': 'form-control text-info', 'type': 'date'}),
+            'certificate_end': forms.DateTimeInput(format='%Y-%m-%d',
+                                                   attrs={'class': 'form-control text-info', 'type': 'date'}),
 
         }
 
@@ -63,10 +68,15 @@ class EquipmentCreateByBrigadeForm(forms.ModelForm):
             'manufacturer': forms.Select(attrs={'class': 'form-control'}),
             'documents': forms.SelectMultiple(attrs={'class': 'form-control', 'hidden': 'hidden'}),
             'condition': forms.Select(attrs={'class': 'form-control'}),
-            'date_release': forms.DateTimeInput(format='%Y-%m-%d', attrs={'class': 'form-control text-info', 'type': 'date'}),
-            'date_exploitation': forms.DateTimeInput(format='%Y-%m-%d', attrs={'class': 'form-control text-info', 'type': 'date', 'multiple': 'multiple'}),
-            'certificate_start': forms.DateTimeInput(format='%Y-%m-%d', attrs={'class': 'form-control text-info', 'type': 'date'}),
-            'certificate_end': forms.DateTimeInput(format='%Y-%m-%d', attrs={'class': 'form-control text-info', 'type': 'date'}),
+            'date_release': forms.DateTimeInput(format='%Y-%m-%d',
+                                                attrs={'class': 'form-control text-info', 'type': 'date'}),
+            'date_exploitation': forms.DateTimeInput(format='%Y-%m-%d',
+                                                     attrs={'class': 'form-control text-info', 'type': 'date',
+                                                            'multiple': 'multiple'}),
+            'certificate_start': forms.DateTimeInput(format='%Y-%m-%d',
+                                                     attrs={'class': 'form-control text-info', 'type': 'date'}),
+            'certificate_end': forms.DateTimeInput(format='%Y-%m-%d',
+                                                   attrs={'class': 'form-control text-info', 'type': 'date'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -80,6 +90,7 @@ class EquipmentCreateByBrigadeForm(forms.ModelForm):
             instance.save()
             self.save_m2m()  # Сохраняем ManyToMany поля
         return instance
+
 
 class DocumentForm(forms.ModelForm):
     class Meta:
@@ -147,7 +158,8 @@ class UserCreateForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name', 'email', 'password', 'groups', 'is_active', 'is_staff',
-                  'is_superuser', 'position', 'phone_number', 'brigade', 'brigade_start_date', 'brigade_end_date', 'status', 'notes']
+                  'is_superuser', 'position', 'phone_number', 'brigade', 'brigade_start_date', 'brigade_end_date',
+                  'status', 'notes']
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control'}),
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
@@ -167,18 +179,21 @@ class UserCreateForm(forms.ModelForm):
         try:
             if self.instance:
                 self.fields['position'].initial = getattr(self.instance, 'position', self.instance.profile.position)
-                self.fields['phone_number'].initial = getattr(self.instance, 'phone_number', self.instance.profile.phone_number)
+                self.fields['phone_number'].initial = getattr(self.instance, 'phone_number',
+                                                              self.instance.profile.phone_number)
                 self.fields['brigade'].initial = getattr(self.instance, 'brigade', self.instance.profile.brigade)
-                self.fields['brigade_start_date'].initial = getattr(self.instance, 'brigade_start_date', self.instance.profile.brigade_start_date)
-                self.fields['brigade_end_date'].initial = getattr(self.instance, 'brigade_end_date', self.instance.profile.brigade_end_date)
+                self.fields['brigade_start_date'].initial = getattr(self.instance, 'brigade_start_date',
+                                                                    self.instance.profile.brigade_start_date)
+                self.fields['brigade_end_date'].initial = getattr(self.instance, 'brigade_end_date',
+                                                                  self.instance.profile.brigade_end_date)
                 self.fields['status'].initial = getattr(self.instance, 'status', self.instance.profile.status)
                 self.fields['notes'].initial = getattr(self.instance, 'notes', self.instance.profile.notes)
 
             if self.instance.pk:  # if the form is being used to update an existing user
                 self.fields['password'].required = False
                 self.fields['password'].widget.attrs['disabled'] = True
-        except: pass
-
+        except:
+            pass
 
     def clean_groups(self):
         groups = self.cleaned_data.get('groups')
@@ -257,6 +272,7 @@ class UserUpdateByBrigadeForm(forms.ModelForm):
         label="Примечания",
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
+
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'email', 'position', 'phone_number',
@@ -273,13 +289,16 @@ class UserUpdateByBrigadeForm(forms.ModelForm):
         try:
             if self.instance:
                 self.fields['position'].initial = getattr(self.instance, 'position', self.instance.profile.position)
-                self.fields['phone_number'].initial = getattr(self.instance, 'phone_number', self.instance.profile.phone_number)
-                self.fields['brigade_start_date'].initial = getattr(self.instance, 'brigade_start_date', self.instance.profile.brigade_start_date)
-                self.fields['brigade_end_date'].initial = getattr(self.instance, 'brigade_end_date', self.instance.profile.brigade_end_date)
+                self.fields['phone_number'].initial = getattr(self.instance, 'phone_number',
+                                                              self.instance.profile.phone_number)
+                self.fields['brigade_start_date'].initial = getattr(self.instance, 'brigade_start_date',
+                                                                    self.instance.profile.brigade_start_date)
+                self.fields['brigade_end_date'].initial = getattr(self.instance, 'brigade_end_date',
+                                                                  self.instance.profile.brigade_end_date)
                 self.fields['status'].initial = getattr(self.instance, 'status', self.instance.profile.status)
                 self.fields['notes'].initial = getattr(self.instance, 'notes', self.instance.profile.notes)
-        except: pass
-
+        except:
+            pass
 
     def save(self, commit=True):
         user = super(UserUpdateByBrigadeForm, self).save(commit=False)
@@ -342,9 +361,10 @@ class UserUpdateStaffForm(forms.ModelForm):
         label="Примечания",
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
+
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'brigade','position', 'phone_number',
+        fields = ['first_name', 'last_name', 'email', 'brigade', 'position', 'phone_number',
                   'brigade_start_date', 'brigade_end_date', 'status', 'notes']
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control'}),
@@ -358,14 +378,17 @@ class UserUpdateStaffForm(forms.ModelForm):
         try:
             if self.instance:
                 self.fields['position'].initial = getattr(self.instance, 'position', self.instance.profile.position)
-                self.fields['phone_number'].initial = getattr(self.instance, 'phone_number', self.instance.profile.phone_number)
+                self.fields['phone_number'].initial = getattr(self.instance, 'phone_number',
+                                                              self.instance.profile.phone_number)
                 self.fields['brigade'].initial = getattr(self.instance, 'brigade', self.instance.profile.brigade)
-                self.fields['brigade_start_date'].initial = getattr(self.instance, 'brigade_start_date', self.instance.profile.brigade_start_date)
-                self.fields['brigade_end_date'].initial = getattr(self.instance, 'brigade_end_date', self.instance.profile.brigade_end_date)
+                self.fields['brigade_start_date'].initial = getattr(self.instance, 'brigade_start_date',
+                                                                    self.instance.profile.brigade_start_date)
+                self.fields['brigade_end_date'].initial = getattr(self.instance, 'brigade_end_date',
+                                                                  self.instance.profile.brigade_end_date)
                 self.fields['status'].initial = getattr(self.instance, 'status', self.instance.profile.status)
                 self.fields['notes'].initial = getattr(self.instance, 'notes', self.instance.profile.notes)
-        except: pass
-
+        except:
+            pass
 
     def save(self, commit=True):
         user = super(UserUpdateStaffForm, self).save(commit=False)
@@ -438,6 +461,7 @@ class WorkerActivityForm(forms.ModelForm):
             'work_type': forms.Select(attrs={'class': 'form-control'}),
             'brigade': forms.Select(attrs={'class': 'form-control'}),
         }
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['brigade'].queryset = Brigade.objects.order_by('name')

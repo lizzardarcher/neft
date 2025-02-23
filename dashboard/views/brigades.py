@@ -1,4 +1,5 @@
 from datetime import date
+import calendar
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -7,10 +8,10 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
 from django.shortcuts import  get_object_or_404, redirect
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView, TemplateView
+from django.views.generic import ListView, CreateView, UpdateView, DetailView, TemplateView
 from django.utils.timezone import datetime
 from dashboard.forms import BrigadeForm
-from dashboard.models import Brigade, Equipment, Manufacturer, WorkerActivity
+from dashboard.models import Brigade, Equipment, Manufacturer, WorkerActivity, BrigadeActivity
 from dashboard.utils.utils import get_days_in_month
 
 
@@ -75,7 +76,6 @@ class BrigadeDetailView(LoginRequiredMixin, SuccessMessageMixin, DetailView):
         context['manufacturers'] = Manufacturer.objects.all().order_by('name')
         return context
 
-
 class BrigadeStaffView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
     template_name = 'dashboard/brigades/brigade_staff.html'
 
@@ -124,6 +124,53 @@ class BrigadeStaffView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
 
 class BrigadeWorkView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
     template_name = 'dashboard/brigades/brigade_work.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        brigade_id = int(self.request.path.split('/')[-5])
+        year = int(self.kwargs.get('year', datetime.now().year))
+        month = int(self.kwargs.get('month', datetime.now().month))
+
+        brigade = get_object_or_404(Brigade, pk=brigade_id)
+        context['brigade'] = brigade
+
+        # Fetch activities for the selected month and brigade
+        activities = BrigadeActivity.objects.filter(
+            brigade=brigade,
+            date__year=year,
+            date__month=month
+        )
+
+        # Build the calendar structure (list of weeks, each a list of days)
+        cal = calendar.monthcalendar(year, month)  # Returns a list of lists
+        context['calendar'] = cal
+
+        # Pass the current year and month for display
+        context['year'] = year
+        context['month'] = month if month > 9 else '0' + str(month)
+        context['month_name'] = calendar.month_name[month]
+
+        # Generate links for previous and next months
+        prev_month = month - 1 if month > 1 else 12
+        prev_year = year if month > 1 else year - 1
+        next_month = month + 1 if month < 12 else 1
+        next_year = year if month < 12 else year + 1
+
+        context['prev_month_url'] = f'/dashboard/brigade/{brigade_id}/work/{prev_month}/{prev_year}'
+        context['next_month_url'] = f'/dashboard/brigade/{brigade_id}/work/{next_month}/{next_year}'
+
+        #Prepare dictionary with all activies grouped by days
+        activities_by_day = {}
+        for activity in activities:
+            day = activity.date.day
+            if day not in activities_by_day:
+                activities_by_day[day] = []
+            activities_by_day[day].append(activity)
+
+        context['activities_by_day'] = activities_by_day
+
+        return context
 
 class BrigadeIndexView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
     template_name = 'dashboard/brigades/index.html'

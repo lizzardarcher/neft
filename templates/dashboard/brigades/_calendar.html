@@ -1,0 +1,67 @@
+{% load custom_filters %}
+<style>
+    .calendar-table {
+        width: 100%;
+    }
+
+    .calendar-table th, .calendar-table td {
+        padding: 5px;
+        width: 50px;
+        height: 50px;
+    }
+
+    .activity-day {
+        background-color: #d4edda; /* Light green */
+    }
+
+    .activity-day a {
+        text-decoration: none;
+    }
+</style>
+
+<div class="container">
+
+
+    <div class="mb-3">
+        <h1>Brigade Calendar: {{ brigade.name }}</h1>
+        <h2>{{ month }} - {{ year }}</h2>
+        <a href="{{ prev_month_url }}" class="btn btn-primary"><<<</a>
+        <a href="{{ next_month_url }}" class="btn btn-primary">>>></a>
+    </div>
+
+
+    <table class="table table-bordered calendar-table">
+        <thead>
+        <tr>
+            <th>Sun</th>
+            <th>Mon</th>
+            <th>Tue</th>
+            <th>Wed</th>
+            <th>Thu</th>
+            <th>Fri</th>
+            <th>Sat</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for week in calendar %}
+            <tr>
+                {% for day in week %}
+                    {% if day == 0 %}
+                        <td></td>
+                    {% else %}
+                        <td {% if activities_by_day|get_item:day %}class="activity-day"{% endif %}>
+                            {{ day }}
+                            {% if activities_by_day|get_item:day %}
+                                <ul>
+                                    {% for activity in activities_by_day|get_item:day %}
+                                        <li>{{ activity.get_work_type_display }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </td>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>

@@ -1,5 +1,4 @@
 {% load custom_filters %}
-{% block content %}
     <div class="p-5 bg-light-subtle">
         <h3 class="mb-5">Сотрудники {{ brigade }}</h3>
         <table class="table table-bordered table-striped table-hover mb-5">
@@ -142,4 +141,3 @@
         </ul>
         <a href="{% url 'brigade_index' brigade.id %}" class="btn btn-secondary mb-2">Назад</a>
     </div>
-{% endblock content %}
