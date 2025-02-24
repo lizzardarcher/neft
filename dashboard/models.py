@@ -161,9 +161,8 @@ class WorkerActivity(models.Model):
 
 
 class WorkObject(models.Model):
-    name = models.CharField(max_length=200, unique=True, null=False, blank=False, verbose_name='Название объекта')
-    short_name = models.CharField(max_length=200, unique=True, null=False, blank=False,
-                                  verbose_name='Короткое название объекта')
+    name = models.CharField(max_length=200, unique=True, null=False, blank=False, verbose_name='Месторождение')
+    short_name = models.CharField(max_length=200, unique=True, null=False, blank=False, verbose_name='Название кустовой площадки')
 
     def __str__(self):
         return self.name

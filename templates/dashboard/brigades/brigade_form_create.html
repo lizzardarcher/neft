@@ -13,6 +13,14 @@
                 <label for="description">Описание:</label>
                 {{ form.description }}
             </div>
+            <div class="form-group">
+                <label for="description">Заказчик:</label>
+                {{ form.customer }}
+            </div>
+            <div class="form-group">
+                <label for="description">Примечание:</label>
+                {{ form.notes }}
+            </div>
             <hr>
             <button type="submit" class="btn btn-primary">Создать</button>
              <a href="{% url 'brigade_list' %}" class="btn btn-secondary">Отмена</a>

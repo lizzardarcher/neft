@@ -9,10 +9,12 @@ from dashboard.models import Brigade, Equipment, Document, Category, UserProfile
 class BrigadeForm(forms.ModelForm):
     class Meta:
         model = Brigade
-        fields = ['name', 'description']
+        fields = ['name', 'description', 'customer', 'notes']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control'}),
+            'customer': forms.TextInput(attrs={'class': 'form-control'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control'}),
         }
 
 
