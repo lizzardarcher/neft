@@ -208,6 +208,7 @@ class BrigadeTableTotalView(LoginRequiredMixin, SuccessMessageMixin, TemplateVie
             } for brigade in brigades
         ]
 
+        context['form'] = BrigadeActivityForm()
         context['brigade_data'] = brigade_data
         context['month']= month
         context['year']= year
@@ -261,6 +262,19 @@ class BrigadeUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'dashboard/brigades/brigade_form_update.html'
     form_class = BrigadeForm
     success_url = '/dashboard/brigades'
+
+    def get_success_message(self, cleaned_data):
+        return f"Бригада {cleaned_data['name']} Успешно обновлена!"
+
+
+class BrigadeUpdateFromTotalView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = Brigade
+    context_object_name = 'brigade'
+    template_name = 'dashboard/brigades/brigade_form_update.html'
+    form_class = BrigadeForm
+
+    def get_success_url(self):
+        return reverse('brigade_table_total')
 
     def get_success_message(self, cleaned_data):
         return f"Бригада {cleaned_data['name']} Успешно обновлена!"
