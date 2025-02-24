@@ -1,0 +1,43 @@
+{% load custom_filters %}
+<div class="p-2">
+    <div class="text-center">
+        <h1>Сводная таблица активности бригад</h1>
+        <h3>{{ month }}/{{ year }}</h3>
+        <div class="mb-3">
+            <a href="{{ previous_month_url }}" class="btn btn-secondary"> <<< </a>
+            <a href="{% url 'brigade_table_total' %}?month={{ current_month }}&year={{ current_year }}" class="btn btn-secondary"> <i class="fa fa-arrow-rotate-right"></i> </a>
+            <a href="{{ next_month_url }}" class="btn btn-secondary"> >>> </a>
+        </div>
+    </div>
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>Бригада</th>
+            <th>Заказчик</th>
+            <th>Примечания</th>
+            {% for day in days %}
+                <th>{{ day }}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+        <tbody>
+        {% for data in brigade_data %}
+            <tr>
+                <td>{% if data.brigade.name %}{{ data.brigade.name }}{% else %}---{% endif %}</td>
+                <td>{% if data.brigade.customer %}{{ data.brigade.customer }}{% else %}---{% endif %}</td>
+                <td>{% if data.brigade.notes %}{{ data.brigade.notes }}{% else %}---{% endif %}</td>
+                {% for ba in data.ba %}
+                    {% if ba.ba.work_type == '(ВНС) спуск хвостовика' %}
+                        <td class="border-light" style="background-color: #53c692"></td>
+                    {% else %}
+                        <td></td>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <div class="text-center">
+    <a class="btn btn-secondary" href="{% url 'dashboard' %}">Назад</a>
+</div>
+</div>

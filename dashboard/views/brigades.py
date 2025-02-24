@@ -7,7 +7,9 @@ from django.contrib.auth.models import User
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
-from django.shortcuts import  get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.views import View
 from django.views.generic import ListView, CreateView, UpdateView, DetailView, TemplateView
 from django.utils.timezone import datetime
 from dashboard.forms import BrigadeForm, BrigadeActivityForm
@@ -180,6 +182,58 @@ class BrigadeWorkView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
 
         return context
 
+
+class BrigadeTableTotalView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
+    template_name = 'dashboard/brigades/brigade_work_total.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        month = int(self.request.GET.get('month', datetime.now().month))
+        year = int(self.request.GET.get('year', datetime.now().year))
+        brigades = Brigade.objects.all().order_by('name')
+
+        if not 1 <= month <= 12:
+            month = datetime.now().month
+        if not 1900 <= year <= datetime.now().year + 10:
+            year = datetime.now().year
+
+        brigade_data = [
+            {
+                'brigade': brigade,
+                'total_ba':  BrigadeActivity.objects.filter(brigade=brigade, date__month=month, date__year=year).count(),
+                'ba': [
+                    {'day': day, 'ba': BrigadeActivity.objects.filter(brigade=brigade, date__month=month, date__year=year, date__day=day).last()}
+                    for day in get_days_in_month(month, year)
+                ],
+            } for brigade in brigades
+        ]
+
+        context['brigade_data'] = brigade_data
+        context['month']= month
+        context['year']= year
+        context['current_month'] = datetime.now().month
+        context['current_year'] = datetime.now().year
+        context['days'] = get_days_in_month(month, year)
+        context['brigades']= brigades
+        context['days_in_month']= calendar.monthrange(year, month)[1]
+        context['previous_month_url']= self.get_month_url(month, year, -1)
+        context['next_month_url']= self.get_month_url(month, year, 1)
+
+        return context
+
+    def get_month_url(self, month, year, offset):
+        new_month = month + offset
+        new_year = year
+
+        if new_month > 12:
+            new_month = 1
+            new_year += 1
+        elif new_month < 1:
+            new_month = 12
+            new_year -= 1
+
+        return reverse('brigade_table_total') + f'?month={new_month}&year={new_year}'
+
 class BrigadeIndexView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
     template_name = 'dashboard/brigades/index.html'
 
@@ -188,6 +242,8 @@ class BrigadeIndexView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
         context['month'] = datetime.now().strftime('%m')
         context['year'] = datetime.now().strftime('%Y')
         context['brigade'] = get_object_or_404(Brigade, pk=self.request.path.split('/')[-1])
+        context['staff_count'] = User.objects.filter(profile__brigade=context['brigade']).count()
+        context['equipment_count'] = Equipment.objects.filter(brigade=context['brigade']).count()
         return context
 
 class BrigadeCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):

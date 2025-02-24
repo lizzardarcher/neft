@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.contrib.messages.views import SuccessMessageMixin
@@ -21,6 +23,8 @@ class DashboardView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
         context['user_log'] = UserActionLog.objects.all()
         context['transfers'] = Transfer.objects.all()
         context['document'] = Document.objects.all()
+        context['month'] = datetime.now().strftime('%m')
+        context['year'] = datetime.now().strftime('%Y')
         return context
 
 

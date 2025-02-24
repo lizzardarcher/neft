@@ -3,42 +3,65 @@
 {% load static %}
 
 {% block content %}
-
-    <div class="container bg-light p-5 mt-5 rounded">
-
+    <div class="container-fluid">
         <div class="row">
-            <div class="col-md-4 mb-3">
-                <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
-                    <div class="card-header"><i class="fa fa-helmet-safety"></i> <b>Сотрудников:</b> <span
-                            class="badge bg-secondary-subtle text-dark">{{ staff.count }}</span></div>
-                    <div class="card-body">
-                        <h5 class="card-title">Персонал</h5>
-                    </div>
-                    <a href="{% url 'brigade_staff' brigade.id %}?month={{ month }}&year={{ year }}" class="m-1 btn btn-outline-info">Просмотреть</a>
+            <div class="col-md-2 p-3">
+                <div class="container p-5 mt-5 rounded">
+                    <h4>Персонал</h4>
+                    <p>Раздел содержит информацию о сотрудниках и табель нагрузки по каждому сотруднику относящемуся к данной бригаде.</p>
+                    <p>Руководитель может редактировать информацию о сотрудниках.</p>
                 </div>
             </div>
 
-            <div class="col-md-4 mb-3">
-                <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
-                    <div class="card-header"><i class="fa fa-hammer"></i> <b>Единиц:</b> <span
-                            class="badge bg-secondary-subtle text-dark">{{ staff.count }}</span></div>
-                    <div class="card-body">
-                        <h5 class="card-title">Оборудование</h5>
+            <div class="col-md-8">
+                <div class="container bg-light p-5 mt-5 rounded">
+                    <h2 class="text-center mt-5 mb-5">{{ brigade }}</h2>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
+                                <div class="card-header"><i class="fa fa-helmet-safety"></i> <b>Сотрудников:</b> <span
+                                        class="badge bg-secondary-subtle text-dark">{{ staff_count }}</span></div>
+                                <div class="card-body">
+                                    <h5 class="card-title">Персонал</h5>
+                                </div>
+                                <a href="{% url 'brigade_staff' brigade.id %}?month={{ month }}&year={{ year }}"
+                                   class="m-1 btn btn-outline-info">Просмотреть</a>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
+                                <div class="card-header"><i class="fa fa-toolbox"></i> <b>Единиц:</b> <span
+                                        class="badge bg-secondary-subtle text-dark">{{ equipment_count }}</span></div>
+                                <div class="card-body">
+                                    <h5 class="card-title">Оборудование</h5>
+                                </div>
+                                <a href="{% url 'brigade_detail' brigade.id %}" class="m-1 btn btn-outline-info">Просмотреть</a>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
+                                <div class="card-header"><i class="fa fa-hammer"></i> <b>Работа бригады</b></div>
+                                <div class="card-body">
+                                    <h5 class="card-title">Работа</h5>
+                                </div>
+                                <a href="{% url 'brigade_work' brigade.id month year %}"
+                                   class="m-1 btn btn-outline-info">Просмотреть</a>
+                            </div>
+                        </div>
                     </div>
-                    <a href="{% url 'brigade_detail' brigade.id %}" class="m-1 btn btn-outline-info">Просмотреть</a>
+                    <a class="btn btn-outline-secondary" href="{% url 'brigade_list' %}">Назад</a>
                 </div>
             </div>
 
-            <div class="col-md-4 mb-3">
-                <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
-                    <div class="card-header"><i class="fa fa-tractor"></i> <b>Работа бригады</b></div>
-                    <div class="card-body">
-                        <h5 class="card-title">Работа</h5>
-                    </div>
-                    <a href="{% url 'brigade_work' brigade.id month year %}" class="m-1 btn btn-outline-info">Просмотреть</a>
+            <div class="col-md-2 p-3">
+                <div class="container p-5 mt-5 rounded">
+                    <h4>Работа бригады</h4>
+                    <p>Раздел содержит информацию о работе бригады.</p>
+                    <p>Руководитель может редактировать информацию о работе бригады.</p>
                 </div>
             </div>
-
         </div>
     </div>
 {% endblock %}

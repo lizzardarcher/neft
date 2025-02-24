@@ -118,3 +118,7 @@ def has_perm_in_group(user, perm_code):
         pass
 
     return False
+
+@register.filter(name='range')
+def filter_range(end):
+   return range(1, end + 1)  # Include the end value

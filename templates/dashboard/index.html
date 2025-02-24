@@ -5,8 +5,8 @@
 {% block content %}
 
     <div class="container bg-light p-5 mt-5 rounded">
-        <h1>Система учета оборудования</h1>
-        <p>Добро пожаловать, {{ user.username }}!</p>
+        <h1>Система учета Rusgeolog.ru</h1>
+        <p>Добро пожаловать, {{ user.get_full_name }}!</p>
 
         {% if user|has_perm_in_group:"Dashboard.view_brigade" %}
             <div class="row">
@@ -79,9 +79,21 @@
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
                     <div class="card-header"><i class="fa fa-user"></i> <b>Табель</b></div>
                     <div class="card-body">
-                        <h5 class="card-title">Рабочая нагрузка</h5>
+                        <h5 class="card-title">Сводная таблица</h5>
                     </div>
                     <a href="{% url 'staff_table_total' %}" class="m-1 btn btn-outline-info">Просмотреть</a>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if user|has_group:"Руководитель" or user|has_group:"Администратор" %}
+            <div class="col-md-4 mb-3">
+                <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
+                    <div class="card-header"><i class="fa fa-users-gear"></i> <b>Работа бригад</b></div>
+                    <div class="card-body">
+                        <h5 class="card-title">Сводная таблица</h5>
+                    </div>
+                    <a href="{% url 'brigade_table_total' %}?month={{ month }}&year={{ year }}" class="m-1 btn btn-outline-info">Просмотреть</a>
                 </div>
             </div>
         {% endif %}

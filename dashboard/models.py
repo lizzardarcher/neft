@@ -187,6 +187,7 @@ class BrigadeActivity(models.Model):
     date = models.DateField(auto_now_add=False, auto_now=False, null=False, blank=False, verbose_name='Дата')
     work_type = models.CharField(max_length=100, null=False, blank=False, default='', choices=BRIGADE_ACTIVITY_CHOICES,
                                  verbose_name='Тип работы')
+    work_object = models.ForeignKey(WorkObject, on_delete=models.SET_NULL, null=True, blank=True, default='', verbose_name='Объект работы')
 
     def __str__(self):
         return self.brigade.name
