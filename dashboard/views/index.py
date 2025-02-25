@@ -241,3 +241,7 @@ class BrigadeActivityExcelView(LoginRequiredMixin, View):
         workbook.save(response)
 
         return response
+
+
+class WorkerActivityExcelView(LoginRequiredMixin, View):
+    pass

@@ -1,0 +1,11 @@
+<div class="col-md-2">
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title m-4">Excel</h5>
+        </div>
+        <div class="card-body">
+            <p>Выгрузить данные за {{ month }}-{{ year }}</p>
+            <a class="btn btn-success" href="{% url 'worker_activity_excel' %}?month={{ month }}&year={{ year }}"><i class="fa fa-file-excel"></i> Excel</a>
+        </div>
+    </div>
+</div>

@@ -300,16 +300,24 @@ def brigade_activity_create(request, brigade_id):
     except:
         work_object = None
     if brigade and work_type and date:
-        brigade_activity, created = BrigadeActivity.objects.update_or_create(
+        brigade_activity = BrigadeActivity.objects.filter(
             brigade=brigade,
-            date=date,
-            work_object=work_object,
-            defaults={'work_type': work_type},
-        )
-        if created:
-            messages.success(request, f'Активность успешно создана!')
-        else:
+            date=date,).first()
+        if brigade_activity:
+            brigade_activity.brigade=brigade
+            brigade_activity.date=date
+            brigade_activity.work_object=work_object
+            brigade_activity.work_type=work_type
+            brigade_activity.save()
             messages.success(request, f'Активность успешно обновлена!')
+        else:
+            BrigadeActivity.objects.create(
+                brigade=brigade,
+                date=date,
+                work_object=work_object,
+                work_type=work_type,
+            )
+            messages.success(request, f'Активность успешно создана!')
         return redirect(request.META.get('HTTP_REFERER'))
     else:
         if form.is_valid():
