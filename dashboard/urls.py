@@ -18,6 +18,8 @@ urlpatterns = [
     path('brigades/<int:pk>/update/', brigades.BrigadeUpdateView.as_view(), name='brigade_update'),
     path('brigades/<int:pk>/brigade_update_from_total/', brigades.BrigadeUpdateFromTotalView.as_view(), name='brigade_update_from_total'),
     path('brigades/<int:brigade_id>/delete/', brigades.brigade_delete, name='brigade_delete'),
+    path('brigades/object_create/', brigades.work_object_create, name='work_object_create'),
+    path('brigades/<int:work_object_id>/work_object_delete', brigades.work_object_delete, name='work_object_delete'),
 
     path('categories/', categories.CategoryListView.as_view(), name='category_list'),
     path('categories/create/', categories.CategoryCreateView.as_view(), name='category_create'),

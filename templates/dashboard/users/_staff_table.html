@@ -88,10 +88,10 @@
 
         <h2 class="text-center mt-5">
             <a href="?month={{ prev_month }}&year={{ prev_year }}"
-               class="btn btn-outline-secondary"><<<</a>
-            Табель {{ month }}-{{ year }}
+               class="btn btn-outline-secondary"><<< {{ prev_month }}-{{ prev_year }}</a>
+            Табель учёта работы {{ month }}/{{ year }}
             <a href="?month={{ next_month }}&year={{ next_year }}"
-               class="btn btn-outline-secondary">>>></a>
+               class="btn btn-outline-secondary">{{ next_month }}-{{ next_year }} >>></a>
         </h2>
         <table class="table table-bordered table-striped table-responsive">
 
@@ -136,12 +136,32 @@
             {% endfor %}
             </tbody>
         </table>
-        <ul>
-            <li>Я - Обычная работа</li>
-            <li>Г - Работа по геологии</li>
-            <li>О - Обслуживание</li>
-            <li>С - Работа стажера</li>
-        </ul>
-        <a href="{% url 'dashboard' %}" class="btn btn-secondary mb-2">Назад</a>
+        <div class="row">
+            <div class="card col-md-3 m-1">
+                <div class="card-header">
+                    <h5 class="card-title">Условные обозначения</h5>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li><span class="p-3 m-2 text-dark badge bg-warning">Я - Обычная работа</span></li>
+                        <li><span class="p-3 m-2 text-dark badge bg-warning-subtle">Г - Работа по геологии</span></li>
+                        <li><span class="p-3 m-2 text-dark badge bg-info-subtle">О - Обслуживание</span></li>
+                        <li><span class="p-3 m-2 text-dark badge bg-success-subtle">С - Работа стажера</span></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card col-md-2 m-1">
+                <div class="card-header">
+                    <h5 class="card-title">Добавить активность</h5>
+                </div>
+                <div class="card-body">
+                    <p>Чтобы добавить вид активности для работника, нажмите кнопку <i
+                            class="btn btn-outline-secondary fa fa-add"></i> в таблице напротив этого работника.</p>
+                </div>
+            </div>
+            <div class="text-center m-2 ">
+                <a class="btn btn-secondary p-3" href="{% url 'dashboard' %}">Назад</a>
+            </div>
+        </div>
     </div>
 {% endblock content %}

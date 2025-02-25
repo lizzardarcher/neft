@@ -12,8 +12,8 @@ from django.urls import reverse
 from django.views import View
 from django.views.generic import ListView, CreateView, UpdateView, DetailView, TemplateView
 from django.utils.timezone import datetime
-from dashboard.forms import BrigadeForm, BrigadeActivityForm
-from dashboard.models import Brigade, Equipment, Manufacturer, WorkerActivity, BrigadeActivity
+from dashboard.forms import BrigadeForm, BrigadeActivityForm, WorkObjectForm
+from dashboard.models import Brigade, Equipment, Manufacturer, WorkerActivity, BrigadeActivity, WorkObject
 from dashboard.utils.utils import get_days_in_month
 
 
@@ -137,7 +137,8 @@ class BrigadeWorkView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
         context = super().get_context_data(**kwargs)
 
         context['form'] = BrigadeActivityForm()
-
+        context['work_object_form'] = WorkObjectForm()
+        context['work_objects'] = WorkObject.objects.all().order_by('name')
         brigade_id = int(self.request.path.split('/')[-5])
         year = int(self.kwargs.get('year', datetime.now().year))
         month = int(self.kwargs.get('month', datetime.now().month))
@@ -209,6 +210,8 @@ class BrigadeTableTotalView(LoginRequiredMixin, SuccessMessageMixin, TemplateVie
         ]
 
         context['form'] = BrigadeActivityForm()
+        context['work_object_form'] = WorkObjectForm()
+        context['work_objects'] = WorkObject.objects.all().order_by('name')
         context['brigade_data'] = brigade_data
         context['month']= month
         context['year']= year
@@ -288,20 +291,25 @@ def brigade_delete(request, brigade_id):
 
 
 def brigade_activity_create(request, brigade_id):
-    brigade = get_object_or_404(Brigade, id=brigade_id)
     form = BrigadeActivityForm(request.POST)
+    brigade = get_object_or_404(Brigade, id=brigade_id)
     date = request.POST.get('date')
     work_type = request.POST.get('work_type')
+    try:
+        work_object = get_object_or_404(WorkObject, id=request.POST.get('work_object'))
+    except:
+        work_object = None
     if brigade and work_type and date:
         brigade_activity, created = BrigadeActivity.objects.update_or_create(
             brigade=brigade,
             date=date,
-            defaults={'work_type': work_type}
+            work_object=work_object,
+            defaults={'work_type': work_type},
         )
         if created:
-            messages.success(request, 'Активность успешно создана!')
+            messages.success(request, f'Активность успешно создана!')
         else:
-            messages.success(request, 'Активность успешно обновлена!')
+            messages.success(request, f'Активность успешно обновлена!')
         return redirect(request.META.get('HTTP_REFERER'))
     else:
         if form.is_valid():
@@ -312,3 +320,20 @@ def brigade_activity_create(request, brigade_id):
         else:
             messages.error(request, 'Произошла ошибка при создании активности!')
         return redirect(request.META.get('HTTP_REFERER'))
+
+def work_object_create(request):
+    if request.method == 'POST':
+        form = WorkObjectForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Объект успешно создан!')
+            return redirect(request.META.get('HTTP_REFERER'))
+        else:
+            messages.error(request, 'Произошла ошибка при создании объекта!')
+            return redirect(request.META.get('HTTP_REFERER'))
+
+def work_object_delete(request, work_object_id):
+    work_object = get_object_or_404(WorkObject, id=work_object_id)
+    work_object.delete()
+    messages.success(request, 'Объект успешно удален!')
+    return redirect(request.META.get('HTTP_REFERER'))

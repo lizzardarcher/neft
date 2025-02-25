@@ -17,6 +17,7 @@
     .activity-day a {
         text-decoration: none;
     }
+
     .li {
         padding: 5px;
         margin: 5px;
@@ -27,7 +28,7 @@
 <div class="mb-3">
     <h1>Календарь работ:</h1>
     <h2> {{ brigade.name }}</h2>
-    <h2>{{ month }} - {{ year }}</h2>
+    <h2>{{ month }}/{{ year }}</h2>
     <a href="{{ prev_month_url }}" class="btn btn-primary"><<<</a>
     <a href="{{ next_month_url }}" class="btn btn-primary">>>></a>
     <button type="button" class="btn btn-outline-success" data-toggle="modal"
@@ -80,32 +81,43 @@
                         {% if activities_by_day|get_item:day %}
                             <ul>
                                 {% for activity in activities_by_day|get_item:day %}
-                                    {% if activity.get_work_type_display == '(ЗБС) Бурение'%}
-                                        <li style="background-color: #e4c89c" class="li rounded">{{ activity.get_work_type_display }}</li>
-                                    {% elif activity.get_work_type_display == '(ЗБС) бурение горизонта'%}
-                                        <li style="background-color: #d6ab8f" class="li rounded">{{ activity.get_work_type_display }}</li>
-                                    {% elif activity.get_work_type_display == '(ЗБС) шаблонирование + ГИС'%}
-                                        <li style="background-color: #ae7e59" class="li rounded">{{ activity.get_work_type_display }}</li>
-                                    {% elif activity.get_work_type_display == '(ЗБС) спуск хвостовика'%}
-                                        <li style="background-color: #673412" class="li rounded">{{ activity.get_work_type_display }}</li>
+                                    {% if activity.get_work_type_display == '(ЗБС) Бурение' %}
+                                        <li style="background-color: #e4c89c"
+                                            class="li rounded">{{ activity.work_object.short_name }}</li>
+                                    {% elif activity.get_work_type_display == '(ЗБС) бурение горизонта' %}
+                                        <li style="background-color: #d6ab8f"
+                                            class="li rounded">{{ activity.work_object.short_name }}</li>
+                                    {% elif activity.get_work_type_display == '(ЗБС) шаблонирование + ГИС' %}
+                                        <li style="background-color: #ae7e59"
+                                            class="li rounded">{{ activity.work_object.short_name }}</li>
+                                    {% elif activity.get_work_type_display == '(ЗБС) спуск хвостовика' %}
+                                        <li style="background-color: #673412"
+                                            class="li rounded">{{ activity.work_object.short_name }}</li>
 
-                                    {% elif activity.get_work_type_display == '(ВНС) бурение кондуктора'%}
-                                        <li style="background-color: #bfe3e2" class="li rounded">{{ activity.get_work_type_display }}</li>
-                                    {% elif activity.get_work_type_display == '(ВНС) бурение ЭК'%}
-                                        <li style="background-color: #29b4c6" class="li rounded">{{ activity.get_work_type_display }}</li>
-                                    {% elif activity.get_work_type_display == '(ВНС) бурение горизонта'%}
-                                        <li style="background-color: #168898" class="li rounded">{{ activity.get_work_type_display }}</li>
-                                    {% elif activity.get_work_type_display == '(ВНС) спуск хвостовика'%}
-                                        <li style="background-color: #0e5e7a" class="li rounded">{{ activity.get_work_type_display }}</li>
+                                    {% elif activity.get_work_type_display == '(ВНС) бурение кондуктора' %}
+                                        <li style="background-color: #bfe3e2"
+                                            class="li rounded">{{ activity.work_object.short_name }}</li>
+                                    {% elif activity.get_work_type_display == '(ВНС) бурение ЭК' %}
+                                        <li style="background-color: #29b4c6"
+                                            class="li rounded">{{ activity.work_object.short_name }}</li>
+                                    {% elif activity.get_work_type_display == '(ВНС) бурение горизонта' %}
+                                        <li style="background-color: #168898"
+                                            class="li rounded">{{ activity.work_object.short_name }}</li>
+                                    {% elif activity.get_work_type_display == '(ВНС) спуск хвостовика' %}
+                                        <li style="background-color: #0e5e7a"
+                                            class="li rounded">{{ activity.work_object.short_name }}</li>
 
-                                    {% elif activity.get_work_type_display == 'Переезд'%}
-                                        <li style="background-color: #399c3a" class="li rounded">{{ activity.get_work_type_display }}</li>
-                                    {% elif activity.get_work_type_display == 'Простой'%}
-                                        <li style="background-color: #faf8f9" class="li rounded">{{ activity.get_work_type_display }}</li>
-                                    {% elif activity.get_work_type_display == 'Авария'%}
-                                        <li style="background-color: #bf423f" class="li rounded">{{ activity.get_work_type_display }}</li>
+                                    {% elif activity.get_work_type_display == 'Переезд' %}
+                                        <li style="background-color: #399c3a"
+                                            class="li rounded">{{ activity.work_object.short_name }}</li>
+                                    {% elif activity.get_work_type_display == 'Простой' %}
+                                        <li style="background-color: #faf8f9"
+                                            class="li rounded">{{ activity.work_object.short_name }}</li>
+                                    {% elif activity.get_work_type_display == 'Авария' %}
+                                        <li style="background-color: #bf423f"
+                                            class="li rounded">{{ activity.work_object.short_name }}</li>
                                     {% else %}
-                                        <li>{{ activity.get_work_type_display }}</li>
+                                        <li>{{ activity.work_object.short_name }}</li>
                                     {% endif %}
                                 {% endfor %}
                             </ul>
@@ -117,6 +129,10 @@
     {% endfor %}
     </tbody>
 </table>
-{% include 'dashboard/brigades/conditional_signs.html' %}
-
-<a class="btn btn-sm btn-outline-secondary mt-2 mb-2" href="{% url 'brigade_index' brigade.id %}">НАЗАД</a>
+<div class="row">
+    {% include 'dashboard/brigades/components/conditional_signs.html' %}
+    {% include 'dashboard/brigades/components/work_objects.html' %}
+</div>
+<div class="text-center m-2">
+    <a class="btn btn-secondary p-3" href="{% url 'brigade_index' brigade.id %}">НАЗАД</a>
+</div>

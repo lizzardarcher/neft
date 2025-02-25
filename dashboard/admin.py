@@ -43,11 +43,12 @@ class ManufacturerAdmin(admin.ModelAdmin):
 class WorkerActivityAdmin(admin.ModelAdmin):
     list_display = ('user', 'brigade', 'date', 'work_type')
     ordering = ('date', 'user')
+
 @admin.register(WorkObject)
 class WorkObjectAdmin(admin.ModelAdmin):
-    ...
+    list_display = ('short_name', 'name')
 
 @admin.register(BrigadeActivity)
 class BrigadeActivityAdmin(admin.ModelAdmin):
-    ...
+    list_display = ('brigade', 'date', 'work_type', 'work_object')
 

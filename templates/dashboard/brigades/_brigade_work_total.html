@@ -31,37 +31,34 @@
                 {% for ba in data.ba %}
                     {% if ba.ba.work_type == '(ЗБС) Бурение' %}
                         <td class="border-light" style="background-color: #e4c89c">
-                            {% if ba.ba.work_object %}{{ ba.ba.work_object }}{% endif %}</td>
+                            {% if ba.ba.work_object %}({{ ba.ba.work_object.short_name }}){% endif %}</td>
                     {% elif ba.ba.work_type == '(ЗБС) бурение горизонта' %}
                         <td class="border-light" style="background-color: #d6ab8f">
-                            {% if ba.ba.work_object %}{{ ba.ba.work_object }}{% endif %}</td>
+                            {% if ba.ba.work_object %}({{ ba.ba.work_object.short_name }}){% endif %}</td>
                     {% elif ba.ba.work_type == '(ЗБС) шаблонирование + ГИС' %}
                         <td class="border-light" style="background-color: #ae7e59">
-                            {% if ba.ba.work_object %}{{ ba.ba.work_object }}{% endif %}</td>
+                            {% if ba.ba.work_object %}({{ ba.ba.work_object.short_name }}){% endif %}</td>
                     {% elif ba.ba.work_type == '(ЗБС) спуск хвостовика' %}
                         <td class="border-light" style="background-color: #673412">
-                            {% if ba.ba.work_object %}{{ ba.ba.work_object }}{% endif %}</td>
+                            {% if ba.ba.work_object %}({{ ba.ba.work_object.short_name }}){% endif %}</td>
                     {% elif ba.ba.work_type == '(ВНС) бурение кондуктора' %}
                         <td class="border-light" style="background-color: #bfe3e2">
-                            {% if ba.ba.work_object %}{{ ba.ba.work_object }}{% endif %}</td>
+                            {% if ba.ba.work_object %}({{ ba.ba.work_object.short_name }}){% endif %}</td>
                     {% elif ba.ba.work_type == '(ВНС) бурение ЭК' %}
                         <td class="border-light" style="background-color: #29b4c6">
-                            {% if ba.ba.work_object %}{{ ba.ba.work_object }}{% endif %}</td>
+                            {% if ba.ba.work_object %}({{ ba.ba.work_object.short_name }}){% endif %}</td>
                     {% elif ba.ba.work_type == '(ВНС) бурение горизонта' %}
                         <td class="border-light" style="background-color: #168898">
-                            {% if ba.ba.work_object %}{{ ba.ba.work_object }}{% endif %}</td>
+                            {% if ba.ba.work_object %}({{ ba.ba.work_object.short_name }}){% endif %}</td>
                     {% elif ba.ba.work_type == '(ВНС) спуск хвостовика' %}
                         <td class="border-light" style="background-color: #0e5e7a">
-                            {% if ba.ba.work_object %}{{ ba.ba.work_object }}{% endif %}</td>
+                            {% if ba.ba.work_object %}({{ ba.ba.work_object.short_name }}){% endif %}</td>
                     {% elif ba.ba.work_type == 'Переезд' %}
-                        <td class="border-light" style="background-color: #399c3a">
-                            {% if ba.ba.work_object %}{{ ba.ba.work_object }}{% endif %}</td>
+                        <td class="border-light" style="background-color: #399c3a"></td>
                     {% elif ba.ba.work_type == 'Простой' %}
-                        <td class="border-light" style="background-color: #b4b4b4">
-                            {% if ba.ba.work_object %}{{ ba.ba.work_object }}{% endif %}</td>
+                        <td class="border-light" style="background-color: #dcd6d9"></td>
                     {% elif ba.ba.work_type == 'Авария' %}
-                        <td class="border-light" style="background-color: #ff0000">
-                            {% if ba.ba.work_object %}{{ ba.ba.work_object }}{% endif %}</td>
+                        <td class="border-light" style="background-color: #ff0000"></td>
                     {% else %}
                         <td class="" style="background-color: #ffffff"></td>
                     {% endif %}
@@ -69,7 +66,7 @@
                 <td>
                     <a href="{% url 'brigade_update_from_total' data.brigade.id %}" class="btn btn-outline-warning"><i
                             class="fa fa-edit"></i></a>
-                    <button type="button" class="btn btn-outline-success" data-toggle="modal"
+                    <button type="button" class="btn btn-outline-secondary" data-toggle="modal"
                             data-target="#wa-modal{{ data.brigade.id }}">
                         <i class="fa fa-add"></i>
                     </button>
@@ -97,7 +94,21 @@
         {% endfor %}
         </tbody>
     </table>
-{% include 'dashboard/brigades/conditional_signs.html' %}
+    <div class="row">
+        {% include 'dashboard/brigades/components/conditional_signs.html' %}
+        {% include 'dashboard/brigades/components/work_objects.html' %}
+        <div class="col-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Добавить активность бригады</h5>
+                </div>
+                <div class="card-body">
+                    <p>При нажатии на кнопку <i class="btn btn-outline-secondary fa fa-add"></i> в таблице напротив
+                        этой бригады, откроется модальное окно для добавления активности.</p>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="text-center m-2 ">
         <a class="btn btn-secondary p-3" href="{% url 'dashboard' %}">Назад</a>
     </div>

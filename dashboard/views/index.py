@@ -63,7 +63,7 @@ class BrigadeCSVExportView(BaseExportView):
     """Выгрузка данных бригады в CSV."""
     model = Brigade
     filename = 'brigades.csv'
-    header = ['id', 'name', 'description']
+    header = ['id', 'name', 'description', 'customer', 'notes']
 
     def get(self, request):
         response = HttpResponse(content_type='text/csv')
@@ -79,7 +79,7 @@ class BrigadeExcelExportView(BaseExportView):
     """Выгрузка данных бригады в Excel."""
     model = Brigade
     filename = 'brigades.xlsx'
-    header = ['id', 'name', 'description']
+    header = ['id', 'name', 'description', 'customer', 'notes']
 
     def get(self, request):
         workbook = Workbook()
@@ -98,7 +98,7 @@ class EquipmentCSVExportView(BaseExportView):
     """Выгрузка данных оборудования в CSV."""
     model = Equipment
     filename = 'equipments.csv'
-    header = ['id', 'serial', 'name', 'category', 'brigade', 'condition', 'date_release', 'date_exploitation']
+    header = ['id', 'serial', 'name', 'category', 'brigade', 'condition', 'date_release', 'date_exploitation', 'manufacturer', 'certificate_start', 'certificate_end']
 
     def get_data(self):
         queryset = self.get_queryset()
@@ -112,7 +112,10 @@ class EquipmentCSVExportView(BaseExportView):
                 obj.brigade.name,
                 obj.get_condition_display(),
                 obj.date_release,
-                obj.date_exploitation
+                obj.date_exploitation,
+                obj.manufacturer,
+                obj.certificate_start,
+                obj.certificate_end
             ]
             data.append(row)
         return data
@@ -130,7 +133,7 @@ class EquipmentExcelExportView(BaseExportView):
     """Выгрузка данных оборудования в Excel."""
     model = Equipment
     filename = 'equipments.xlsx'
-    header = ['id', 'serial', 'name', 'category', 'brigade', 'condition', 'date_release', 'date_exploitation']
+    header = ['id', 'serial', 'name', 'category', 'brigade', 'condition', 'date_release', 'date_exploitation', 'manufacturer', 'certificate_start', 'certificate_end']
 
     def get_data(self):
         queryset = self.get_queryset()
@@ -144,7 +147,10 @@ class EquipmentExcelExportView(BaseExportView):
                 obj.brigade.name,
                 obj.get_condition_display(),
                 obj.date_release,
-                obj.date_exploitation
+                obj.date_exploitation,
+                obj.manufacturer,
+                obj.certificate_start,
+                obj.certificate_end
             ]
             data.append(row)
         return data

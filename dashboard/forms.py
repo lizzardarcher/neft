@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.models import Group, Permission
 
 from dashboard.models import Brigade, Equipment, Document, Category, UserProfile, Manufacturer, WorkerActivity, \
-    BrigadeActivity
+    BrigadeActivity, WorkObject
 
 
 class BrigadeForm(forms.ModelForm):
@@ -487,3 +487,12 @@ class BrigadeActivityForm(forms.ModelForm):
         brigade_activity = super(BrigadeActivityForm, self).save(commit=False)
         brigade_activity.save()
         return brigade_activity
+
+class WorkObjectForm(forms.ModelForm):
+    class Meta:
+        model = WorkObject
+        fields = ('name', 'short_name')
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'short_name': forms.TextInput(attrs={'class': 'form-control'}),
+        }
