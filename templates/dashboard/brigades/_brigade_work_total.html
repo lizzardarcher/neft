@@ -9,6 +9,7 @@
                class="btn btn-secondary"> <i class="fa fa-arrow-rotate-right"></i> </a>
             <a href="{{ next_month_url }}" class="btn btn-secondary"> >>> </a>
         </div>
+        <a class="btn btn-success" href="{% url 'brigade_activity_excel' %}?month={{ month }}&year={{ year }}"><i class="fa fa-file-excel"></i></a>
     </div>
     <table class="table table-bordered">
         <thead class="table-secondary">

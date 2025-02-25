@@ -68,6 +68,8 @@ urlpatterns = [
     path('brigade/export/csv/', index.BrigadeCSVExportView.as_view(), name='brigade_export_csv'),
     path('brigade/export/excel/', index.BrigadeExcelExportView.as_view(), name='brigade_export_excel'),
 
+    path('brigade/activity/excel', index.BrigadeActivityExcelView.as_view(), name='brigade_activity_excel'),
+
     path('equipment/export/csv/', index.EquipmentCSVExportView.as_view(), name='equipment_export_csv'),
     path('equipment/export/excel/', index.EquipmentExcelExportView.as_view(), name='equipment_export_excel'),
 

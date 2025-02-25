@@ -165,7 +165,7 @@ class WorkObject(models.Model):
     short_name = models.CharField(max_length=200, unique=False, null=False, blank=False, verbose_name='Название кустовой площадки')
 
     def __str__(self):
-        return self.name + ' (' + self.short_name + ')'
+        return f'{self.short_name}'
 
 
 class BrigadeActivity(models.Model):
