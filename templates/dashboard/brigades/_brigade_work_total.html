@@ -9,7 +9,6 @@
                class="btn btn-secondary"> <i class="fa fa-arrow-rotate-right"></i> </a>
             <a href="{{ next_month_url }}" class="btn btn-secondary"> >>> </a>
         </div>
-        <a class="btn btn-success" href="{% url 'brigade_activity_excel' %}?month={{ month }}&year={{ year }}"><i class="fa fa-file-excel"></i></a>
     </div>
     <table class="table table-bordered">
         <thead class="table-secondary">
@@ -97,18 +96,9 @@
     </table>
     <div class="row">
         {% include 'dashboard/brigades/components/conditional_signs.html' %}
-        {% include 'dashboard/brigades/components/work_objects.html' %}
-        <div class="col-md-2">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title">Добавить активность бригады</h5>
-                </div>
-                <div class="card-body">
-                    <p>При нажатии на кнопку <i class="btn btn-outline-secondary fa fa-add"></i> в таблице напротив
-                        этой бригады, откроется модальное окно для добавления активности.</p>
-                </div>
-            </div>
-        </div>
+        {% include 'dashboard/brigades/components/work_objects_edit.html' %}
+        {% include 'dashboard/brigades/components/info_add_brigade_activity.html' %}
+        {% include 'dashboard/brigades/components/info_download_excel.html' %}
     </div>
     <div class="text-center m-2 ">
         <a class="btn btn-secondary p-3" href="{% url 'dashboard' %}">Назад</a>

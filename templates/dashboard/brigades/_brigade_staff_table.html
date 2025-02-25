@@ -133,18 +133,9 @@
         {% endfor %}
         </tbody>
     </table>
-    <div class="card col-md-3 m-1">
-        <div class="card-header">
-            <h5 class="card-title">Условные обозначения</h5>
-        </div>
-        <div class="card-body">
-            <ul>
-                <li><span class="p-3 m-2 text-dark badge bg-warning">Я - Обычная работа</span></li>
-                <li><span class="p-3 m-2 text-dark badge bg-warning-subtle">Г - Работа по геологии</span></li>
-                <li><span class="p-3 m-2 text-dark badge bg-info-subtle">О - Обслуживание</span></li>
-                <li><span class="p-3 m-2 text-dark badge bg-success-subtle">С - Работа стажера</span></li>
-            </ul>
-        </div>
+    <div class="row">
+        {% include 'dashboard/users/components/conditional_signs.html' %}
+        {% include 'dashboard/users/components/info_add_user_activity.html' %}
     </div>
     <div class="text-center p-3 m-2">
         <a href="{% url 'brigade_index' brigade.id %}" class="btn btn-secondary mb-2">Назад</a>
