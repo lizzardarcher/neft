@@ -42,10 +42,7 @@ class EquipmentListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
             else:
                 queryset = queryset.order_by(sort_by)
         if category:
-            if sort_by:
-                queryset = queryset.filter(category__name=category).order_by(f'{sort_by}name')
-            else:
-                queryset = queryset.filter(category__name=category).order_by(f'name')
+            queryset = queryset.filter(category__name=category).order_by(f'name')
         return queryset
 
 
