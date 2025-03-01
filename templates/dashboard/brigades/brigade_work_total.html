@@ -44,5 +44,20 @@
                 zeroRecords: 'Nothing found - sorry'
             },
         });
+
+
+    </script>
+
+    <script>
+        $(function () {
+            $("#id_name").autocomplete({
+                source: "{% url 'get_locations' %}",
+                minLength: 2,
+                select: function (event, ui) {
+                    $("#id_name").val(ui.item.value);
+                    return false;
+                }
+            });
+        });
     </script>
 {% endblock extrascript %}

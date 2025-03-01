@@ -5,20 +5,36 @@
         </div>
         <div class="card-body">
             <div class="card-text">
-                <ol>
+                <table id="wo_table" class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>№ Скважины</th>
+                        <th>№ Куста</th>
+                        <th>Месторождение</th>
+                        <th>Действия</th>
+                    </tr>
+                    </thead>
+                    <tbody>
                     {% for obj in work_objects %}
-                        <li>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="bg-info-subtle rounded p-1">{{ obj.name }} ({{ obj.short_name }})</span>
+                        <tr>
+                            <td>{{ obj.hole }}</td>
+                            <td>{{ obj.short_name }}</td>
+                            <td>{{ obj.name }}</td>
+                            <td>
+                                <a class="btn btn-outline-warning" href="{% url 'work_object_update' obj.id %}">
+                                    <i class="fa fa-edit"></i>
+                                </a>
                                 <a onclick="return confirm('Вы уверены, что хотите удалить объект {{ obj.name }} ({{ obj.short_name }})?');"
                                    class="btn btn-outline-danger" href="{% url 'work_object_delete' obj.id %}">
                                     <i class="fa fa-trash"></i>
                                 </a>
-                            </div>
-                        </li><hr>
+                            </td>
+                        </tr>
                     {% endfor %}
-                </ol>
+                    </tbody>
+                </table>
             </div>
+
             <button type="button" class="btn btn-outline-success" data-toggle="modal"
                     data-target="#wa-modal_work_object">
                 <i class="fa fa-add"></i> Добавить объект

@@ -35,10 +35,6 @@
         {% endfor %}
         </tbody>
     </table>
-    {% if 'action-log' in request.path %}
-        <a class="btn btn-outline-info mt-2 mb-2" href="{% url 'user_list' %}">Назад</a>
-    {% else %}
         <a href="{% url 'dashboard' %}" class="btn btn-secondary mb-2">Назад</a>
-    {% endif %}
     {% include 'includes/pagination.html' %}
 </div>

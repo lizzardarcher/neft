@@ -488,11 +488,18 @@ class BrigadeActivityForm(forms.ModelForm):
         brigade_activity.save()
         return brigade_activity
 
+
 class WorkObjectForm(forms.ModelForm):
     class Meta:
         model = WorkObject
-        fields = ('name', 'short_name')
+        fields = ('hole', 'short_name', 'name',)
         widgets = {
+            'hole': forms.TextInput(attrs={'class': 'form-control'}),
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'short_name': forms.TextInput(attrs={'class': 'form-control'}),
         }
+
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #     existing_locations = WorkObject.objects.values_list('name', 'name').distinct()  # Получаем кортежи (value, label)
+    #     self.fields['name'].widget = forms.Select(choices=existing_locations)

@@ -3,11 +3,10 @@ from django.urls import path
 from .views import index, reports, users, brigades, transfers, categories, equipment
 
 urlpatterns = [
-    path('', index.DashboardView.as_view(), name='dashboard'),  # Главная страница дашборда
+    path('', index.DashboardView.as_view(), name='dashboard'),
     path('instructions', index.InstructionView.as_view(), name='instructions'),
 
     path('brigades/', brigades.BrigadeListView.as_view(), name='brigade_list'),
-
     path('brigade_index/<int:pk>', brigades.BrigadeIndexView.as_view(), name='brigade_index'),
     path('brigade/<int:pk>/equipment', brigades.BrigadeDetailView.as_view(), name='brigade_detail'),
     path('brigade/<int:pk>/staff', brigades.BrigadeStaffView.as_view(), name='brigade_staff'),
@@ -19,7 +18,9 @@ urlpatterns = [
     path('brigades/<int:pk>/brigade_update_from_total/', brigades.BrigadeUpdateFromTotalView.as_view(), name='brigade_update_from_total'),
     path('brigades/<int:brigade_id>/delete/', brigades.brigade_delete, name='brigade_delete'),
     path('brigades/object_create/', brigades.work_object_create, name='work_object_create'),
+    path('brigades/<int:pk>/work_object_update', brigades.WorkObjectUpdateView.as_view(), name='work_object_update'),
     path('brigades/<int:work_object_id>/work_object_delete', brigades.work_object_delete, name='work_object_delete'),
+
 
     path('categories/', categories.CategoryListView.as_view(), name='category_list'),
     path('categories/create/', categories.CategoryCreateView.as_view(), name='category_create'),
@@ -60,6 +61,8 @@ urlpatterns = [
     path('groups/create/', users.GroupCreateView.as_view(), name='group_create'),
     path('groups/<int:pk>/edit/', users.GroupUpdateView.as_view(), name='group_edit'),
     path('groups/<int:pk>/delete/', users.GroupDeleteView.as_view(), name='group_delete'),
+
+    path('get_locations/', brigades.get_locations, name='get_locations'),
 
     path('reports/', reports.ReportListView.as_view(), name='report_list'),
     path('reports/summary/', reports.ReportSummaryView.as_view(), name='report_summary'),

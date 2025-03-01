@@ -25,9 +25,9 @@
         <tbody>
         {% for data in brigade_data %}
             <tr>
-                <td>{% if data.brigade.name %}{{ data.brigade.name }}{% else %}---{% endif %}</td>
-                <td>{% if data.brigade.customer %}{{ data.brigade.customer }}{% else %}---{% endif %}</td>
-                <td>{% if data.brigade.notes %}{{ data.brigade.notes }}{% else %}---{% endif %}</td>
+                <td><small>{% if data.brigade.name %}{{ data.brigade.name }}{% else %}---{% endif %}</small></td>
+                <td><small>{% if data.brigade.customer %}{{ data.brigade.customer }}{% else %}---{% endif %}</small></td>
+                <td><small>{% if data.brigade.notes %}{{ data.brigade.notes }}{% else %}---{% endif %}</small></td>
                 {% for ba in data.ba %}
                     {% if ba.ba.work_type == '(ЗБС) Бурение' %}
                         <td class="border-light" style="background-color: #e4c89c">
@@ -64,9 +64,9 @@
                     {% endif %}
                 {% endfor %}
                 <td>
-                    <a href="{% url 'brigade_update_from_total' data.brigade.id %}" class="btn btn-outline-warning"><i
-                            class="fa fa-edit"></i></a>
-                    <button type="button" class="btn btn-outline-secondary" data-toggle="modal"
+                    <small><a href="{% url 'brigade_update_from_total' data.brigade.id %}" class="btn btn-sm btn-outline-warning"><i
+                            class="fa fa-edit"></i></a></small>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal"
                             data-target="#wa-modal{{ data.brigade.id }}">
                         <i class="fa fa-add"></i>
                     </button>

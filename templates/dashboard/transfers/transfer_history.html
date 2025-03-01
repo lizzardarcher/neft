@@ -30,6 +30,8 @@
                 {% endfor %}
             </tbody>
         </table>
+        <a href="{% url 'dashboard' %}" class="btn btn-secondary mb-2">Назад</a>
+
        {% include 'includes/pagination.html' %}
     </div>
 {% endblock %}

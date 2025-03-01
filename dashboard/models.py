@@ -5,6 +5,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
+from django.template.defaultfilters import default
 
 
 class Brigade(models.Model):
@@ -161,8 +162,9 @@ class WorkerActivity(models.Model):
 
 
 class WorkObject(models.Model):
+    hole = models.CharField(max_length=200, unique=False, null=False, blank=False, default='', verbose_name='№ Скважины')
     name = models.CharField(max_length=200, unique=False, null=False, blank=False, verbose_name='Месторождение')
-    short_name = models.CharField(max_length=200, unique=False, null=False, blank=False, verbose_name='Название кустовой площадки')
+    short_name = models.CharField(max_length=200, unique=False, null=False, blank=False, verbose_name='№ куста')
 
     def __str__(self):
         return f'{self.short_name}'

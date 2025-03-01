@@ -7,11 +7,13 @@ from django.contrib.auth.models import User
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views import View
 from django.views.generic import ListView, CreateView, UpdateView, DetailView, TemplateView
 from django.utils.timezone import datetime
+
 from dashboard.forms import BrigadeForm, BrigadeActivityForm, WorkObjectForm
 from dashboard.models import Brigade, Equipment, Manufacturer, WorkerActivity, BrigadeActivity, WorkObject
 from dashboard.utils.utils import get_days_in_month
@@ -345,3 +347,25 @@ def work_object_delete(request, work_object_id):
     work_object.delete()
     messages.success(request, 'Объект успешно удален!')
     return redirect(request.META.get('HTTP_REFERER'))
+
+
+
+class WorkObjectUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = WorkObject
+    context_object_name = 'work_object'
+    template_name = 'dashboard/brigades/work_object_edit.html'
+    form_class = WorkObjectForm
+
+    def get_success_url(self):
+        return f'/dashboard/brigade/brigade_table_total/?month={datetime.now().month}&year={datetime.now().year}'
+
+    def get_success_message(self, cleaned_data):
+        return f"Объект {cleaned_data['name']} Успешно обновлен!"
+
+def get_locations(request):
+    query = request.GET.get('term', '')  # Получаем текст, введенный пользователем
+    locations = WorkObject.objects.values_list('name', flat=True).distinct()  # Получаем уникальные месторождения
+    locations = [loc for loc in locations if query.lower() in loc.lower()] # Фильтрация для поиска
+
+    data = list(locations)  # Преобразуем в список
+    return JsonResponse(data, safe=False)
