@@ -10,7 +10,7 @@
             <a href="{{ next_month_url }}" class="btn btn-secondary"> >>> </a>
         </div>
     </div>
-    <table class="table table-bordered">
+    <table id="brigade_actions_table" class="table table-bordered">
         <thead class="table-secondary">
         <tr>
             <th>Бригада</th>
@@ -31,28 +31,28 @@
                 {% for ba in data.ba %}
                     {% if ba.ba.work_type == '(ЗБС) Бурение' %}
                         <td class="border-light" style="background-color: #e4c89c">
-                            {% if ba.ba.work_object %}({{ ba.ba.work_object.short_name }}){% endif %}</td>
+                            {% if ba.ba.work_object %}<small>{{ ba.ba.work_object.short_name }}</small>{% endif %}</td>
                     {% elif ba.ba.work_type == '(ЗБС) бурение горизонта' %}
                         <td class="border-light" style="background-color: #d6ab8f">
-                            {% if ba.ba.work_object %}({{ ba.ba.work_object.short_name }}){% endif %}</td>
+                            {% if ba.ba.work_object %}<small>{{ ba.ba.work_object.short_name }}</small>{% endif %}</td>
                     {% elif ba.ba.work_type == '(ЗБС) шаблонирование + ГИС' %}
                         <td class="border-light" style="background-color: #ae7e59">
-                            {% if ba.ba.work_object %}({{ ba.ba.work_object.short_name }}){% endif %}</td>
+                            {% if ba.ba.work_object %}<small>{{ ba.ba.work_object.short_name }}</small>{% endif %}</td>
                     {% elif ba.ba.work_type == '(ЗБС) спуск хвостовика' %}
                         <td class="border-light" style="background-color: #673412">
-                            {% if ba.ba.work_object %}({{ ba.ba.work_object.short_name }}){% endif %}</td>
+                            {% if ba.ba.work_object %}<small>{{ ba.ba.work_object.short_name }}</small>{% endif %}</td>
                     {% elif ba.ba.work_type == '(ВНС) бурение кондуктора' %}
                         <td class="border-light" style="background-color: #bfe3e2">
-                            {% if ba.ba.work_object %}({{ ba.ba.work_object.short_name }}){% endif %}</td>
+                            {% if ba.ba.work_object %}<small>{{ ba.ba.work_object.short_name }}</small>{% endif %}</td>
                     {% elif ba.ba.work_type == '(ВНС) бурение ЭК' %}
                         <td class="border-light" style="background-color: #29b4c6">
-                            {% if ba.ba.work_object %}({{ ba.ba.work_object.short_name }}){% endif %}</td>
+                            {% if ba.ba.work_object %}<small>{{ ba.ba.work_object.short_name }}</small>{% endif %}</td>
                     {% elif ba.ba.work_type == '(ВНС) бурение горизонта' %}
                         <td class="border-light" style="background-color: #168898">
-                            {% if ba.ba.work_object %}({{ ba.ba.work_object.short_name }}){% endif %}</td>
+                            {% if ba.ba.work_object %}<small>{{ ba.ba.work_object.short_name }}</small>{% endif %}</td>
                     {% elif ba.ba.work_type == '(ВНС) спуск хвостовика' %}
                         <td class="border-light" style="background-color: #0e5e7a">
-                            {% if ba.ba.work_object %}({{ ba.ba.work_object.short_name }}){% endif %}</td>
+                            {% if ba.ba.work_object %}<small>{{ ba.ba.work_object.short_name }}</small>{% endif %}</td>
                     {% elif ba.ba.work_type == 'Переезд' %}
                         <td class="border-light" style="background-color: #399c3a"></td>
                     {% elif ba.ba.work_type == 'Простой' %}

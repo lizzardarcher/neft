@@ -1,8 +1,70 @@
 {% load custom_filters %}
 {% block content %}
     <div class="p-5 bg-light-subtle">
+
+        <h2 class="text-center mt-5">
+            <a href="?month={{ prev_month }}&year={{ prev_year }}"
+               class="btn btn-outline-secondary"><<< {{ prev_month }}-{{ prev_year }}</a>
+            Табель учёта работы {{ month }}/{{ year }}
+            <a href="?month={{ next_month }}&year={{ next_year }}"
+               class="btn btn-outline-secondary">{{ next_month }}-{{ next_year }} >>></a>
+        </h2>
+        <table id="staff_actions_table" class="table table-bordered table-striped table-responsive">
+
+            <thead>
+            <tr>
+                <th class="bg-dark-subtle">ФИО</th>
+                <th class="bg-dark-subtle">Должность</th>
+                <th class="bg-dark-subtle">Бригада</th>
+                {% for day in days %}
+                    <th class="bg-dark-subtle">{{ day }}</th>
+                {% endfor %}
+                <th class="bg-dark-subtle">Всего дней</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for data in employee_data %}
+                <tr>
+                    <td class="bg-light-subtle">{{ data.user.last_name }} {{ data.user.first_name }}</td>
+                    <td class="bg-light-subtle">{{ data.user.profile.position }}</td>
+                    <td class="bg-light-subtle">{{ data.user.profile.brigade.name }}</td>
+                    {% for wa in data.wa %}
+                        {% if wa.wa %}
+                            {% if wa.wa.work_type == 'Y' %}
+                                <td class="bg-warning">Я</td>
+                            {% elif wa.wa.work_type == 'G' %}
+                                <td class="bg-warning-subtle">Г</td>
+                            {% elif wa.wa.work_type == 'O' %}
+                                <td class="bg-info-subtle">О</td>
+                            {% elif wa.wa.work_type == 'S' %}
+                                <td class="bg-success-subtle">С</td>
+                            {% endif %}
+                        {% else %}
+                            <td class="bg-light-subtle">-</td>
+                        {% endif %}
+                    {% endfor %}
+                    <td>
+                        {{ data.total_wa }}
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal"
+                                data-target="#wa-modal{{ data.user }}">
+                            <i class="fa fa-add"></i>
+                        </button>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="row">
+            {% include 'dashboard/users/components/conditional_signs.html' %}
+            {% include 'dashboard/users/components/info_add_user_activity.html' %}
+            {% include 'dashboard/users/components/info_download_excel.html' %}
+            <div class="text-center m-2 ">
+                <a class="btn btn-secondary p-3" href="{% url 'dashboard' %}">Назад</a>
+            </div>
+        </div>
+
         <h3 class="mb-5">Сотрудники</h3>
-        <table class="table table-bordered  table-secondary table-striped table-hover mb-5">
+        <table id="user_table" class="table table-bordered  table-light table-striped table-hover mb-5">
             <thead class="thead-dark">
             <tr>
                 <th>ФИО</th>
@@ -20,7 +82,8 @@
             <tbody>
             {% for user in users %}
                 <tr>
-                    <td>{% if user.get_full_name %}{{ user.get_full_name }}{% else %}---{% endif %}</td>
+                    <td>{% if user.get_full_name %}{{ user.last_name }} {{ user.first_name }}{% else %}
+                        ---{% endif %}</td>
                     <td>{% if user.profile.position %}{{ user.profile.position }}{% else %}---{% endif %}</td>
                     <td>{% if user.profile.phone_number %}{{ user.profile.phone_number }}{% else %}---{% endif %}</td>
                     <td>{% if user.email %}{{ user.email }}{% else %}---{% endif %}</td>
@@ -85,64 +148,66 @@
 
             </tbody>
         </table>
-
-        <h2 class="text-center mt-5">
-            <a href="?month={{ prev_month }}&year={{ prev_year }}"
-               class="btn btn-outline-secondary"><<< {{ prev_month }}-{{ prev_year }}</a>
-            Табель учёта работы {{ month }}/{{ year }}
-            <a href="?month={{ next_month }}&year={{ next_year }}"
-               class="btn btn-outline-secondary">{{ next_month }}-{{ next_year }} >>></a>
-        </h2>
-        <table class="table table-bordered table-striped table-responsive">
-
-            <thead>
-            <tr>
-                <th class="bg-dark-subtle">ФИО</th>
-                <th class="bg-dark-subtle">Должность</th>
-                {% for day in days %}
-                    <th class="bg-dark-subtle">{{ day }}</th>
-                {% endfor %}
-                <th class="bg-dark-subtle">Всего дней</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for data in employee_data %}
-                <tr>
-                    <td class="bg-light-subtle">{{ data.user.get_full_name }}</td>
-                    <td class="bg-light-subtle">{{ data.user.profile.position }}</td>
-                    {% for wa in data.wa %}
-                        {% if wa.wa %}
-                            {% if wa.wa.work_type == 'Y' %}
-                                <td class="bg-warning">Я</td>
-                            {% elif wa.wa.work_type == 'G' %}
-                                <td class="bg-warning-subtle">Г</td>
-                            {% elif wa.wa.work_type == 'O' %}
-                                <td class="bg-info-subtle">О</td>
-                            {% elif wa.wa.work_type == 'S' %}
-                                <td class="bg-success-subtle">С</td>
-                            {% endif %}
-                        {% else %}
-                            <td class="bg-light-subtle">-</td>
-                        {% endif %}
-                    {% endfor %}
-                    <td>
-                        {{ data.total_wa }}
-                        <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal"
-                                data-target="#wa-modal{{ data.user }}">
-                            <i class="fa fa-add"></i>
-                        </button>
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-        <div class="row">
-            {% include 'dashboard/users/components/conditional_signs.html' %}
-            {% include 'dashboard/users/components/info_add_user_activity.html' %}
-            {% include 'dashboard/users/components/info_download_excel.html' %}
-            <div class="text-center m-2 ">
-                <a class="btn btn-secondary p-3" href="{% url 'dashboard' %}">Назад</a>
-            </div>
-        </div>
     </div>
 {% endblock content %}
+
+{% block extrascript %}
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css">
+    <script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+
+    <script>
+        let table1 = new DataTable('#user_table', {
+            sorting: false,
+            searching: false,
+            columnDefs: [
+                {"orderable": false, "targets": [9]}
+            ],
+            language: {
+                info: ' Показано _PAGE_ из _PAGES_ страниц',
+                infoEmpty: 'Нет записей',
+                infoFiltered: '(filtered from _MAX_ total records)',
+                lengthMenu: 'Показать _MENU_ на странице',
+                zeroRecords: 'Nothing found - sorry'
+            },
+            lengthMenu: [
+                [15, 30, 60, -1],
+                [15, 30, 60, 'все записи']
+            ]
+
+        });
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const month_len = urlParams.get('month');
+        const year_len = urlParams.get('year')
+
+        if (month_len === '02' && parseInt(year_len) % 4 === 0) {
+            targets = [3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32]
+        } else if (month_len === '03' || month_len === '05' || month_len === '07' || month_len === '08' || month_len === '10' || month_len === '12') {
+            targets = [3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34]
+        } else if (month_len === '04' || month_len === '06' || month_len === '09' || month_len === '11') {
+            targets = [3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33]
+        } else if (month_len === '02' && parseInt(urlParams.get('year')) % 4 !== 0){
+            targets = [3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]
+        }
+
+        let table2 = new DataTable('#staff_actions_table', {
+            sorting: false,
+            searching: false,
+            columnDefs: [
+                {"orderable": false, "targets": targets}
+            ],
+            lengthMenu: [
+                [60, 120, 180, -1],
+                [60, 120, 180, 'все записи']
+            ],
+            language: {
+                info: ' Показано _PAGE_ из _PAGES_ страниц',
+                infoEmpty: 'Нет записей',
+                infoFiltered: '(filtered from _MAX_ total records)',
+                lengthMenu: 'Показать _MENU_ на странице',
+                zeroRecords: 'Nothing found - sorry'
+            },
+        });
+    </script>
+{% endblock extrascript %}

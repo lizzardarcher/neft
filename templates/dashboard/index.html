@@ -41,7 +41,7 @@
                     <div class="card-header"><i class="fa fa-hammer"></i> <b>Оборудование:</b> <span
                             class="badge bg-secondary-subtle text-dark">{{ equipment.count }}</span></div>
                     <div class="card-body">
-                        <h5 class="card-title">Полный список доступного оборудования</h5>
+                        <h5 class="card-title">Список доступного оборудования</h5>
                     </div>
                     <a href="{% url 'equipment_list' %}" class="m-1 btn btn-outline-info">Просмотреть</a>
                 </div>
@@ -54,7 +54,7 @@
                     <div class="card-header"><i class="fa fa-file"></i> <b>Документы:</b> <span
                             class="badge bg-secondary-subtle text-dark">{{ document.count }}</span></div>
                     <div class="card-body">
-                        <h5 class="card-title">Полный список документов</h5>
+                        <h5 class="card-title">Список документов</h5>
                     </div>
                     <a href="{% url 'document_list' %}" class="m-1 btn btn-outline-info">Просмотреть</a>
                 </div>
@@ -77,11 +77,11 @@
         {% if user|has_group:"Руководитель" or user|has_group:"Администратор" %}
             <div class="col-md-4 mb-3">
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
-                    <div class="card-header"><i class="fa fa-user"></i> <b>Табель</b></div>
+                    <div class="card-header"><i class="fa fa-user"></i> <b>Учет работников</b></div>
                     <div class="card-body">
-                        <h5 class="card-title">Сводная таблица</h5>
+{#                        <h5 class="card-title">Учет работников</h5>#}
                     </div>
-                    <a href="{% url 'staff_table_total' %}" class="m-1 btn btn-outline-info">Просмотреть</a>
+                    <a href="{% url 'staff_table_total' %}?month={{ month }}&year={{ year }}" class="m-1 btn btn-outline-info">Просмотреть</a>
                 </div>
             </div>
         {% endif %}
@@ -89,9 +89,9 @@
         {% if user|has_group:"Руководитель" or user|has_group:"Администратор" %}
             <div class="col-md-4 mb-3">
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
-                    <div class="card-header"><i class="fa fa-users-gear"></i> <b>Работа бригад</b></div>
+                    <div class="card-header"><i class="fa fa-users-gear"></i> <b>Учет бригад</b></div>
                     <div class="card-body">
-                        <h5 class="card-title">Сводная таблица</h5>
+{#                        <h5 class="card-title">Учет бригад</h5>#}
                     </div>
                     <a href="{% url 'brigade_table_total' %}?month={{ month }}&year={{ year }}" class="m-1 btn btn-outline-info">Просмотреть</a>
                 </div>

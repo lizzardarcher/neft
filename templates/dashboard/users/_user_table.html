@@ -1,39 +1,48 @@
 {% load custom_filters %}
 {% block content %}
 
-    <div class="container mt-4">
+
+
+    <div class="mt-4">
         <h1>Список пользователей</h1>
         <p><a href="{% url 'group_list' %}" class="btn btn-outline-dark mb-2">Группы пользователей</a></p>
-        <p><a href="{% url 'user_create' %}" class="btn btn-outline-success mb-2"><i class="fa fa-plus-square"></i> Создать пользователя</a></p>
-        <table class="table table-bordered table-striped">
+        <p><a href="{% url 'user_create' %}" class="btn btn-outline-success mb-2"><i class="fa fa-plus-square"></i>
+            Создать пользователя</a></p>
+        <table id="user_table" class="table table-bordered table-striped">
             <thead class="thead-dark">
             <tr>
                 <th>Логин</th>
-                <th>Имя</th>
                 <th>Фамилия</th>
+                <th>Имя</th>
                 <th>Должность</th>
                 <th>Тел.</th>
                 <th>Email</th>
-                <th>Группы</th>
-                <th>Админ</th>
                 <th>Бригада</th>
                 <th>Работа_с</th>
                 <th>Работа_по</th>
                 <th>Работа/Отпуск</th>
+                <th>Группы</th>
                 <th>Примечания</th>
-                <th>Действия</th>
-
+                <th class="no-sort">Действия</th>
             </tr>
             </thead>
             <tbody>
             {% for user in users %}
                 <tr>
                     <td>{{ user.username }}</td>
-                    <td>{{ user.first_name }}</td>
                     <td>{{ user.last_name }}</td>
+                    <td>{{ user.first_name }}</td>
                     <td>{% if user.profile.position %}{{ user.profile.position }}{% else %}---{% endif %}</td>
                     <td>{% if user.profile.phone_number %}{{ user.profile.phone_number }}{% else %}---{% endif %}</td>
                     <td>{% if user.email %}{{ user.email }}{% else %}---{% endif %}</td>
+                    <td>{% if user.profile.brigade %}
+                        <a href="{% url 'brigade_detail' user.profile.brigade.id %}">{{ user.profile.brigade }}</a>{% else %}
+                        ---{% endif %}</td>
+                    <td>{% if user.profile.brigade_start_date %}
+                        {{ user.profile.brigade_start_date|date:"d-m-Y" }}{% else %}---{% endif %}</td>
+                    <td>{% if user.profile.brigade_end_date %}{{ user.profile.brigade_end_date|date:"d-m-Y" }}{% else %}
+                        ---{% endif %}</td>
+                    <td>{% if user.profile.status %}Работа{% else %}Отпуск{% endif %}</td>
                     <td>
                         {% for group in user.groups.all %}
                             <span class="badge bg-info">{{ group.name }}</span>
@@ -41,11 +50,6 @@
                             ---
                         {% endfor %}
                     </td>
-                    <td>{{ user.is_superuser|yesno:"✅,🛑" }}</td>
-                    <td>{% if user.profile.brigade %}<a href="{% url 'brigade_detail' user.profile.brigade.id %}">{{ user.profile.brigade }}</a>{% else %}---{% endif %}</td>
-                    <td>{% if user.profile.brigade_start_date %}{{ user.profile.brigade_start_date|date:"d-m-Y" }}{% else %}---{% endif %}</td>
-                    <td>{% if user.profile.brigade_end_date %}{{ user.profile.brigade_end_date|date:"d-m-Y" }}{% else %}---{% endif %}</td>
-                    <td>{% if user.profile.status %}Работа{% else %}Отпуск{% endif %}</td>
                     <td>{% if user.profile.notes %}{{ user.profile.notes }}{% else %}---{% endif %}</td>
                     <td>
                         {% if request.user|has_group:"Администратор" %}
@@ -85,11 +89,35 @@
                     <td colspan="9">Нет данных о пользователях.</td>
                 </tr>
             {% endfor %}
-
             </tbody>
         </table>
-        <a href="{% url 'dashboard' %}" class="btn btn-secondary mb-2">Назад</a>
-
     </div>
 
 {% endblock content %}
+{% block extrascript %}
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css">
+    <script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+
+    <script>
+        let table = new DataTable('#user_table', {
+            sorting: false,
+            searching: false,
+            columnDefs: [
+                {"orderable": false, "targets": [12]}
+            ],
+            language: {
+                info: ' Показано _PAGE_ из _PAGES_ страниц',
+                infoEmpty: 'Нет записей',
+                infoFiltered: '(filtered from _MAX_ total records)',
+                lengthMenu: 'Показать _MENU_ на странице',
+                zeroRecords: 'Nothing found - sorry'
+            },
+            lengthMenu: [
+                [15, 30, 60, -1],
+                [15, 30, 60, 'все записи']
+            ]
+
+        });
+    </script>
+{% endblock extrascript %}
