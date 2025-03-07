@@ -190,7 +190,7 @@ class EquipmentUpdateByBrigadeView(LoginRequiredMixin, SuccessMessageMixin, Upda
         return context
 
     def get_success_url(self):
-        return  reverse('brigade_detail', args=[self.kwargs.get('brigade_id')])
+        return reverse('brigade_detail', args=[self.kwargs.get('brigade_id')])
 
     def form_valid(self, form):
         manufacturer_id = self.request.POST.get('id_manufacturer')

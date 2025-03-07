@@ -77,9 +77,10 @@
         {% if user|has_group:"Руководитель" or user|has_group:"Администратор" %}
             <div class="col-md-4 mb-3">
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
-                    <div class="card-header"><i class="fa fa-user"></i> <b>Учет работников</b></div>
+                    <div class="card-header"><i class="fa fa-user"></i> <b>Работники</b> <span
+                            class="badge bg-secondary-subtle text-dark">{{ users.count }}</span></div>
                     <div class="card-body">
-{#                        <h5 class="card-title">Учет работников</h5>#}
+                        <h5 class="card-title">Учет работников</h5>
                     </div>
                     <a href="{% url 'staff_table_total' %}?month={{ month }}&year={{ year }}" class="m-1 btn btn-outline-info">Просмотреть</a>
                 </div>
@@ -89,9 +90,10 @@
         {% if user|has_group:"Руководитель" or user|has_group:"Администратор" %}
             <div class="col-md-4 mb-3">
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
-                    <div class="card-header"><i class="fa fa-users-gear"></i> <b>Учет бригад</b></div>
+                    <div class="card-header"><i class="fa fa-users-gear"></i> <b>Бригады:</b> <span
+                            class="badge bg-secondary-subtle text-dark">{{ brigades.count }}</span></div>
                     <div class="card-body">
-{#                        <h5 class="card-title">Учет бригад</h5>#}
+                        <h5 class="card-title">Учет бригад</h5>
                     </div>
                     <a href="{% url 'brigade_table_total' %}?month={{ month }}&year={{ year }}" class="m-1 btn btn-outline-info">Просмотреть</a>
                 </div>

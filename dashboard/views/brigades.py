@@ -43,6 +43,7 @@ class BrigadeListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
         context['page_size'] = self.request.GET.get('page_size', self.paginate_by)
         return context
 
+
 class BrigadeDetailView(LoginRequiredMixin, SuccessMessageMixin, DetailView):
     model = Brigade
     context_object_name = 'brigade'
@@ -82,6 +83,7 @@ class BrigadeDetailView(LoginRequiredMixin, SuccessMessageMixin, DetailView):
         context['manufacturers'] = Manufacturer.objects.all().order_by('name')
         return context
 
+
 class BrigadeStaffView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
     template_name = 'dashboard/brigades/brigade_staff.html'
 
@@ -109,24 +111,30 @@ class BrigadeStaffView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
             next_month = '0' + str(next_month)
         context['prev_month'] = str(prev_month)
         context['next_month'] = str(next_month)
-        context['prev_year']  = prev_year
-        context['next_year']  = next_year
+        context['prev_year'] = prev_year
+        context['next_year'] = next_year
         context['users'] = User.objects.annotate(
             total_wa=Count('workeractivity',
-            filter=Q(workeractivity__date__year=context['year'],
-                     workeractivity__date__month=context['month'],
-                     workeractivity__brigade=brigade,))).filter(profile__brigade=brigade).order_by('username')
+                           filter=Q(workeractivity__date__year=context['year'],
+                                    workeractivity__date__month=context['month'],
+                                    workeractivity__brigade=brigade, ))).filter(profile__brigade=brigade).order_by(
+            'username')
         employee_data = [
             {
                 'user': user,
-                'total_wa': WorkerActivity.objects.filter(user=user, date__month=context['month'], date__year=context['year'], brigade=context['brigade']).count(),
+                'total_wa': WorkerActivity.objects.filter(user=user, date__month=context['month'],
+                                                          date__year=context['year'],
+                                                          brigade=context['brigade']).count(),
                 'wa': [
-                    {'day': day, 'wa': WorkerActivity.objects.filter(user=user, date__month=context['month'], date__year=context['year'], date__day=day).last()} for day in context['days']
+                    {'day': day, 'wa': WorkerActivity.objects.filter(user=user, date__month=context['month'],
+                                                                     date__year=context['year'], date__day=day).last()}
+                    for day in context['days']
                 ],
             } for user in context['users']
         ]
         context['employee_data'] = employee_data
         return context
+
 
 class BrigadeWorkView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
     template_name = 'dashboard/brigades/brigade_work.html'
@@ -166,6 +174,19 @@ class BrigadeWorkView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
         context['month'] = month if month > 9 else '0' + str(month)
         context['month_name'] = calendar.month_name[month]
 
+        brigade_data = [
+            {
+                'brigade': brigade,
+                'total_ba':  BrigadeActivity.objects.filter(brigade=brigade, date__month=month, date__year=year).count(),
+                'ba': [
+                    {'day': day, 'ba': BrigadeActivity.objects.filter(brigade=brigade, date__month=month, date__year=year, date__day=day).last()}
+                    for day in get_days_in_month(month, year)
+                ],
+            }
+        ]
+        context['brigade_data'] = brigade_data
+        context['days'] = get_days_in_month(month, year)
+
         # Generate links for previous and next months
         prev_month = month - 1 if month > 1 else 12
         prev_year = year if month > 1 else year - 1
@@ -175,7 +196,7 @@ class BrigadeWorkView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
         context['prev_month_url'] = f'/dashboard/brigade/{brigade_id}/work/{prev_month}/{prev_year}'
         context['next_month_url'] = f'/dashboard/brigade/{brigade_id}/work/{next_month}/{next_year}'
 
-        #Prepare dictionary with all activies grouped by days
+        # Prepare dictionary with all activies grouped by days
         activities_by_day = {}
         for activity in activities:
             day = activity.date.day
@@ -205,27 +226,29 @@ class BrigadeTableTotalView(LoginRequiredMixin, SuccessMessageMixin, TemplateVie
         brigade_data = [
             {
                 'brigade': brigade,
-                'total_ba':  BrigadeActivity.objects.filter(brigade=brigade, date__month=month, date__year=year).count(),
+                'total_ba': BrigadeActivity.objects.filter(brigade=brigade, date__month=month, date__year=year).count(),
                 'ba': [
-                    {'day': day, 'ba': BrigadeActivity.objects.filter(brigade=brigade, date__month=month, date__year=year, date__day=day).last()}
+                    {'day': day,
+                     'ba': BrigadeActivity.objects.filter(brigade=brigade, date__month=month, date__year=year,
+                                                          date__day=day).last()}
                     for day in get_days_in_month(month, year)
                 ],
             } for brigade in brigades
         ]
+        context['brigade_data'] = brigade_data
 
         context['form'] = BrigadeActivityForm()
         context['work_object_form'] = WorkObjectForm()
         context['work_objects'] = WorkObject.objects.all().order_by('name')
-        context['brigade_data'] = brigade_data
-        context['month']= month
-        context['year']= year
+        context['month'] = month
+        context['year'] = year
         context['current_month'] = datetime.now().month
         context['current_year'] = datetime.now().year
         context['days'] = get_days_in_month(month, year)
-        context['brigades']= brigades
-        context['days_in_month']= calendar.monthrange(year, month)[1]
-        context['previous_month_url']= self.get_month_url(month, year, -1)
-        context['next_month_url']= self.get_month_url(month, year, 1)
+        context['brigades'] = brigades
+        context['days_in_month'] = calendar.monthrange(year, month)[1]
+        context['previous_month_url'] = self.get_month_url(month, year, -1)
+        context['next_month_url'] = self.get_month_url(month, year, 1)
 
         return context
 
@@ -242,6 +265,7 @@ class BrigadeTableTotalView(LoginRequiredMixin, SuccessMessageMixin, TemplateVie
 
         return reverse('brigade_table_total') + f'?month={new_month}&year={new_year}'
 
+
 class BrigadeIndexView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
     template_name = 'dashboard/brigades/index.html'
 
@@ -254,14 +278,17 @@ class BrigadeIndexView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
         context['equipment_count'] = Equipment.objects.filter(brigade=context['brigade']).count()
         return context
 
+
 class BrigadeCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Brigade
     context_object_name = 'brigade'
     template_name = 'dashboard/brigades/brigade_form_create.html'
     form_class = BrigadeForm
     success_url = '/dashboard/brigades'
+
     def get_success_message(self, cleaned_data):
         return f"Бригада {cleaned_data['name']} Успешно создана!"
+
 
 class BrigadeUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Brigade
@@ -306,12 +333,12 @@ def brigade_activity_create(request, brigade_id):
     if brigade and work_type and date:
         brigade_activity = BrigadeActivity.objects.filter(
             brigade=brigade,
-            date=date,).first()
+            date=date, ).first()
         if brigade_activity:
-            brigade_activity.brigade=brigade
-            brigade_activity.date=date
-            brigade_activity.work_object=work_object
-            brigade_activity.work_type=work_type
+            brigade_activity.brigade = brigade
+            brigade_activity.date = date
+            brigade_activity.work_object = work_object
+            brigade_activity.work_type = work_type
             brigade_activity.save()
             messages.success(request, f'Активность успешно обновлена!')
         else:
@@ -333,6 +360,7 @@ def brigade_activity_create(request, brigade_id):
             messages.error(request, 'Произошла ошибка при создании активности!')
         return redirect(request.META.get('HTTP_REFERER'))
 
+
 def work_object_create(request):
     if request.method == 'POST':
         form = WorkObjectForm(request.POST)
@@ -344,12 +372,12 @@ def work_object_create(request):
             messages.error(request, 'Произошла ошибка при создании объекта!')
             return redirect(request.META.get('HTTP_REFERER'))
 
+
 def work_object_delete(request, work_object_id):
     work_object = get_object_or_404(WorkObject, id=work_object_id)
     work_object.delete()
     messages.success(request, 'Объект успешно удален!')
     return redirect(request.META.get('HTTP_REFERER'))
-
 
 
 class WorkObjectUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
@@ -364,10 +392,11 @@ class WorkObjectUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     def get_success_message(self, cleaned_data):
         return f"Объект {cleaned_data['name']} Успешно обновлен!"
 
+
 def get_locations(request):
     query = request.GET.get('term', '')  # Получаем текст, введенный пользователем
     locations = WorkObject.objects.values_list('name', flat=True).distinct()  # Получаем уникальные месторождения
-    locations = [loc for loc in locations if query.lower() in loc.lower()] # Фильтрация для поиска
+    locations = [loc for loc in locations if query.lower() in loc.lower()]  # Фильтрация для поиска
 
     data = list(locations)  # Преобразуем в список
     return JsonResponse(data, safe=False)

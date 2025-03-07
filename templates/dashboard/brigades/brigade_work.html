@@ -3,8 +3,113 @@
 {% load static %}
 
 {% block content %}
-
-    <div class="container bg-light p-5 mt-5 rounded">
-        {% include 'dashboard/brigades/_calendar.html' %}
+    <div class="bg-light p-5 mt-5 rounded">
+        <div class="p-2">
+            <table id="brigade_actions_table" class="table table-bordered">
+                <thead class="table-secondary">
+                <tr>
+                    <th>Бригада</th>
+                    <th>Заказчик</th>
+                    <th>Примечания</th>
+                    {% for day in days %}
+                        <th>{{ day }}</th>
+                    {% endfor %}
+                    <th>Действия</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for data in brigade_data %}
+                    <tr>
+                        <td><small><a href="{% url 'brigade_index' data.brigade.id %}">
+                            {% if data.brigade.name %}{{ data.brigade.name }}</a>{% else %}---{% endif %}</small></td>
+                        <td><small>
+                            {% if data.brigade.customer %}{{ data.brigade.customer }}{% else %}---{% endif %}</small>
+                        </td>
+                        <td><small>{% if data.brigade.notes %}{{ data.brigade.notes }}{% else %}---{% endif %}</small>
+                        </td>
+                        {% for ba in data.ba %}
+                            {% if ba.ba.work_type == '(ЗБС) Бурение' %}
+                                <td class="border-light" style="background-color: #e4c89c">
+                                    {% if ba.ba.work_object %}
+                                        <small>{{ ba.ba.work_object.short_name }}</small>{% endif %}</td>
+                            {% elif ba.ba.work_type == '(ЗБС) бурение горизонта' %}
+                                <td class="border-light" style="background-color: #d6ab8f">
+                                    {% if ba.ba.work_object %}
+                                        <small>{{ ba.ba.work_object.short_name }}</small>{% endif %}</td>
+                            {% elif ba.ba.work_type == '(ЗБС) шаблонирование + ГИС' %}
+                                <td class="border-light" style="background-color: #ae7e59">
+                                    {% if ba.ba.work_object %}
+                                        <small>{{ ba.ba.work_object.short_name }}</small>{% endif %}</td>
+                            {% elif ba.ba.work_type == '(ЗБС) спуск хвостовика' %}
+                                <td class="border-light" style="background-color: #673412">
+                                    {% if ba.ba.work_object %}
+                                        <small>{{ ba.ba.work_object.short_name }}</small>{% endif %}</td>
+                            {% elif ba.ba.work_type == '(ВНС) бурение кондуктора' %}
+                                <td class="border-light" style="background-color: #bfe3e2">
+                                    {% if ba.ba.work_object %}
+                                        <small>{{ ba.ba.work_object.short_name }}</small>{% endif %}</td>
+                            {% elif ba.ba.work_type == '(ВНС) бурение ЭК' %}
+                                <td class="border-light" style="background-color: #29b4c6">
+                                    {% if ba.ba.work_object %}
+                                        <small>{{ ba.ba.work_object.short_name }}</small>{% endif %}</td>
+                            {% elif ba.ba.work_type == '(ВНС) бурение горизонта' %}
+                                <td class="border-light" style="background-color: #168898">
+                                    {% if ba.ba.work_object %}
+                                        <small>{{ ba.ba.work_object.short_name }}</small>{% endif %}</td>
+                            {% elif ba.ba.work_type == '(ВНС) спуск хвостовика' %}
+                                <td class="border-light" style="background-color: #0e5e7a">
+                                    {% if ba.ba.work_object %}
+                                        <small>{{ ba.ba.work_object.short_name }}</small>{% endif %}</td>
+                            {% elif ba.ba.work_type == 'Переезд' %}
+                                <td class="border-light" style="background-color: #399c3a"></td>
+                            {% elif ba.ba.work_type == 'Простой' %}
+                                <td class="border-light" style="background-color: #dcd6d9"></td>
+                            {% elif ba.ba.work_type == 'Авария' %}
+                                <td class="border-light" style="background-color: #ff0000"></td>
+                            {% else %}
+                                <td class="" style="background-color: #ffffff"></td>
+                            {% endif %}
+                        {% endfor %}
+                        <td>
+                            <small><a href="{% url 'brigade_update_from_total' data.brigade.id %}"
+                                      class="btn btn-sm btn-outline-warning"><i
+                                    class="fa fa-edit"></i></a></small>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal"
+                                    data-target="#wa-modal{{ data.brigade.id }}">
+                                <i class="fa fa-add"></i>
+                            </button>
+                            <div class="modal fade" id="wa-modal{{ data.brigade.id }}" tabindex="-1" role="dialog"
+                                 aria-labelledby="wa-modal{{ data.brigade.id }}-label" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="wa-modal{{ data.brigade.id }}-label">Добавить
+                                                тип работы: <br> {{ data.brigade.name }} </h5>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form method="post"
+                                                  action="{% url 'brigade_activity_create' data.brigade.id %}?month={{ month }}&year={{ year }}/">
+                                                {% csrf_token %}
+                                                {{ form.as_p }}
+                                                <button type="submit" class="mt-4 btn btn-primary">Добавить</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <div class="row">
+                {% include 'dashboard/brigades/components/conditional_signs.html' %}
+                {% include 'dashboard/brigades/components/work_objects_edit.html' %}
+                {% include 'dashboard/brigades/components/info_add_brigade_activity.html' %}
+            </div>
+            <div class="text-center m-2">
+                <a class="btn btn-secondary p-3" href="{% url 'brigade_index' brigade.id %}">НАЗАД</a>
+            </div>
+        </div>
     </div>
 {% endblock %}

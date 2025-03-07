@@ -22,6 +22,7 @@
             <th>Бригада</th>
             <th>Описание</th>
             <th>Всего оборудования (Ед.)</th>
+            <th>Персонал</th>
             <th>Заказчик</th>
             <th>Примечания</th>
             <th>Действия</th>
@@ -39,6 +40,10 @@
                        class="link-offset-2 text-bg-{% if brigade.equipment_set.count > 0 %}success{% else %}secondary{% endif %} p-1 rounded"
                        style="text-decoration: none;">{{ brigade.equipment_set.count }}</a>
                 </td>
+                <td><a href="{% if brigade.userprofile_set.count %}{% url 'brigade_staff' brigade.id %}{% else %}{% endif %}"
+                    class="link-offset-2 text-bg-{% if brigade.userprofile_set.count > 0 %}success{% else %}secondary{% endif %} p-1 rounded"
+                       style="text-decoration: none;">{{ brigade.userprofile_set.count }}</a>
+                    </td>
                 <td>{% if brigade.customer %}{{ brigade.customer }}{% else %}---{% endif %}</td>
                 <td>{% if brigade.notes %}{{ brigade.notes }}{% else %}---{% endif %}</td>
                 <td>
