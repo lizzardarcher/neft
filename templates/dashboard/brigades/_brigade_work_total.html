@@ -25,8 +25,9 @@
         <tbody>
         {% for data in brigade_data %}
             <tr>
-                <td><small>{% if data.brigade.name %}{{ data.brigade.name }}{% else %}---{% endif %}</small></td>
-                <td><small>{% if data.brigade.customer %}{{ data.brigade.customer }}{% else %}---{% endif %}</small></td>
+                <td><small><a href="{% url 'brigade_index' data.brigade.id %}">{% if data.brigade.name %}{{ data.brigade.name }}</a>{% else %}---{% endif %}</small></td>
+                <td><small>{% if data.brigade.customer %}{{ data.brigade.customer }}{% else %}---{% endif %}</small>
+                </td>
                 <td><small>{% if data.brigade.notes %}{{ data.brigade.notes }}{% else %}---{% endif %}</small></td>
                 {% for ba in data.ba %}
                     {% if ba.ba.work_type == '(ЗБС) Бурение' %}
@@ -64,7 +65,8 @@
                     {% endif %}
                 {% endfor %}
                 <td>
-                    <small><a href="{% url 'brigade_update_from_total' data.brigade.id %}" class="btn btn-sm btn-outline-warning"><i
+                    <small><a href="{% url 'brigade_update_from_total' data.brigade.id %}"
+                              class="btn btn-sm btn-outline-warning"><i
                             class="fa fa-edit"></i></a></small>
                     <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal"
                             data-target="#wa-modal{{ data.brigade.id }}">
@@ -75,8 +77,7 @@
                         <div class="modal-dialog" role="document">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h5 class="modal-title" id="wa-modal{{ data.brigade.id }}-label">Добавить тип работы
-                                        для пользователя: <br> {{ brigade.name }} </h5>
+                                    <h5 class="modal-title" id="wa-modal{{ data.brigade.id }}-label">Добавить тип работы: <br> {{ data.brigade.name }} </h5>
                                 </div>
                                 <div class="modal-body">
                                     <form method="post"

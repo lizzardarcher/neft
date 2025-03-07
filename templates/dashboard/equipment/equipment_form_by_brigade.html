@@ -1,6 +1,15 @@
 {% extends 'layouts/base.html' %}
 {% block content %}
     <div class="container bg-light p-4 mt-4 rounded">
+        {% if form.errors %}
+            <div class="alert alert-danger mt-2">
+                {% for error in form.errors %}
+                    {% if "serial" in error %}
+                        Ошибка добавления {{ form.serial.error }} Оборудование с таким серийным номером уже существует
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
         <h2>Добавление нового оборудования для бригады: {{ brigade }}</h2>
         <form method="post">
             {% csrf_token %}
@@ -16,7 +25,7 @@
                 <label for="name">Название:</label>
                 {{ form.name }}
             </div>
-                       <div class="form-group">
+            <div class="form-group">
                 <label for="manufacturer">Изготовитель:</label>
                 <select class="form-control" id="id_manufacturer" name="manufacturer">
                     <option value="">-- Выберите изготовителя --</option>
@@ -61,7 +70,7 @@
                 <label for="date_exploitation">Дата ввода в эксплуатацию:</label>
                 {{ form.date_exploitation }}
             </div>
-                    <div class="form-group">
+            <div class="form-group">
                 <label for="date_exploitation">Начало действия сертификата:</label>
                 {{ form.certificate_start }}
             </div>

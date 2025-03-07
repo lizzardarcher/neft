@@ -1,6 +1,15 @@
 {% extends 'layouts/base.html' %}
 {% block content %}
     <div class="container bg-light p-4 mt-4 rounded">
+        {% if form.errors %}
+            <div class="alert alert-danger mt-2">
+                {% for error in form.errors %}
+                    {% if "serial" in error %}
+                         Ошибка добавления {{ form.serial.error }} Оборудование с таким серийным номером уже существует
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
         <h2>Добавление нового оборудования для бригады: {{ brigade }}</h2>
         <form method="post">
             {% csrf_token %}

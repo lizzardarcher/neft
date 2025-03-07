@@ -1,10 +1,13 @@
 from django import forms
+from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group, Permission
+from django.core.exceptions import ValidationError
 
 from dashboard.models import Brigade, Equipment, Document, Category, UserProfile, Manufacturer, WorkerActivity, \
     BrigadeActivity, WorkObject
 
+DATE_STYLE = {'style': 'width: 15rem;'}
 
 class BrigadeForm(forms.ModelForm):
     class Meta:
@@ -12,9 +15,9 @@ class BrigadeForm(forms.ModelForm):
         fields = ['name', 'description', 'customer', 'notes']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
-            'description': forms.Textarea(attrs={'class': 'form-control'}),
+            'description': forms.TextInput(attrs={'class': 'form-control'}),
             'customer': forms.TextInput(attrs={'class': 'form-control'}),
-            'notes': forms.Textarea(attrs={'class': 'form-control'}),
+            'notes': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
 
@@ -32,15 +35,11 @@ class EquipmentCreateForm(forms.ModelForm):
             'documents': forms.SelectMultiple(attrs={'class': 'form-control', 'hidden': 'hidden'}),
             'manufacturer': forms.Select(attrs={'class': 'form-select'}),
             'condition': forms.Select(attrs={'class': 'form-control'}),
-            'date_release': forms.DateTimeInput(format='%Y-%m-%d',
-                                                attrs={'class': 'form-control text-info', 'type': 'date'}),
-            'date_exploitation': forms.DateTimeInput(format='%Y-%m-%d',
-                                                     attrs={'class': 'form-control text-info', 'type': 'date',
-                                                            'multiple': 'multiple'}),
-            'certificate_start': forms.DateTimeInput(format='%Y-%m-%d',
-                                                     attrs={'class': 'form-control text-info', 'type': 'date'}),
-            'certificate_end': forms.DateTimeInput(format='%Y-%m-%d',
-                                                   attrs={'class': 'form-control text-info', 'type': 'date'}),
+            'date_release': forms.DateTimeInput(format='%Y-%m-%d', attrs={'class': 'form-control text-info', 'type': 'date', 'style': DATE_STYLE['style']}),
+            'date_exploitation': forms.DateTimeInput(format='%Y-%m-%d', attrs={'class': 'form-control text-info', 'type': 'date',
+                                                            'multiple': 'multiple', 'style': DATE_STYLE['style']}),
+            'certificate_start': forms.DateTimeInput(format='%Y-%m-%d', attrs={'class': 'form-control text-info', 'type': 'date', 'style': DATE_STYLE['style']}),
+            'certificate_end': forms.DateTimeInput(format='%Y-%m-%d', attrs={'class': 'form-control text-info', 'type': 'date', 'style': DATE_STYLE['style']}),
 
         }
 
@@ -72,14 +71,14 @@ class EquipmentCreateByBrigadeForm(forms.ModelForm):
             'documents': forms.SelectMultiple(attrs={'class': 'form-control', 'hidden': 'hidden'}),
             'condition': forms.Select(attrs={'class': 'form-control'}),
             'date_release': forms.DateTimeInput(format='%Y-%m-%d',
-                                                attrs={'class': 'form-control text-info', 'type': 'date'}),
+                                                attrs={'class': 'form-control text-info', 'type': 'date', 'style': DATE_STYLE['style']}),
             'date_exploitation': forms.DateTimeInput(format='%Y-%m-%d',
                                                      attrs={'class': 'form-control text-info', 'type': 'date',
-                                                            'multiple': 'multiple'}),
+                                                            'multiple': 'multiple', 'style': DATE_STYLE['style']}),
             'certificate_start': forms.DateTimeInput(format='%Y-%m-%d',
-                                                     attrs={'class': 'form-control text-info', 'type': 'date'}),
+                                                     attrs={'class': 'form-control text-info', 'type': 'date', 'style': DATE_STYLE['style']}),
             'certificate_end': forms.DateTimeInput(format='%Y-%m-%d',
-                                                   attrs={'class': 'form-control text-info', 'type': 'date'}),
+                                                   attrs={'class': 'form-control text-info', 'type': 'date', 'style': DATE_STYLE['style']}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -192,9 +191,9 @@ class UserCreateForm(forms.ModelForm):
                 self.fields['status'].initial = getattr(self.instance, 'status', self.instance.profile.status)
                 self.fields['notes'].initial = getattr(self.instance, 'notes', self.instance.profile.notes)
 
-            if self.instance.pk:  # if the form is being used to update an existing user
-                self.fields['password'].required = False
-                self.fields['password'].widget.attrs['disabled'] = True
+            # if self.instance.pk:  # if the form is being used to update an existing user
+            #     self.fields['password'].required = False
+            #     self.fields['password'].widget.attrs['disabled'] = True
         except:
             pass
 
@@ -457,9 +456,9 @@ class GroupForm(forms.ModelForm):
 class WorkerActivityForm(forms.ModelForm):
     class Meta:
         model = WorkerActivity
-        fields = ('user', 'date', 'work_type', 'brigade')
+        fields = ('date', 'work_type', 'brigade')
         widgets = {
-            'user': forms.Select(attrs={'class': 'form-control'}),
+            # 'user': forms.Select(attrs={'class': 'form-control'}),
             'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'work_type': forms.Select(attrs={'class': 'form-control'}),
             'brigade': forms.Select(attrs={'class': 'form-control'}),
@@ -482,6 +481,7 @@ class BrigadeActivityForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['work_object'].queryset = WorkObject.objects.order_by('short_name')
 
     def save(self, commit=True):
         brigade_activity = super(BrigadeActivityForm, self).save(commit=False)

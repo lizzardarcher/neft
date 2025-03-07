@@ -27,7 +27,7 @@
                 <tr>
                     <td class="bg-light-subtle">{{ data.user.last_name }} {{ data.user.first_name }}</td>
                     <td class="bg-light-subtle">{{ data.user.profile.position }}</td>
-                    <td class="bg-light-subtle">{{ data.user.profile.brigade.name }}</td>
+                    <td class="bg-light-subtle">{% if data.user.profile.brigade %}<small><a href="{% url 'brigade_index' data.user.profile.brigade.id %}">{{ data.user.profile.brigade.name }}</a></small>{% endif %}</td>
                     {% for wa in data.wa %}
                         {% if wa.wa %}
                             {% if wa.wa.work_type == 'Y' %}
@@ -38,6 +38,8 @@
                                 <td class="bg-info-subtle">О</td>
                             {% elif wa.wa.work_type == 'S' %}
                                 <td class="bg-success-subtle">С</td>
+                            {% else %}
+                                <td>-</td>
                             {% endif %}
                         {% else %}
                             <td class="bg-light-subtle">-</td>
@@ -87,7 +89,7 @@
                     <td>{% if user.profile.position %}{{ user.profile.position }}{% else %}---{% endif %}</td>
                     <td>{% if user.profile.phone_number %}{{ user.profile.phone_number }}{% else %}---{% endif %}</td>
                     <td>{% if user.email %}{{ user.email }}{% else %}---{% endif %}</td>
-                    <td>{% if user.profile.brigade %}{{ user.profile.brigade }}{% else %}---{% endif %}</td>
+                    <td>{% if user.profile.brigade %}<small><a href="{% url 'brigade_index' user.profile.brigade.id %}">{{ user.profile.brigade }}</a></small>{% else %}---{% endif %}</td>
                     <td>{% if user.profile.brigade_start_date %}
                         {{ user.profile.brigade_start_date|date:"d-m-Y" }}{% else %}
                         ---{% endif %}</td>
@@ -113,20 +115,21 @@
                                         </div>
                                         <div class="modal-body">
                                             <form method="post"
-                                                  action="/dashboard/user/user_worker_activity_create/?brigade_id={{ user.profile.brigade.id }}&user_id={{ user.id }}&month={{ month }}&year={{ year }}/">
+                                                  action="/dashboard/user/user_worker_activity_create/?&user_id={{ user.id }}&month={{ month }}&year={{ year }}/">
+{#                                                  action="/dashboard/user/user_worker_activity_create/?brigade_id={{ user.profile.brigade.id }}&user_id={{ user.id }}&month={{ month }}&year={{ year }}/">#}
                                                 {% csrf_token %}
-                                                <label for="id_date">Дата:</label>
-                                                <input type="date" id="id_date" name="date" class="form-control"
-                                                       placeholder="YYYY-MM-DD" required>
+{#                                                <label for="id_date">Дата:</label>#}
+{#                                                <input type="date" id="id_date" name="date" class="form-control" placeholder="YYYY-MM-DD" required>#}
+{##}
+{#                                                <label for="id_work_type">Тип работы:</label>#}
+{#                                                <select id="id_work_type" name="work_type" class="form-control" required>#}
+{#                                                    <option value="Y">Обычная работа (Я)</option>#}
+{#                                                    <option value="G">Работа по геологии (Г)</option>#}
+{#                                                    <option value="O">Обслуживание (О)</option>#}
+{#                                                    <option value="S">Работа стажера (С)</option>#}
+{#                                                </select>#}
 
-                                                <label for="id_work_type">Тип работы:</label>
-                                                <select id="id_work_type" name="work_type" class="form-control"
-                                                        required>
-                                                    <option value="Y">Обычная работа (Я)</option>
-                                                    <option value="G">Работа по геологии (Г)</option>
-                                                    <option value="O">Обслуживание (О)</option>
-                                                    <option value="S">Работа стажера (С)</option>
-                                                </select>
+                                                {{ form.as_p }}
 
                                                 <button type="submit" class="mt-4 btn btn-primary">Добавить</button>
                                             </form>
@@ -208,6 +211,8 @@
                 lengthMenu: 'Показать _MENU_ на странице',
                 zeroRecords: 'Nothing found - sorry'
             },
+            stateSave: true,
+
         });
     </script>
 {% endblock extrascript %}

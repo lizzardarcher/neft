@@ -147,29 +147,33 @@ class WorkerActivityCreateView(CreateView):
 @csrf_exempt
 def create_worker_activity(request):
     if request.method == 'POST':
-        brigade = get_object_or_404(Brigade, id=request.GET.get('brigade_id'))
         user = get_object_or_404(User, id=request.GET.get('user_id').split('/')[0])
+        brigade = get_object_or_404(Brigade, id=request.POST.get('brigade'))
         work_type = request.POST.get('work_type')
         date = request.POST.get('date')
         month = request.POST.get('month')
         year = request.POST.get('year')
-
-        if brigade and user and work_type and date:
-            # Обновление или создание активности
-            worker_activity, created = WorkerActivity.objects.update_or_create(
-                user=user,
-                brigade=brigade,
-                date=date,
-                defaults={'work_type': work_type}
-            )
-            if created:
-                messages.success(request, 'Активность успешно создана!')
-            else:
-                messages.success(request, 'Активность успешно обновлена!')
+        if work_type == '-':
+            WorkerActivity.objects.filter(user=user, date=date).delete()
+            messages.success(request, 'Активность успешно удалена!')
             return redirect(request.META.get('HTTP_REFERER'))
         else:
-            messages.error(request, 'Произошла ошибка при создании активности!')
-            return redirect('brigade_staff', pk=request.GET.get('brigade_id'))
+            if brigade and user and work_type and date:
+                # Обновление или создание активности
+                worker_activity, created = WorkerActivity.objects.update_or_create(
+                    user=user,
+                    brigade=brigade,
+                    date=date,
+                    defaults={'work_type': work_type}
+                )
+                if created:
+                    messages.success(request, 'Активность успешно создана!')
+                else:
+                    messages.success(request, 'Активность успешно обновлена!')
+                return redirect(request.META.get('HTTP_REFERER'))
+            else:
+                messages.error(request, 'Произошла ошибка при создании активности!')
+                return redirect('brigade_staff', pk=request.GET.get('brigade_id'))
     else:
         messages.error(request, 'Произошла ошибка при создании активности!')
         return redirect('brigade_staff', pk=request.GET.get('brigade_id'))
@@ -220,4 +224,5 @@ class StaffTableTotalView(LoginRequiredMixin, SuccessMessageMixin, TemplateView)
             } for user in context['users']
         ]
         context['employee_data'] = employee_data
+        context['form'] = WorkerActivityForm
         return context

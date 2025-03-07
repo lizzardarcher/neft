@@ -21,11 +21,11 @@
                             <td>{{ obj.short_name }}</td>
                             <td>{{ obj.name }}</td>
                             <td>
-                                <a class="btn btn-outline-warning" href="{% url 'work_object_update' obj.id %}">
+                                <a class="text-warning" href="{% url 'work_object_update' obj.id %}">
                                     <i class="fa fa-edit"></i>
                                 </a>
                                 <a onclick="return confirm('Вы уверены, что хотите удалить объект {{ obj.name }} ({{ obj.short_name }})?');"
-                                   class="btn btn-outline-danger" href="{% url 'work_object_delete' obj.id %}">
+                                   class="text-danger" href="{% url 'work_object_delete' obj.id %}">
                                     <i class="fa fa-trash"></i>
                                 </a>
                             </td>

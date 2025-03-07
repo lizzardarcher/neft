@@ -48,7 +48,7 @@ class Manufacturer(models.Model):
 class Equipment(models.Model):
     CONDITION = (('work', 'Рабочее'), ('faulty', 'Неисправное'), ('repair', 'В ремонте'))
 
-    serial = models.CharField(max_length=200, null=False, blank=False, verbose_name='Серийный номер')
+    serial = models.CharField(max_length=200, unique=True, null=False, blank=False, verbose_name='Серийный номер')
     name = models.CharField(max_length=200, null=False, blank=False, verbose_name='Название')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=False, verbose_name='Категория')
     brigade = models.ForeignKey(Brigade, on_delete=models.SET_NULL, null=True, blank=False, verbose_name='Бригада')
@@ -116,6 +116,7 @@ class UserActionLog(models.Model):
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', verbose_name='Пользователь')
+    father_name = models.CharField(max_length=200, default='', blank=True, null=True, verbose_name='Отчество')
     position = models.CharField(max_length=100, blank=True, null=True, verbose_name='Должность')
     phone_number = models.CharField(max_length=20, blank=True, null=True, verbose_name='Номер телефона')
     brigade = models.ForeignKey(Brigade, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Бригада')
@@ -146,7 +147,8 @@ class WorkerActivity(models.Model):
         ('Y', 'Обычная работа (Я)'),
         ('G', 'Работа по геологии (Г)'),
         ('O', 'Обслуживание (О)'),
-        ('S', 'Работа стажера (С)')
+        ('S', 'Работа стажера (С)'),
+        ('-', 'Удалить активность 🛑'),
     ]
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Пользователь')
     brigade = models.ForeignKey(Brigade, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Бригада')
@@ -167,8 +169,12 @@ class WorkObject(models.Model):
     short_name = models.CharField(max_length=200, unique=False, null=False, blank=False, verbose_name='№ куста')
 
     def __str__(self):
-        return f'{self.short_name}'
+        return f'{self.short_name} / {self.hole}'
 
+    class Meta:
+        verbose_name = 'Месторождение'
+        verbose_name_plural = 'Месторождения'
+        unique_together = ['hole', 'name', 'short_name']
 
 class BrigadeActivity(models.Model):
     BRIGADE_ACTIVITY_CHOICES = [

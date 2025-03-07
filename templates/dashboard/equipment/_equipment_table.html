@@ -3,6 +3,9 @@
     <thead class="thead-dark">
     <tr>
         <th>
+            <a href="?sort_by=category{% if request.GET.sort_by == 'category' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'category' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Категория</a>
+        </th>
+        <th>
             <a href="?sort_by=name{% if request.GET.sort_by == 'name' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'name' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Название</a>
         </th>
         <th>
@@ -10,9 +13,6 @@
                 номер</a>
         </th>
 
-        <th>
-            <a href="?sort_by=category{% if request.GET.sort_by == 'category' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'category' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Категория</a>
-        </th>
         {% if not 'brigade' in request.path %}
             <th>
                 <a href="?sort_by=brigade{% if request.GET.sort_by == 'brigade' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'brigade' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Бригада</a>
@@ -84,12 +84,9 @@
         <tr>
 
 
-            <td><a class="link-success link-offset-2"
-                   href="{% url 'equipment_detail' equipment.id %}"><b>{{ equipment.name }}</b></a></td>
-            <td>{{ equipment.serial }}</td>
-
-
             <td>{{ equipment.category }}</td>
+            <td>{{ equipment.name }}</td>
+            <td><a class="link-success link-offset-2" href="{% url 'equipment_detail' equipment.id %}"><b>{{ equipment.serial }}</b></a></td>
 
             {% if not 'brigade' in request.path %}
                 <td>{% if equipment.brigade %}{{ equipment.brigade }}{% else %}---{% endif %}</td>{% endif %}
