@@ -17,7 +17,7 @@ class EquipmentListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
     model = Equipment
     context_object_name = 'equipments'
     template_name = 'dashboard/equipment/equipment_list.html'
-    paginate_by = 50
+    paginate_by = 100
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -33,7 +33,7 @@ class EquipmentListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
         order = self.request.GET.get('order', 'asc')  # по умолчанию прямой порядок
         if search_request:
             equipment_by_name = Equipment.objects.filter(name__icontains=search_request)
-            equipment_by_serial = Equipment.objects.filter(name__icontains=search_request)
+            equipment_by_serial = Equipment.objects.filter(serial__icontains=search_request)
             queryset = (equipment_by_name | equipment_by_serial)
         if sort_by:
             if order == 'desc':
