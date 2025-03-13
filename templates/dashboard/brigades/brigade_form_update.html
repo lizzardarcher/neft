@@ -23,7 +23,8 @@
             </div>
             <hr>
             <button type="submit" class="btn btn-primary">Обновить</button>
-            <a href="{% url 'brigade_list' %}" class="btn btn-secondary">Отмена</a>
+{#            <a href="{% url 'brigade_list' %}" class="btn btn-secondary">Отмена</a>#}
+            <a href="{{ request.META.HTTP_REFERER }}" class="btn btn-secondary">Назад</a>
         </form>
     </div>
 {% endblock content %}

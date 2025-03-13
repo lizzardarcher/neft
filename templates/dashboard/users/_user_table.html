@@ -20,11 +20,11 @@
                 <th>Тел.</th>
                 <th>Email</th>
                 <th>Бригада</th>
-                <th>Работа_с</th>
-                <th>Работа_по</th>
+{#                <th>Работа_с</th>#}
+{#                <th>Работа_по</th>#}
                 <th>Работа/Отпуск</th>
-                <th>Группы</th>
                 <th>Примечания</th>
+                <th>Группы</th>
                 <th class="no-sort">Действия</th>
             </tr>
             </thead>
@@ -40,11 +40,10 @@
                     <td>{% if user.profile.brigade %}
                         <small><a href="{% url 'brigade_detail' user.profile.brigade.id %}">{{ user.profile.brigade }}</a></small>{% else %}
                         ---{% endif %}</td>
-                    <td>{% if user.profile.brigade_start_date %}
-                        {{ user.profile.brigade_start_date|date:"d-m-Y" }}{% else %}---{% endif %}</td>
-                    <td>{% if user.profile.brigade_end_date %}{{ user.profile.brigade_end_date|date:"d-m-Y" }}{% else %}
-                        ---{% endif %}</td>
+{#                    <td>{% if user.profile.brigade_start_date %}{{ user.profile.brigade_start_date|date:"d-m-Y" }}{% else %}---{% endif %}</td>#}
+{#                    <td>{% if user.profile.brigade_end_date %}{{ user.profile.brigade_end_date|date:"d-m-Y" }}{% else %}---{% endif %}</td>#}
                     <td>{% if user.profile.status %}Работа{% else %}Отпуск{% endif %}</td>
+                    <td>{% if user.profile.notes %}<small>{{ user.profile.notes }}</small>{% else %}---{% endif %}</td>
                     <td>
                         {% for group in user.groups.all %}
                             <span class="badge bg-info">{{ group.name }}</span>
@@ -52,7 +51,6 @@
                             ---
                         {% endfor %}
                     </td>
-                    <td>{% if user.profile.notes %}<small>{{ user.profile.notes }}</small>{% else %}---{% endif %}</td>
                     <td>
                         {% if request.user|has_group:"Администратор" %}
                             <a href="{% url 'user_update' user.id %}" class="btn btn-sm btn-outline-warning"><i
@@ -106,7 +104,7 @@
         sorting: false,
         searching: false,
         columnDefs: [
-            {"orderable": false, "targets": [12]}
+            {"orderable": false, "targets": [10]}
         ],
         language: {
             info: ' Показано _PAGE_ из _PAGES_ страниц',

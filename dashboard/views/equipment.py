@@ -233,7 +233,9 @@ def equipment_delete(request, equipment_id):
     equipment = get_object_or_404(Equipment, id=equipment_id)
     equipment.delete()
     messages.success(request, 'Оборудование успешно удалено!')
-    return redirect('equipment_list')
+    referer_url = request.META.get('HTTP_REFERER')
+    return HttpResponseRedirect(referer_url)
+    # return redirect('equipment_list')
 
 
 class DocumentListView(LoginRequiredMixin, SuccessMessageMixin, ListView):

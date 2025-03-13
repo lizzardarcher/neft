@@ -15,6 +15,7 @@ urlpatterns = [
     path('brigade/<int:brigade_id>/brigade_activity_create/', brigades.brigade_activity_create, name='brigade_activity_create'),
     path('brigades/create/', brigades.BrigadeCreateView.as_view(), name='brigade_create'),
     path('brigades/<int:pk>/update/', brigades.BrigadeUpdateView.as_view(), name='brigade_update'),
+    path('brigades/<int:pk>/brigade_update_from_work/<int:month>/<int:year>/', brigades.BrigadeUpdateFromWorkView.as_view(), name='brigade_update_from_work'),
     path('brigades/<int:pk>/brigade_update_from_total/', brigades.BrigadeUpdateFromTotalView.as_view(), name='brigade_update_from_total'),
     path('brigades/<int:brigade_id>/delete/', brigades.brigade_delete, name='brigade_delete'),
     path('brigades/object_create/', brigades.work_object_create, name='work_object_create'),

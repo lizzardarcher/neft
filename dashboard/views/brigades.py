@@ -314,6 +314,19 @@ class BrigadeUpdateFromTotalView(LoginRequiredMixin, SuccessMessageMixin, Update
         return f"Бригада {cleaned_data['name']} Успешно обновлена!"
 
 
+class BrigadeUpdateFromWorkView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = Brigade
+    context_object_name = 'brigade'
+    template_name = 'dashboard/brigades/brigade_form_update.html'
+    form_class = BrigadeForm
+
+    def get_success_url(self):
+        return reverse('brigade_work', args=[self.kwargs.get('pk'), self.kwargs.get('month'), self.kwargs.get('year')])
+
+    def get_success_message(self, cleaned_data):
+        return f"Бригада {cleaned_data['name']} Успешно обновлена!"
+
+
 def brigade_delete(request, brigade_id):
     brigade = get_object_or_404(Brigade, id=brigade_id)
     brigade.delete()

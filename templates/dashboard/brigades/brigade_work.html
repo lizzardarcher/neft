@@ -71,7 +71,7 @@
                             {% endif %}
                         {% endfor %}
                         <td>
-                            <small><a href="{% url 'brigade_update_from_total' data.brigade.id %}"
+                            <small><a href="{% url 'brigade_update_from_work' data.brigade.id month year %}"
                                       class="btn btn-sm btn-outline-warning"><i
                                     class="fa fa-edit"></i></a></small>
                             <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal"
