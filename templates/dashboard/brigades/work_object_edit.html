@@ -1,0 +1,20 @@
+{% extends 'layouts/base.html' %}
+{% load custom_filters %}
+
+{% block title %}
+    Редактирование объекта работы
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="card">
+            <div class="card-body p-3 m-2">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button class="btn btn-primary" type="submit">Сохранить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
