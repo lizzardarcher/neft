@@ -150,7 +150,6 @@ class BrigadeWorkView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
 
         context['form'] = BrigadeActivityForm()
         context['work_object_form'] = WorkObjectForm()
-        context['work_objects'] = WorkObject.objects.all().order_by('name')
         brigade_id = int(self.request.path.split('/')[-5])
         year = int(self.kwargs.get('year', datetime.now().year))
         month = int(self.kwargs.get('month', datetime.now().month))
@@ -158,18 +157,21 @@ class BrigadeWorkView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
         brigade = get_object_or_404(Brigade, pk=brigade_id)
         context['brigade'] = brigade
 
-        # Fetch activities for the selected month and brigade
         activities = BrigadeActivity.objects.filter(
             brigade=brigade,
             date__year=year,
             date__month=month
         )
+        work_objects = []
+        for i in activities:
+            if i.work_object:
+                work_objects.append(i.work_object)
+        context['work_objects'] = work_objects
+        # context['work_objects'] = WorkObject.objects.all().order_by('name')
 
-        # Build the calendar structure (list of weeks, each a list of days)
         cal = calendar.monthcalendar(year, month)  # Returns a list of lists
         context['calendar'] = cal
 
-        # Pass the current year and month for display
         context['year'] = year
         context['month'] = month if month > 9 else '0' + str(month)
         context['month_name'] = calendar.month_name[month]
@@ -187,7 +189,6 @@ class BrigadeWorkView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
         context['brigade_data'] = brigade_data
         context['days'] = get_days_in_month(month, year)
 
-        # Generate links for previous and next months
         prev_month = month - 1 if month > 1 else 12
         prev_year = year if month > 1 else year - 1
         next_month = month + 1 if month < 12 else 1
@@ -196,7 +197,6 @@ class BrigadeWorkView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
         context['prev_month_url'] = f'/dashboard/brigade/{brigade_id}/work/{prev_month}/{prev_year}'
         context['next_month_url'] = f'/dashboard/brigade/{brigade_id}/work/{next_month}/{next_year}'
 
-        # Prepare dictionary with all activies grouped by days
         activities_by_day = {}
         for activity in activities:
             day = activity.date.day
@@ -239,7 +239,14 @@ class BrigadeTableTotalView(LoginRequiredMixin, SuccessMessageMixin, TemplateVie
 
         context['form'] = BrigadeActivityForm()
         context['work_object_form'] = WorkObjectForm()
-        context['work_objects'] = WorkObject.objects.all().order_by('name')
+        work_objects = []
+        for i in BrigadeActivity.objects.filter(date__month=month, date__year=year):
+            if i.work_object:
+                work_objects.append(i.work_object)
+        work_objects = set(work_objects)
+
+        context['work_objects'] = work_objects
+        # context['work_objects'] = WorkObject.objects.all().order_by('name')
         context['month'] = month
         context['year'] = year
         context['current_month'] = datetime.now().month
