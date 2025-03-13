@@ -154,7 +154,7 @@ class WorkerActivity(models.Model):
                                  verbose_name='Тип работы')
 
     def __str__(self):
-        return self.user.username
+        return f'{self.user.username} - {self.brigade} - {self.date} - {self.work_type}'
 
     class Meta:
         unique_together = ['user', 'date', 'brigade']

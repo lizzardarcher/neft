@@ -1,5 +1,6 @@
 import calendar
 from datetime import datetime
+from re import search
 
 import openpyxl
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -11,7 +12,8 @@ from django.views import View
 import csv
 from openpyxl import Workbook
 
-from dashboard.models import Brigade, Category, Equipment, UserActionLog, Transfer, Document, BrigadeActivity
+from dashboard.models import Brigade, Category, Equipment, UserActionLog, Transfer, Document, BrigadeActivity, \
+    WorkerActivity
 from dashboard.utils.utils import get_days_in_month
 
 
@@ -133,14 +135,21 @@ class EquipmentCSVExportView(BaseExportView):
         writer.writerows(self.get_data())
         return response
 
-class EquipmentExcelExportView(BaseExportView):
+class EquipmentExcelExportView(LoginRequiredMixin, View):
     """Выгрузка данных оборудования в Excel."""
-    model = Equipment
     filename = 'equipments.xlsx'
     header = ['id', 'serial', 'name', 'category', 'brigade', 'condition', 'date_release', 'date_exploitation', 'manufacturer', 'certificate_start', 'certificate_end']
 
-    def get_data(self):
-        queryset = self.get_queryset()
+    def get(self, request, *args, **kwargs):
+
+        search_request = request.GET.get("search")
+        if search_request:
+            equipment_by_name = Equipment.objects.filter(name__icontains=search_request)
+            equipment_by_serial = Equipment.objects.filter(serial__icontains=search_request)
+            queryset = (equipment_by_name | equipment_by_serial)
+        else:
+            queryset = Equipment.objects.all()
+
         data = []
         for obj in queryset:
             row = [
@@ -157,13 +166,11 @@ class EquipmentExcelExportView(BaseExportView):
                 obj.certificate_end
             ]
             data.append(row)
-        return data
 
-    def get(self, request):
         workbook = Workbook()
         sheet = workbook.active
         sheet.append(self.header)
-        for row in self.get_data():
+        for row in data:
             sheet.append(row)
 
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -244,4 +251,57 @@ class BrigadeActivityExcelView(LoginRequiredMixin, View):
 
 
 class WorkerActivityExcelView(LoginRequiredMixin, View):
-    pass
+    def get(self, request, *args, **kwargs):
+        month = int(request.GET.get('month', datetime.now().month))
+        year = int(request.GET.get('year', datetime.now().year))
+
+        if not 1 <= month <= 12:
+            month = datetime.now().month
+        if not 1900 <= year <= datetime.now().year + 10:
+            year = datetime.now().year
+
+        brigades = Brigade.objects.all().order_by('name')
+        days_in_month = calendar.monthrange(year, month)[1]
+        days = get_days_in_month(month, year)
+
+        users = User.objects.all().order_by('last_name', 'first_name')
+
+        # Create a new workbook and add a worksheet.
+        workbook = Workbook()
+        worksheet = workbook.active
+        worksheet.title = f"Brigade Activities - {calendar.month_name[month]} {year}"
+
+        # Add headers
+        headers = ['ФИО'] + ['Должность'] + ['Бригада'] + [f'{day}' for day in days] + ['Итого']
+        worksheet.append(headers)
+
+        # Populate data
+        for user in users:
+            row_data = [user.get_full_name(), user.profile.position, user.profile.brigade.__str__()]
+            total_ba = 0
+            for day in days:
+                wa = WorkerActivity.objects.filter(user=user, date__day=day, date__month=month, date__year=year).last()
+                try:
+                    activity_str = wa.work_type
+                except:
+                    activity_str = ""
+                row_data.append(activity_str)
+                if wa:
+                    total_ba += 1  # Increment the total count for the brigade
+
+            row_data.append(total_ba)  # Add the total to the row
+            worksheet.append(row_data)
+
+        # Add formatting (optional)
+        # Example: Bold the header row
+        for cell in worksheet[1]:
+            cell.font = openpyxl.styles.Font(bold=True)
+
+        # Create the response
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = f'attachment; filename=brigade_activities_{month}_{year}.xlsx'
+
+        # Save the workbook to the response
+        workbook.save(response)
+
+        return response

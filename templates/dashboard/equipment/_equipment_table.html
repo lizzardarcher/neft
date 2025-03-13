@@ -140,7 +140,7 @@
             </td>
             <td>
                 {% if user|has_perm_in_group:"Dashboard.change_equipment" %}
-                    <a href="{% if 'brigade' in request.path %}{% url 'equipment_update_by_brigade' equipment.id equipment.brigade.id %}{% else %}{% url 'equipment_update' equipment.id %}{% endif %}"
+                    <a href="{% if 'brigade' in request.path %}{% url 'equipment_update_by_brigade' equipment.id equipment.brigade.id %}{% else %}{% url 'equipment_update' equipment.id %}?search={{ request.GET.search }}{% endif %}"
                        class="btn btn-sm btn-outline-warning"><i
                             class="fa fa-edit"></i> </a>
                     <button type="button" class="btn btn-sm btn-outline-danger" data-toggle="modal"

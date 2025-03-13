@@ -146,7 +146,8 @@ class EquipmentUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return context
 
     def get_success_url(self):
-        return reverse('equipment_list')
+        search_request = self.request.GET.get("search")
+        return reverse('equipment_list') + f'?search={search_request}'
 
     def form_valid(self, form):
         manufacturer_id = self.request.POST.get('id_manufacturer')

@@ -13,7 +13,7 @@
                 </div>
             {% endif %}
             <div class="p-0">
-                <a class="btn btn-success m-1" href="{% url 'equipment_export_excel' %}"><i
+                <a class="btn btn-success m-1" href="{% url 'equipment_export_excel' %}?search={{ request.GET.search }}"><i
                         class="fa fa-file-excel"></i>
                     Выгрузить в EXCEL</a>
                 <a class="btn btn-success m-1" href="{% url 'equipment_export_csv' %}"><i class="fa fa-file-csv"></i>
