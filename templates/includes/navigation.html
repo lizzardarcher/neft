@@ -1,8 +1,10 @@
 {% load static %}
 <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
-        
-{#        <a class="navbar-brand fw-bold" href="{% url 'home' %}">Главная</a>#}
+
+        <div id="disk-chart-container" style="width: 7.5rem; height: 4rem;">
+            <canvas id="diskChart"></canvas>
+        </div>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText"
                 aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -16,10 +18,10 @@
                     <a class="nav-link fw-bold" href="{% url 'instructions' %}">Помощь</a>
                 </li>
                 <li class="nav-item mx-3">
-                   <a class="nav-link fw-bold" href="{% url 'user_detail' request.user.id %}">
+                    <a class="nav-link fw-bold" href="{% url 'user_detail' request.user.id %}">
                         Личный кабинет
                         {% for group in user.groups.all %}
-                        <span class="mx-2">
+                            <span class="mx-2">
                         {{ group.name }}
                         </span>
                         {% endfor %}</a>
@@ -40,3 +42,53 @@
         </div>
     </div>
 </nav>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {  // Убедитесь, что DOM загружен
+        const ctx = document.getElementById('diskChart').getContext('2d');
+
+        // Получаем данные из контекста Django
+        const diskData = {{ disk_chart_data|safe }}; // Используем |safe, чтобы Django не экранировал JSON
+
+        if (diskData) {
+            const percentUsed = diskData.percent_used;
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [percentUsed, 100 - percentUsed], // Данные для диаграммы
+                        backgroundColor: [
+                            'rgb(237,172,182)', // Цвет заполненной части
+                            'rgb(202,247,251)'  // Цвет пустой части
+                        ],
+                        borderWidth: 1 // Убираем границы
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, // Важно для задания размеров через CSS
+                    cutout: '30%',           // Размер отверстия в центре (для эффекта кольца)
+                    plugins: {
+                        legend: {
+                            display: false     // Убираем легенду
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return `${diskData.used_gb} из ${diskData.total_gb} Gb`; // Кастомный текст для tooltip
+                                }
+                            }
+                        }
+                    },
+                    layout: {
+                        padding: 10
+                    }
+                }
+            });
+        } else {
+            document.getElementById('disk-chart-container').innerText = 'Не удалось получить данные о диске';
+        }
+    });
+</script>

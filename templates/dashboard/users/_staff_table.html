@@ -51,6 +51,27 @@
                                 data-target="#wa-modal{{ data.user }}">
                             <i class="fa fa-add"></i>
                         </button>
+                        <div class="modal fade" id="wa-modal{{ data.user }}" tabindex="-1" role="dialog"
+                             aria-labelledby="wa-modal{{ data.user }}-label" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="wa-modal{{ data.user }}-label">Добавить тип работы
+                                            для пользователя: <br> {{ data.user.get_full_name }} </h5>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form method="post"
+                                              action="/dashboard/user/user_worker_activity_create/?&user_id={{ data.user.id }}&month={{ month }}&year={{ year }}/">
+                                            {% csrf_token %}
+                                            {{ form.as_p }}
+
+                                            <button type="submit" class="mt-4 btn btn-primary">Добавить</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </td>
                 </tr>
             {% endfor %}
@@ -101,42 +122,10 @@
                         {% if request.user|has_perm_in_group:"auth.change_user" %}
                             <a href="{% url 'user_staff_update' user.id %}"
                                class="btn btn-sm btn-outline-warning"><i class="fa fa-edit"></i></a>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal"
-                                    data-target="#wa-modal{{ user }}">
-                                <i class="fa fa-add"></i>
-                            </button>
-                            <div class="modal fade" id="wa-modal{{ user }}" tabindex="-1" role="dialog"
-                                 aria-labelledby="wa-modal{{ user }}-label" aria-hidden="true">
-                                <div class="modal-dialog" role="document">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="wa-modal{{ user }}-label">Добавить тип работы
-                                                для пользователя: <br> {{ user.get_full_name }} </h5>
-                                        </div>
-                                        <div class="modal-body">
-                                            <form method="post"
-                                                  action="/dashboard/user/user_worker_activity_create/?&user_id={{ user.id }}&month={{ month }}&year={{ year }}/">
-{#                                                  action="/dashboard/user/user_worker_activity_create/?brigade_id={{ user.profile.brigade.id }}&user_id={{ user.id }}&month={{ month }}&year={{ year }}/">#}
-                                                {% csrf_token %}
-{#                                                <label for="id_date">Дата:</label>#}
-{#                                                <input type="date" id="id_date" name="date" class="form-control" placeholder="YYYY-MM-DD" required>#}
-{##}
-{#                                                <label for="id_work_type">Тип работы:</label>#}
-{#                                                <select id="id_work_type" name="work_type" class="form-control" required>#}
-{#                                                    <option value="Y">Обычная работа (Я)</option>#}
-{#                                                    <option value="G">Работа по геологии (Г)</option>#}
-{#                                                    <option value="O">Обслуживание (О)</option>#}
-{#                                                    <option value="S">Работа стажера (С)</option>#}
-{#                                                </select>#}
-
-                                                {{ form.as_p }}
-
-                                                <button type="submit" class="mt-4 btn btn-primary">Добавить</button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+{#                            <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal"#}
+{#                                    data-target="#wa-modal{{ user }}">#}
+{#                                <i class="fa fa-add"></i>#}
+{#                            </button>#}
                         {% else %}
                             <a class="btn btn-sm btn-outline-secondary"><i
                                     class="fa fa-edit"></i></a>
