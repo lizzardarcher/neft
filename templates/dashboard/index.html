@@ -82,7 +82,8 @@
                     <div class="card-body">
                         <h5 class="card-title">Учет работников</h5>
                     </div>
-                    <a href="{% url 'staff_table_total' %}?month={{ month }}&year={{ year }}" class="m-1 btn btn-outline-info">Просмотреть</a>
+                    <a href="{% url 'staff_table_total' %}?month={{ month }}&year={{ year }}"
+                       class="m-1 btn btn-outline-info">Просмотреть</a>
                 </div>
             </div>
         {% endif %}
@@ -95,10 +96,44 @@
                     <div class="card-body">
                         <h5 class="card-title">Учет бригад</h5>
                     </div>
-                    <a href="{% url 'brigade_table_total' %}?month={{ month }}&year={{ year }}" class="m-1 btn btn-outline-info">Просмотреть</a>
+                    <a href="{% url 'brigade_table_total' %}?month={{ month }}&year={{ year }}"
+                       class="m-1 btn btn-outline-info">Просмотреть</a>
                 </div>
             </div>
         {% endif %}
+
+
+        {% if request.user.is_superuser %}
+            <div class="col-md-4 mb-3">
+                <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
+                    <div class="card-header"><i class="fa fa-mountain"></i>
+                        <b>Объектов:</b> <span class="badge bg-secondary-subtle text-dark">{{ work_object.count }}</span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Месторождения</h5>
+                        <p class="card-title text-muted">В разработке</p>
+                    </div>
+                    <a href="#" class="m-1 btn btn-outline-info">Просмотреть</a>
+                </div>
+            </div>
+        {% endif %}
+
+
+        {% if request.user.is_superuser %}
+            <div class="col-md-4 mb-3">
+                <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
+                    <div class="card-header"><i class="fa fa-truck"></i>
+                        <b>Действий:</b> <span class="badge bg-secondary-subtle text-dark">{{ vehicle_movement.count }}</span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Снабжение</h5>
+                        <p class="card-title text-muted">В разработке</p>
+                    </div>
+                    <a href="#" class="m-1 btn btn-outline-info">Просмотреть</a>
+                </div>
+            </div>
+        {% endif %}
+
 
         {% if user|has_group:"Руководитель" or user|has_group:"Администратор" %}
             <div class="col-md-4 mb-3">
