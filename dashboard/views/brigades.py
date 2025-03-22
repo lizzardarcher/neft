@@ -25,7 +25,6 @@ class BrigadeListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
     model = Brigade
     context_object_name = 'brigades'
     template_name = 'dashboard/brigades/brigade_list.html'
-    paginate_by = 30
     ordering = 'name'
 
     def get_queryset(self):

@@ -45,11 +45,9 @@
 
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {  // Убедитесь, что DOM загружен
+    document.addEventListener('DOMContentLoaded', function () {
         const ctx = document.getElementById('diskChart').getContext('2d');
-
-        // Получаем данные из контекста Django
-        const diskData = {{ disk_chart_data|safe }}; // Используем |safe, чтобы Django не экранировал JSON
+        const diskData = {{ disk_chart_data|safe }};
 
         if (diskData) {
             const percentUsed = diskData.percent_used;
@@ -58,21 +56,21 @@
                 type: 'doughnut',
                 data: {
                     datasets: [{
-                        data: [percentUsed, 100 - percentUsed], // Данные для диаграммы
+                        data: [percentUsed, 100 - percentUsed],
                         backgroundColor: [
-                            'rgb(237,172,182)', // Цвет заполненной части
-                            'rgb(202,247,251)'  // Цвет пустой части
+                            'rgb(237,172,182)',
+                            'rgb(202,247,251)'
                         ],
-                        borderWidth: 1 // Убираем границы
+                        borderWidth: 1
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false, // Важно для задания размеров через CSS
-                    cutout: '30%',           // Размер отверстия в центре (для эффекта кольца)
+                    maintainAspectRatio: false,
+                    cutout: '30%',
                     plugins: {
                         legend: {
-                            display: false     // Убираем легенду
+                            display: false
                         },
                         tooltip: {
                             callbacks: {

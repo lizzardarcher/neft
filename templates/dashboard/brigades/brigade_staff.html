@@ -20,7 +20,7 @@
                 {"orderable": false, "targets": [8]}
             ],
             language: {
-                info: ' Показано _PAGE_ из _PAGES_ страниц',
+                info: ' ',
                 infoEmpty: 'Нет записей',
                 infoFiltered: '(filtered from _MAX_ total records)',
                 lengthMenu: 'Показать _MENU_ на странице',
@@ -29,7 +29,9 @@
             lengthMenu: [
                 [15, 30, 60, -1],
                 [15, 30, 60, 'все записи']
-            ]
+            ],
+            paging: false,
+            stateSave: true,
 
         });
 
@@ -57,8 +59,9 @@
                 [60, 120, 180, -1],
                 [60, 120, 180, 'все записи']
             ],
+            paging: false,
             language: {
-                info: ' Показано _PAGE_ из _PAGES_ страниц',
+                info: ' ',
                 infoEmpty: 'Нет записей',
                 infoFiltered: '(filtered from _MAX_ total records)',
                 lengthMenu: 'Показать _MENU_ на странице',

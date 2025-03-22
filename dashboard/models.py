@@ -140,13 +140,18 @@ class WorkTypes(models.Model):
 
 
 class WorkerActivity(models.Model):
+
     WORKER_ACTIVITY_CHOICES = [
         ('Y', 'Обычная работа (Я)'),
         ('G', 'Работа по геологии (Г)'),
         ('O', 'Обслуживание (О)'),
         ('S', 'Работа стажера (С)'),
+        ('T', 'Техдежурство (Т)'),
+        ('D', 'Дежурство (Д)'),
+        ('N', 'Наставничество (Н)'),
         ('-', 'Удалить активность 🛑'),
     ]
+
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Пользователь')
     brigade = models.ForeignKey(Brigade, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Бригада')
     date = models.DateField(auto_now_add=False, auto_now=False, null=False, blank=False, verbose_name='Дата')
@@ -186,6 +191,7 @@ class BrigadeActivity(models.Model):
         ('Переезд', 'Переезд'),
         ('Простой', 'Простой'),
         ('Авария', 'Авария'),
+        ('Движка', 'Движка'),
     ]
     brigade = models.ForeignKey(Brigade, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Бригада')
     date = models.DateField(auto_now_add=False, auto_now=False, null=False, blank=False, verbose_name='Дата')

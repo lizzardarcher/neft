@@ -47,12 +47,12 @@
                                     </div>
                                     <div class="modal-body">
                                         <form method="post"
-                                              action="/dashboard/user/user_worker_activity_create/?brigade_id={{ user.profile.brigade.id }}&user_id={{ user.id }}&month={{ month }}&year={{ year }}/">
+                                              action="/dashboard/user/user_worker_activity_create/?brigade_id={{ brigade.id }}&user_id={{ user.id }}&month={{ month }}&year={{ year }}">
                                             {% csrf_token %}
                                             <label for="id_date">Дата:</label>
                                             <input type="date" id="id_date" name="date" class="form-control"
                                                    placeholder="YYYY-MM-DD" required>
-
+                                            <input type="hidden" name="brigade" value="{{ brigade.id }}">
                                             <label for="id_work_type">Тип работы:</label>
                                             <select id="id_work_type" name="work_type" class="form-control"
                                                     required>
@@ -60,6 +60,9 @@
                                                 <option value="G">Работа по геологии (Г)</option>
                                                 <option value="O">Обслуживание (О)</option>
                                                 <option value="S">Работа стажера (С)</option>
+                                                <option value="T">Тех дежурство (Т)</option>
+                                                <option value="D">Дежурство (Д)</option>
+                                                <option value="N">Наставничество (Н)</option>
                                             </select>
 
                                             <button type="submit" class="mt-4 btn btn-primary">Добавить</button>
@@ -117,6 +120,12 @@
                             <td class="bg-info-subtle">О</td>
                         {% elif wa.wa.work_type == 'S' %}
                             <td class="bg-success-subtle">С</td>
+                        {% elif wa.wa.work_type == 'T' %}
+                            <td class="bg-secondary-subtle">Т</td>
+                        {% elif wa.wa.work_type == 'D' %}
+                            <td class="bg-secondary-subtle">Д</td>
+                        {% elif wa.wa.work_type == 'N' %}
+                            <td class="bg-secondary-subtle">Н</td>
                         {% endif %}
                     {% else %}
                         <td class="bg-light-subtle">-</td>

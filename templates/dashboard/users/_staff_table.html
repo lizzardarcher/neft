@@ -38,6 +38,12 @@
                                 <td class="bg-info-subtle">О</td>
                             {% elif wa.wa.work_type == 'S' %}
                                 <td class="bg-success-subtle">С</td>
+                            {% elif wa.wa.work_type == 'T' %}
+                                <td class="bg-secondary-subtle">Т</td>
+                            {% elif wa.wa.work_type == 'D' %}
+                                <td class="bg-secondary-subtle">Д</td>
+                            {% elif wa.wa.work_type == 'N' %}
+                                <td class="bg-secondary-subtle">Н</td>
                             {% else %}
                                 <td>-</td>
                             {% endif %}
@@ -194,8 +200,9 @@
                 [60, 120, 180, -1],
                 [60, 120, 180, 'все записи']
             ],
+            paging: false,
             language: {
-                info: ' Показано _PAGE_ из _PAGES_ страниц',
+                info: ' ',
                 infoEmpty: 'Нет записей',
                 infoFiltered: '(filtered from _MAX_ total records)',
                 lengthMenu: 'Показать _MENU_ на странице',
