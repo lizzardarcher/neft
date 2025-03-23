@@ -1,0 +1,13 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}{{ vehicle.brand }} {{ vehicle.model }} {% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="card">
+            <div class="card-body p-3 m-2">
+                {{ vehicle }}
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -44,6 +44,18 @@ urlpatterns = [
 
     path('manufacturer_delete/<int:manufacturer_id>/', equipment.manufacturer_delete, name='manufacturer_delete'),
     path('transfers/history/', transfers.TransferHistoryView.as_view(), name='transfer_history'),
+    path('transfer/vehicle_list', transfers.VehicleListView.as_view(), name='vehicle_list'),
+    path('transfer/vehicle_create', transfers.VehicleCreateView.as_view(), name='vehicle_create'),
+    path('transfer/vehicle_update/<int:pk>', transfers.VehicleUpdateView.as_view(), name='vehicle_update'),
+    path('transfer/vehicle_delete/<int:pk>', transfers.vehicle_delete, name='vehicle_delete'),
+    path('transfer/vehicle_detail/<int:pk>', transfers.VehicleDetailView.as_view(), name='vehicle_detail'),
+    path('transfer/vehicle_movement_create', transfers.VehicleMovementCreateView.as_view(), name='vehicle_movement_create'),
+    path('transfer/vehicle_movement_update/<int:pk>', transfers.VehicleMovementUpdateView.as_view(), name='vehicle_movement_update'),
+    path('transfer/vehicle_movement_delete/<int:pk>', transfers.vehicle_movement_delete, name='vehicle_movement_delete'),
+    path('transfer/vehicle_movement_detail/<int:pk>', transfers.VehicleMovementDetailView.as_view(), name='vehicle_movement_detail'),
+    path('transfer/vehicle_movement_list', transfers.VehicleMovementListView.as_view(), name='vehicle_movement_list'),
+
+
 
     path('users/', users.UserListView.as_view(), name='user_list'),
     path('users/create/', users.UserCreateView.as_view(), name='user_create'),
@@ -77,5 +89,6 @@ urlpatterns = [
 
     path('equipment/export/csv/', index.EquipmentCSVExportView.as_view(), name='equipment_export_csv'),
     path('equipment/export/excel/', index.EquipmentExcelExportView.as_view(), name='equipment_export_excel'),
+
 
 ]
