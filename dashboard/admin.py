@@ -52,3 +52,18 @@ class WorkObjectAdmin(admin.ModelAdmin):
 class BrigadeActivityAdmin(admin.ModelAdmin):
     list_display = ('brigade', 'date', 'work_type', 'work_object')
 
+@admin.register(OtherCategory)
+class OtherCategoryAdmin(admin.ModelAdmin):
+    ...
+
+@admin.register(OtherEquipment)
+class OtherEquipmentAdmin(admin.ModelAdmin):
+    ...
+
+@admin.register(Vehicle)
+class VehicleAdmin(admin.ModelAdmin):
+    ...
+
+@admin.register(VehicleMovement)
+class VehicleMovementAdmin(admin.ModelAdmin):
+    ...

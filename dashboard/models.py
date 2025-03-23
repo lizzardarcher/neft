@@ -201,3 +201,66 @@ class BrigadeActivity(models.Model):
 
     def __str__(self):
         return self.brigade.name
+
+
+
+class OtherCategory(models.Model):
+    name = models.CharField(max_length=200, unique=True, null=False, blank=False, verbose_name='Название категории')
+
+    def __str__(self):
+        return self.name
+
+
+class OtherEquipment(models.Model):
+    name = models.CharField(max_length=200, unique=True, null=False, blank=False, verbose_name='Название оборудования')
+    category = models.ForeignKey(OtherCategory, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Категория')
+    amount = models.IntegerField(null=False, blank=False, default=1, verbose_name='Количество')
+
+    def __str__(self):
+        return f"{self.name} ({self.category})"
+
+
+class Vehicle(models.Model):
+    brand = models.CharField(max_length=200, null=False, blank=False, verbose_name='Марка')
+    model = models.CharField(max_length=200, null=True, blank=True, verbose_name='Модель')
+    number = models.CharField(max_length=200, null=True, blank=True, verbose_name='Гос Номер')
+
+    def __str__(self):
+        return f'{self.brand} - {self.model} - {self.number}'
+
+
+class VehicleMovement(models.Model):
+    vehicle = models.ForeignKey(Vehicle, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Автомобиль')
+    brigade_from = models.ForeignKey(Brigade, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Из бригады', related_name='vehicle_movements_from')
+    brigade_to = models.ForeignKey(Brigade, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='В бригаду', related_name='vehicle_movements_to')
+    date = models.DateField(auto_now_add=False, auto_now=False, null=False, blank=False, verbose_name='Дата')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
