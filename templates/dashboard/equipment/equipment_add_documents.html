@@ -28,7 +28,7 @@
                                 <div class="row">
                                     <div class="col-11">
                                         {% if user|has_perm_in_group:"Dashboard.view_document" %}
-                                            <a href="{{ doc.file.url }}">{{ doc.title }} <small>{{ doc.file.size|filesize_mb }}</small></a>
+                                            <a href="{{ doc.file.url }}" target="_blank">{{ doc.title }} <small>{{ doc.file.size|filesize_mb }}</small></a>
                                         {% else %}
                                             <a href="#">{{ doc.title }} <small>{{ doc.file.size|filesize_mb }}</small></a>
                                         {% endif %}
