@@ -5,7 +5,7 @@ from django.contrib.auth.models import Group, Permission
 from django.core.exceptions import ValidationError
 
 from dashboard.models import Brigade, Equipment, Document, Category, UserProfile, Manufacturer, WorkerActivity, \
-    BrigadeActivity, WorkObject
+    BrigadeActivity, WorkObject, Vehicle, VehicleMovement, OtherEquipment
 
 DATE_STYLE = {'style': 'width: 15rem;'}
 
@@ -503,3 +503,28 @@ class WorkObjectForm(forms.ModelForm):
     #     super().__init__(*args, **kwargs)
     #     existing_locations = WorkObject.objects.values_list('name', 'name').distinct()  # Получаем кортежи (value, label)
     #     self.fields['name'].widget = forms.Select(choices=existing_locations)
+
+
+class VehicleForm(forms.ModelForm):
+    class Meta:
+        model = Vehicle
+        fields = ['brand', 'model', 'number']
+        widgets = {
+            'brand': forms.TextInput(attrs={'class': 'form-control'}),
+            'model': forms.TextInput(attrs={'class': 'form-control'}),
+            'number': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+
+class VehicleMovementForm(forms.ModelForm):
+    equipment = forms.ModelMultipleChoiceField(queryset=OtherEquipment.objects.all(), widget=forms.CheckboxSelectMultiple, required=False)
+
+    class Meta:
+        model = VehicleMovement
+        fields = ['vehicle', 'date', 'brigade_from', 'brigade_to', 'equipment']
+        widgets = {
+            'vehicle': forms.Select(attrs={'class': 'form-control'}),
+            'brigade_from': forms.Select(attrs={'class': 'form-control'}),
+            'brigade_to': forms.Select(attrs={'class': 'form-control'}),
+            'date': forms.DateInput(format='%Y-%m-%d', attrs={'class': 'form-control', 'type': 'date', 'style': DATE_STYLE['style']}),
+        }

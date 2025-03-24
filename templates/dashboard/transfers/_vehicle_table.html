@@ -1,0 +1,51 @@
+    <div class="table-responsive">
+        <table id="vehicle_table" class="table table-striped table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Марка</th>
+                    <th>Модель</th>
+                    <th>Гос. номер</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vehicle in vehicles %}
+                    <tr>
+                        <td>{{ vehicle.brand }}</td>
+                        <td>{{ vehicle.model }}</td>
+                        <td>{{ vehicle.number }}</td>
+                        <td>
+                            <a href="{% url 'vehicle_update' vehicle.id %}" class="btn btn-sm btn-warning"><i class="fa fa-edit"></i> </a>
+                            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#vehicle_delete{{ vehicle.id }}"><i class="fa fa-trash"></i> </button>
+
+                            <!-- Modal для подтверждения удаления -->
+                            <div class="modal fade" id="vehicle_delete{{ vehicle.id }}" tabindex="-1" aria-labelledby="vehicle_deleteLabel{{ vehicle.id }}" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="vehicle_deleteLabel{{ vehicle.id }}">Подтверждение удаления</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Вы уверены, что хотите удалить автомобиль "{{ vehicle.brand }} - {{ vehicle.model }} - {{ vehicle.number }}"?
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                                            <a href="{% url 'vehicle_delete' vehicle.id %}" class="btn btn-danger">Удалить</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+            <tr>
+                <td>---</td>
+                <td>---</td>
+                <td>---</td>
+                <td>---</td>
+            </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>

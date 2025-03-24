@@ -1,0 +1,91 @@
+<div class="table-responsive">
+    <table id="movement_table" class="table table-striped table-bordered">
+        <thead class="thead-dark">
+        <tr>
+            <th>Дата</th>
+            <th>Автомобиль</th>
+            <th>Из бригады</th>
+            <th>В бригаду</th>
+            <th>Оборудование</th>
+            <th>Действия</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for movement in vehicle_movements %}
+            <tr>
+                <td>{{ movement.date|date:"d.m.Y" }}</td>
+                <td>
+                    {% if movement.vehicle %}
+                        <a href="{% url 'vehicle_detail' movement.vehicle.id %}">{{ movement.vehicle.brand }}
+                            - {{ movement.vehicle.model }} - {{ movement.vehicle.number }}</a>
+                    {% else %}
+                        ---
+                    {% endif %}
+                </td>
+                <td>
+                    {% if movement.brigade_from %}
+                        <a href="{% url 'brigade_detail' movement.brigade_from.id %}">{{ movement.brigade_from.name }}</a>
+                    {% else %}
+                        ---
+                    {% endif %}
+                </td>
+                <td>
+                    {% if movement.brigade_to %}
+                        <a href="{% url 'brigade_detail' movement.brigade_to.id %}">{{ movement.brigade_to.name }}</a>
+                    {% else %}
+                        ---
+                    {% endif %}
+                </td>
+                <td>
+                    {% if movement.brigade_to %}
+                        <a href="{% url 'brigade_detail' movement.brigade_to.id %}">{{ movement.brigade_to.name }}</a>
+                    {% else %}
+                        ---
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'vehicle_movement_update' movement.id %}"
+                       class="btn btn-sm btn-warning"><i class="fa fa-edit"></i> </a>
+                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal"
+                            data-bs-target="#deleteModal{{ movement.id }}"><i class="fa fa-trash"></i>
+                    </button>
+
+                    <!-- Modal для подтверждения удаления -->
+                    <div class="modal fade" id="deleteModal{{ movement.id }}" tabindex="-1"
+                         aria-labelledby="deleteModalLabel{{ movement.id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="deleteModalLabel{{ movement.id }}">
+                                        Подтверждение удаления</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Вы уверены, что хотите удалить движение автомобиля?
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">
+                                        Отмена
+                                    </button>
+                                    <a href="{% url 'vehicle_movement_delete' movement.id %}"
+                                       class="btn btn-danger">Удалить</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td>---</td>
+                <td>---</td>
+                <td>---</td>
+                <td>---</td>
+                <td>---</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>

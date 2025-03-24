@@ -1,8 +1,11 @@
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.generic import ListView, UpdateView, CreateView, DetailView
 
+from dashboard.forms import VehicleForm, VehicleMovementForm
 from dashboard.models import Transfer, OtherEquipment, OtherCategory, Vehicle, VehicleMovement
 
 
@@ -27,23 +30,26 @@ class VehicleDetailView(LoginRequiredMixin, DetailView):
 
 class VehicleCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Vehicle
-    fields = ['brand', 'model', 'number']
-    template_name = 'dashboard/transfers/vehicle_form.html'
-
-
-class VehicleUpdateView(LoginRequiredMixin, SuccessMessageMixin,  UpdateView):
-    model = Vehicle
-    fields = ['brand', 'model', 'number']
+    form_class = VehicleForm
     template_name = 'dashboard/transfers/vehicle_form.html'
 
     def get_success_url(self):
-        return reverse('vehicle_list')
+        return reverse('vehicle_movement_list')
+
+class VehicleUpdateView(LoginRequiredMixin, SuccessMessageMixin,  UpdateView):
+    model = Vehicle
+    form_class = VehicleForm
+    template_name = 'dashboard/transfers/vehicle_form.html'
+
+    def get_success_url(self):
+        return reverse('vehicle_movement_list')
 
 
-def vehicle_delete(request, pk):
-    vehicle = Vehicle.objects.get(pk=pk)
+def vehicle_delete(request, vehicle_id):
+    vehicle = get_object_or_404(Vehicle, id=vehicle_id)
     vehicle.delete()
-    return reverse('vehicle_list')
+    messages.success(request, 'Транспорт успешно удален!')
+    return redirect('vehicle_movement_list')
 
 
 class VehicleMovementListView(LoginRequiredMixin, ListView):
@@ -51,6 +57,10 @@ class VehicleMovementListView(LoginRequiredMixin, ListView):
     template_name = 'dashboard/transfers/vehicle_movement_list.html'
     context_object_name = 'vehicle_movements'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['vehicles'] = Vehicle.objects.all().order_by('brand')
+        return context
 
 class VehicleMovementDetailView(LoginRequiredMixin, DetailView):
     model = VehicleMovement
@@ -59,7 +69,7 @@ class VehicleMovementDetailView(LoginRequiredMixin, DetailView):
 
 class VehicleMovementCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = VehicleMovement
-    fields = ['vehicle', 'brigade_from', 'brigade_to', 'date']
+    form_class = VehicleMovementForm
     template_name = 'dashboard/transfers/vehicle_movement_form.html'
 
     def get_success_url(self):
@@ -68,7 +78,7 @@ class VehicleMovementCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateV
 
 class VehicleMovementUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = VehicleMovement
-    fields = ['vehicle', 'brigade_from', 'brigade_to', 'date']
+    form_class = VehicleMovementForm
     template_name = 'dashboard/transfers/vehicle_movement_form.html'
 
     def get_success_url(self):
@@ -78,7 +88,7 @@ class VehicleMovementUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateV
 def vehicle_movement_delete(request, pk):
     vehicle_movement = VehicleMovement.objects.get(pk=pk)
     vehicle_movement.delete()
-    return reverse('vehicle_movement_list')
+    return redirect('vehicle_movement_list')
 
 
 class OtherCategoryListView(LoginRequiredMixin, ListView):
@@ -112,7 +122,7 @@ class OtherCategoryUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateVie
 def other_category_delete(request, pk):
     other_category = OtherCategory.objects.get(pk=pk)
     other_category.delete()
-    return reverse('other_category_list')
+    return redirect('other_category_list')
 
 
 class OtherCategoryDetailView(LoginRequiredMixin, DetailView):
@@ -149,7 +159,7 @@ class OtherEquipmentUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateVi
 def other_equipment_delete(request, pk):
     other_equipment = OtherEquipment.objects.get(pk=pk)
     other_equipment.delete()
-    return reverse('other_equipment_list')
+    return redirect('other_equipment_list')
 
 
 class OtherEquipmentDetailView(LoginRequiredMixin, DetailView):

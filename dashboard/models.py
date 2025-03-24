@@ -237,6 +237,9 @@ class Vehicle(models.Model):
     def __str__(self):
         return f'{self.brand} - {self.model} - {self.number}'
 
+    class Meta:
+        unique_together = ['brand', 'model', 'number']
+
 
 class VehicleMovement(models.Model):
     vehicle = models.ForeignKey(Vehicle, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Автомобиль')
@@ -245,3 +248,4 @@ class VehicleMovement(models.Model):
     brigade_to = models.ForeignKey(Brigade, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='В бригаду',
                                    related_name='vehicle_movements_to')
     date = models.DateField(auto_now_add=False, auto_now=False, null=False, blank=False, verbose_name='Дата')
+    equipment = models.ManyToManyField(OtherEquipment, blank=True,  default=None, verbose_name='Оборудование')

@@ -1,6 +1,63 @@
-{% extends 'layouts/base.html' %}
-
-{% block title %}борудование{% endblock %}
+{% extends "layouts/base.html" %}
 
 {% block content %}
-{% endblock content %}
+<div class="container mt-4">
+    <h1>Оборудование</h1>
+    <a href="{% url 'other_equipment_create' %}" class="btn btn-success mb-3"><i class="fa fa-plus"></i> Добавить оборудование</a>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Название оборудования</th>
+                    <th>Категория</th>
+                    <th>Количество</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for equipment in other_equipments %}
+                    <tr>
+                        <td>{{ equipment.name }}</td>
+                        <td>
+                            {% if equipment.category %}
+                                <a href="{% url 'other_category_detail' equipment.category.pk %}">{{ equipment.category.name }}</a>
+                            {% else %}
+                                ---
+                            {% endif %}
+                        </td>
+                        <td>{{ equipment.amount }}</td>
+                        <td>
+                            <a href="{% url 'other_equipment_update' equipment.pk %}" class="btn btn-sm btn-warning"><i class="fa fa-edit"></i> Редактировать</a>
+                            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ equipment.pk }}"><i class="fa fa-trash"></i> Удалить</button>
+
+                            <!-- Modal для подтверждения удаления -->
+                            <div class="modal fade" id="deleteModal{{ equipment.pk }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ equipment.pk }}" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="deleteModalLabel{{ equipment.pk }}">Подтверждение удаления</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Вы уверены, что хотите удалить оборудование "{{ equipment.name }}"?
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                                            <a href="{% url 'other_equipment_delete' equipment.pk %}" class="btn btn-danger">Удалить</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="4">Нет доступного оборудования.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
