@@ -13,7 +13,7 @@ import csv
 from openpyxl import Workbook
 
 from dashboard.models import Brigade, Category, Equipment, UserActionLog, Transfer, Document, BrigadeActivity, \
-    WorkerActivity
+    WorkerActivity, WorkObject, VehicleMovement
 from dashboard.utils.utils import get_days_in_month
 
 
@@ -22,13 +22,15 @@ class DashboardView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(DashboardView, self).get_context_data(**kwargs)
-        context['brigades'] = Brigade.objects.all()
-        context['categories'] = Category.objects.all()
-        context['equipment'] = Equipment.objects.all()
-        context['users'] = User.objects.all()
-        context['user_log'] = UserActionLog.objects.all()
-        context['transfers'] = Transfer.objects.all()
-        context['document'] = Document.objects.all()
+        context['brigades_count'] = Brigade.objects.all().count()
+        context['categories_count'] = Category.objects.all().count()
+        context['equipment_count'] = Equipment.objects.all().count()
+        context['work_object_count'] = WorkObject.objects.all().count()
+        context['users_count'] = User.objects.all().count()
+        context['user_log_count'] = UserActionLog.objects.all().count()
+        context['transfers_count'] = Transfer.objects.all().count()
+        context['vehicle_movement_count'] = VehicleMovement.objects.all().count()
+        context['document_count'] = Document.objects.all().count()
         context['month'] = datetime.now().strftime('%m')
         context['year'] = datetime.now().strftime('%Y')
         return context

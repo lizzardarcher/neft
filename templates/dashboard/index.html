@@ -13,7 +13,7 @@
             <div class="col-md-4 mb-3">
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
                     <div class="card-header"><i class="fa fa-helmet-safety"></i> <b>Бригады:</b> <span
-                            class="badge bg-secondary-subtle text-dark">{{ brigades.count }}</span></div>
+                            class="badge bg-secondary-subtle text-dark">{{ brigades_count }}</span></div>
                     <div class="card-body">
                         <h5 class="card-title">Список бригад</h5>
                     </div>
@@ -26,7 +26,7 @@
             <div class="col-md-4 mb-3">
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
                     <div class="card-header"><i class="fa fa-list-alt"></i> <b>Категории:</b> <span
-                            class="badge bg-secondary-subtle text-dark">{{ categories.count }}</span></div>
+                            class="badge bg-secondary-subtle text-dark">{{ categories_count }}</span></div>
                     <div class="card-body">
                         <h5 class="card-title">Оборудование по категориям</h5>
                     </div>
@@ -39,7 +39,7 @@
             <div class="col-md-4 mb-3">
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
                     <div class="card-header"><i class="fa fa-hammer"></i> <b>Оборудование:</b> <span
-                            class="badge bg-secondary-subtle text-dark">{{ equipment.count }}</span></div>
+                            class="badge bg-secondary-subtle text-dark">{{ equipment_count }}</span></div>
                     <div class="card-body">
                         <h5 class="card-title">Список доступного оборудования</h5>
                     </div>
@@ -52,7 +52,7 @@
             <div class="col-md-4 mb-3">
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
                     <div class="card-header"><i class="fa fa-file"></i> <b>Документы:</b> <span
-                            class="badge bg-secondary-subtle text-dark">{{ document.count }}</span></div>
+                            class="badge bg-secondary-subtle text-dark">{{ document_count }}</span></div>
                     <div class="card-body">
                         <h5 class="card-title">Список документов</h5>
                     </div>
@@ -65,7 +65,7 @@
             <div class="col-md-4 mb-3">
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
                     <div class="card-header"><i class="fa fa-user"></i> <b>Пользователи:</b> <span
-                            class="badge bg-secondary-subtle text-dark">{{ users.count }}</span></div>
+                            class="badge bg-secondary-subtle text-dark">{{ users_count }}</span></div>
                     <div class="card-body">
                         <h5 class="card-title">Список пользователей</h5>
                     </div>
@@ -78,7 +78,7 @@
             <div class="col-md-4 mb-3">
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
                     <div class="card-header"><i class="fa fa-user"></i> <b>Работники</b> <span
-                            class="badge bg-secondary-subtle text-dark">{{ users.count }}</span></div>
+                            class="badge bg-secondary-subtle text-dark">{{ users_count }}</span></div>
                     <div class="card-body">
                         <h5 class="card-title">Учет работников</h5>
                     </div>
@@ -92,7 +92,7 @@
             <div class="col-md-4 mb-3">
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
                     <div class="card-header"><i class="fa fa-users-gear"></i> <b>Бригады:</b> <span
-                            class="badge bg-secondary-subtle text-dark">{{ brigades.count }}</span></div>
+                            class="badge bg-secondary-subtle text-dark">{{ brigades_count }}</span></div>
                     <div class="card-body">
                         <h5 class="card-title">Учет бригад</h5>
                     </div>
@@ -107,13 +107,12 @@
             <div class="col-md-4 mb-3">
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
                     <div class="card-header"><i class="fa fa-mountain"></i>
-                        <b>Объектов:</b> <span class="badge bg-secondary-subtle text-dark">{{ work_object.count }}</span>
+                        <b>Объектов:</b> <span class="badge bg-secondary-subtle text-dark">{{ work_object_count }}</span>
                     </div>
                     <div class="card-body">
                         <h5 class="card-title">Месторождения</h5>
-                        <p class="card-title text-muted">В разработке</p>
                     </div>
-                    <a href="#" class="m-1 btn btn-outline-info">Просмотреть</a>
+                    <a href="{% url 'work_object_list' %}" class="m-1 btn btn-outline-info">Просмотреть</a>
                 </div>
             </div>
         {% endif %}
@@ -123,13 +122,13 @@
             <div class="col-md-4 mb-3">
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
                     <div class="card-header"><i class="fa fa-truck"></i>
-                        <b>Действий:</b> <span class="badge bg-secondary-subtle text-dark">{{ vehicle_movement.count }}</span>
+                        <b>Действий:</b> <span class="badge bg-secondary-subtle text-dark">{{ vehicle_movement_count }}</span>
                     </div>
                     <div class="card-body">
                         <h5 class="card-title">Снабжение</h5>
                         <p class="card-title text-muted">В разработке</p>
                     </div>
-                    <a href="#" class="m-1 btn btn-outline-info">Просмотреть</a>
+                    <a href="{% url 'vehicle_movement_list' %}" class="m-1 btn btn-outline-info">Просмотреть</a>
                 </div>
             </div>
         {% endif %}
@@ -140,7 +139,7 @@
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
                     <div class="card-header"><i class="fa fa-down-left-and-up-right-to-center"></i>
                         <b>Перемещений:</b> <span
-                                class="badge bg-secondary-subtle text-dark">{{ transfers.count }}</span></div>
+                                class="badge bg-secondary-subtle text-dark">{{ transfers_count }}</span></div>
                     <div class="card-body">
                         <h5 class="card-title">Журнал перемещения оборудования</h5>
                     </div>
@@ -153,7 +152,7 @@
             <div class="col-md-4 mb-3">
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
                     <div class="card-header"><i class="fa fa-font-awesome-logo-full"></i>
-                        <b>Записей:</b> <span class="badge bg-secondary-subtle text-dark">{{ user_log.count }}</span>
+                        <b>Записей:</b> <span class="badge bg-secondary-subtle text-dark">{{ user_log_count }}</span>
                     </div>
                     <div class="card-body">
                         <h5 class="card-title">Журнал действий пользователей</h5>

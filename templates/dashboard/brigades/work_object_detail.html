@@ -1,0 +1,44 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Объект {{ work_object }}{% endblock %}
+
+{% block content %}
+    <div class="bg-light p-4 m-4 rounded">
+        <div class="container">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title m-2">Скважина: {{ work_object.hole }}</h6>
+                    <h6 class="card-title m-2">Куст: {{ work_object.short_name }}</h6>
+                    <h6 class="card-title m-2">Месторождение: {{ work_object.name }}</h6>
+                </div>
+                <div class="card-body p-3 m-2">
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th>Дата</th>
+                            <th>Тип работы</th>
+                            <th>Бригада</th>
+                            <th>Работники</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for activity in activities %}
+                            <tr>
+                                <td>{{ activity.date|date:'d.m.Y' }}</td>
+                                <td>{{ activity.get_work_type_display }}</td>
+                                <td>{{ activity.brigade }}</td>
+                                <td>
+                                    {% for worker in activity.workers.all %}
+                                        {{ worker.last_name }} {{ worker.first_name }} {% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <a class="btn btn-secondary mt-4" href="{% url 'work_object_list' %}">Назад</a>
+        </div>
+    </div>
+{% endblock content %}

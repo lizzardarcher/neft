@@ -1,0 +1,49 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Объекты{% endblock %}
+
+{% block content %}
+    <div class="bg-light p-4 m-4 rounded">
+        <div class="container">
+            <h3>Объекты</h3>
+            {% include 'dashboard/brigades/components/_work_objects_table.html' %}
+            <a class="btn btn-secondary" href="{% url 'dashboard' %}">На главную</a>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block extrascript %}
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css">
+    <script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+
+    <script>
+        var table = new DataTable('#wo_table', {
+            sorting: true,
+            searching: true,
+            columnDefs: [
+                {"orderable": false, "targets": [3]}
+            ],
+            paging: false,
+            language: {
+                info: ' ',
+                infoEmpty: 'Нет записей',
+                infoFiltered: ' ',
+                lengthMenu: 'Показать _MENU_ на странице',
+                zeroRecords: 'Ничего не найдено',
+                search: 'Поиск',
+            },
+            stateSave: true,
+        });
+    </script>
+
+    <style>
+        table.dataTable tr td.dt-type-numeric {
+            text-align: left;
+        }
+        table.dataTable tr th.dt-type-numeric {
+            text-align: left;
+        }
+    </style>
+
+{% endblock extrascript %}

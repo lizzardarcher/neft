@@ -20,6 +20,7 @@ class Brigade(models.Model):
     class Meta:
         ordering = ['name']
 
+
 class Category(models.Model):
     name = models.CharField(max_length=200, unique=True, null=False, blank=False, verbose_name='Название категории')
     parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='subcategories')
@@ -55,12 +56,17 @@ class Equipment(models.Model):
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=False, verbose_name='Категория')
     brigade = models.ForeignKey(Brigade, on_delete=models.SET_NULL, null=True, blank=False, verbose_name='Бригада')
     documents = models.ManyToManyField(Document, blank=True, verbose_name='Документы для оборудования')
-    date_release = models.DateField(auto_now_add=False, auto_now=False, null=True, blank=True, verbose_name='Дата выпуска')
-    date_exploitation = models.DateField(auto_now_add=False, auto_now=False, null=True, blank=True, verbose_name='Дата ввода в эксплуатацию')
-    condition = models.CharField(max_length=100, null=False, blank=False, default='work', choices=CONDITION, verbose_name='Состояние оборудования')
+    date_release = models.DateField(auto_now_add=False, auto_now=False, null=True, blank=True,
+                                    verbose_name='Дата выпуска')
+    date_exploitation = models.DateField(auto_now_add=False, auto_now=False, null=True, blank=True,
+                                         verbose_name='Дата ввода в эксплуатацию')
+    condition = models.CharField(max_length=100, null=False, blank=False, default='work', choices=CONDITION,
+                                 verbose_name='Состояние оборудования')
     manufacturer = models.CharField(max_length=200, null=True, blank=True, default='', verbose_name='Изготовитель')
-    certificate_start = models.DateField(auto_now_add=False, auto_now=False, null=True, blank=True, default=None, verbose_name='Дата начала сертификата')
-    certificate_end = models.DateField(auto_now_add=False, auto_now=False, null=True, blank=True, default=None, verbose_name='Дата окончания сертификата')
+    certificate_start = models.DateField(auto_now_add=False, auto_now=False, null=True, blank=True, default=None,
+                                         verbose_name='Дата начала сертификата')
+    certificate_end = models.DateField(auto_now_add=False, auto_now=False, null=True, blank=True, default=None,
+                                       verbose_name='Дата окончания сертификата')
 
     def __str__(self):
         return f"{self.name} ({self.category})"
@@ -140,7 +146,6 @@ class WorkTypes(models.Model):
 
 
 class WorkerActivity(models.Model):
-
     WORKER_ACTIVITY_CHOICES = [
         ('Y', 'Обычная работа (Я)'),
         ('G', 'Работа по геологии (Г)'),
@@ -166,7 +171,8 @@ class WorkerActivity(models.Model):
 
 
 class WorkObject(models.Model):
-    hole = models.CharField(max_length=200, unique=False, null=False, blank=False, default='', verbose_name='№ Скважины')
+    hole = models.CharField(max_length=200, unique=False, null=False, blank=False, default='',
+                            verbose_name='№ Скважины')
     name = models.CharField(max_length=200, unique=False, null=False, blank=False, verbose_name='Месторождение')
     short_name = models.CharField(max_length=200, unique=False, null=False, blank=False, verbose_name='№ куста')
 
@@ -177,6 +183,7 @@ class WorkObject(models.Model):
         verbose_name = 'Месторождение'
         verbose_name_plural = 'Месторождения'
         unique_together = ['hole', 'name', 'short_name']
+
 
 class BrigadeActivity(models.Model):
     BRIGADE_ACTIVITY_CHOICES = [
@@ -197,11 +204,12 @@ class BrigadeActivity(models.Model):
     date = models.DateField(auto_now_add=False, auto_now=False, null=False, blank=False, verbose_name='Дата')
     work_type = models.CharField(max_length=100, null=False, blank=False, default='', choices=BRIGADE_ACTIVITY_CHOICES,
                                  verbose_name='Тип работы')
-    work_object = models.ForeignKey(WorkObject, on_delete=models.SET_NULL, null=True, blank=True, default='', verbose_name='Объект работы')
+    work_object = models.ForeignKey(WorkObject, on_delete=models.SET_NULL, null=True, blank=True, default='',
+                                    verbose_name='Объект работы')
+    workers = models.ManyToManyField(User, blank=True,  default=None, verbose_name='Работники')
 
     def __str__(self):
         return self.brigade.name
-
 
 
 class OtherCategory(models.Model):
@@ -213,7 +221,8 @@ class OtherCategory(models.Model):
 
 class OtherEquipment(models.Model):
     name = models.CharField(max_length=200, unique=True, null=False, blank=False, verbose_name='Название оборудования')
-    category = models.ForeignKey(OtherCategory, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Категория')
+    category = models.ForeignKey(OtherCategory, on_delete=models.SET_NULL, null=True, blank=True,
+                                 verbose_name='Категория')
     amount = models.IntegerField(null=False, blank=False, default=1, verbose_name='Количество')
 
     def __str__(self):
@@ -231,36 +240,8 @@ class Vehicle(models.Model):
 
 class VehicleMovement(models.Model):
     vehicle = models.ForeignKey(Vehicle, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Автомобиль')
-    brigade_from = models.ForeignKey(Brigade, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Из бригады', related_name='vehicle_movements_from')
-    brigade_to = models.ForeignKey(Brigade, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='В бригаду', related_name='vehicle_movements_to')
+    brigade_from = models.ForeignKey(Brigade, on_delete=models.SET_NULL, null=True, blank=True,
+                                     verbose_name='Из бригады', related_name='vehicle_movements_from')
+    brigade_to = models.ForeignKey(Brigade, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='В бригаду',
+                                   related_name='vehicle_movements_to')
     date = models.DateField(auto_now_add=False, auto_now=False, null=False, blank=False, verbose_name='Дата')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
