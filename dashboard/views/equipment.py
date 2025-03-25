@@ -71,6 +71,7 @@ class EquipmentCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
             form.instance.manufacturer = manufacturer_id
         return super().form_valid(form)
 
+
 class EquipmentCreateByBrigadeIdView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Equipment
     form_class = EquipmentCreateByBrigadeForm
@@ -191,7 +192,8 @@ class EquipmentUpdateByBrigadeView(LoginRequiredMixin, SuccessMessageMixin, Upda
         return context
 
     def get_success_url(self):
-        return reverse('brigade_detail', args=[self.kwargs.get('brigade_id')])
+        search_request = self.request.GET.get("search")
+        return reverse('brigade_detail', args=[self.kwargs.get('brigade_id')]) + f'?search={search_request}'
 
     def form_valid(self, form):
         manufacturer_id = self.request.POST.get('id_manufacturer')
@@ -285,5 +287,3 @@ def manufacturer_delete(request, manufacturer_id):
         return HttpResponseRedirect(referer_url)
     else:
         return redirect('equipment_list')
-
-

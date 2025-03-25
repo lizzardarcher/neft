@@ -2,24 +2,14 @@
 <table id="equipment_table" class="table table-bordered table-striped">
     <thead class="thead-dark">
     <tr>
-        <th>
-            <a href="?sort_by=category{% if request.GET.sort_by == 'category' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'category' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Категория</a>
-        </th>
-        <th>
-            <a href="?sort_by=name{% if request.GET.sort_by == 'name' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'name' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Название</a>
-        </th>
-        <th>
-            <a href="?sort_by=serial{% if request.GET.sort_by == 'serial' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'serial' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Серийный
-                номер</a>
-        </th>
+        <th>Категория</th>
+        <th>Название</th>
+        <th>Серийный номер</th>
 
         {% if not 'brigade' in request.path %}
-            <th>
-                <a href="?sort_by=brigade{% if request.GET.sort_by == 'brigade' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'brigade' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Бригада</a>
-            </th>
+            <th>Бригада</th>
         {% endif %}
-        <th>
-            <a href="?sort_by=manufacturer{% if request.GET.sort_by == 'brigade' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'brigade' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Изготовитель</a>
+        <th>Изготовитель
             <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal"
                     data-target="#manufacturers-modal">
                 <i class="fa fa-edit"></i>
@@ -59,22 +49,10 @@
             </div>
         </th>
         <th>Документы</th>
-        <th>
-            <a href="?sort_by=date_release{% if request.GET.sort_by == 'date_release' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'date_release' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Дата
-                выпуска оборудования</a>
-        </th>
-        <th>
-            <a href="?sort_by=date_exploitation{% if request.GET.sort_by == 'date_exploitation' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'date_exploitation' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Дата
-                ввода в эксплуатацию</a>
-        </th>
-        <th>
-            <a href="?sort_by=certificate_start{% if request.GET.sort_by == 'certificate_start' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'certificate_start' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Сертификат
-                от</a>
-        </th>
-        <th>
-            <a href="?sort_by=certificate_end{% if request.GET.sort_by == 'certificate_end' and request.GET.order == 'asc' %}&order=desc{% elif request.GET.sort_by != 'certificate_end' %}&order=asc{% else %}&order=asc{% endif %}&page={{ page_obj.number }}">Сертификат
-                до</a>
-        </th>
+        <th>выпуска оборудования</th>
+        <th>ввода в эксплуатацию</th>
+        <th>от</th>
+        <th>до</th>
         <th>Состояние</th>
         <th>Действия</th>
     </tr>
@@ -86,7 +64,8 @@
 
             <td>{{ equipment.category }}</td>
             <td>{{ equipment.name }}</td>
-            <td><a class="link-success link-offset-2" href="{% url 'equipment_detail' equipment.id %}"><b>{{ equipment.serial }}</b></a></td>
+            <td><a class="link-success link-offset-2"
+                   href="{% url 'equipment_detail' equipment.id %}?search={{ request.GET.search }}"><b>{{ equipment.serial }}</b></a></td>
 
             {% if not 'brigade' in request.path %}
                 <td>{% if equipment.brigade %}{{ equipment.brigade }}{% else %}---{% endif %}</td>{% endif %}
@@ -140,7 +119,12 @@
             </td>
             <td>
                 {% if user|has_perm_in_group:"Dashboard.change_equipment" %}
-                    <a href="{% if 'brigade' in request.path %}{% url 'equipment_update_by_brigade' equipment.id equipment.brigade.id %}{% else %}{% url 'equipment_update' equipment.id %}?search={{ request.GET.search }}{% endif %}"
+                    <a href="
+
+
+
+
+                            {% if 'brigade' in request.path %}{% url 'equipment_update_by_brigade' equipment.id equipment.brigade.id %}{% else %}{% url 'equipment_update' equipment.id %}?search={{ request.GET.search }}{% endif %}"
                        class="btn btn-sm btn-outline-warning"><i
                             class="fa fa-edit"></i> </a>
                     <button type="button" class="btn btn-sm btn-outline-danger" data-toggle="modal"
@@ -176,10 +160,24 @@
         </tr>
     {% empty %}
         <tr>
-            <td colspan="8">Нет данных об оборудовании.</td>
+            <td>---</td>
+            <td>---</td>
+            {% if 'brigade' in request.path %}
+            {% else %}
+                <td>---</td>
+            {% endif %}
+            <td>---</td>
+            <td>---</td>
+            <td>---</td>
+            <td>---</td>
+            <td>---</td>
+            <td>---</td>
+            <td>---</td>
+            <td>---</td>
+            <td>---</td>
         </tr>
     {% endfor %}
     </tbody>
 </table>
 {% include 'includes/pagination.html' %}
-<a href="{{ request.META.HTTP_REFERER }}" class="btn btn-sm btn-outline-dark mt-2 mb-2">НАЗАД</a>
+<a href="{{ request.META.HTTP_REFERER }}?search={{ request.GET.search }}" class="btn btn-sm btn-outline-dark mt-2 mb-2">НАЗАД</a>

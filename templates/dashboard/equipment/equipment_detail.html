@@ -78,16 +78,16 @@
                     {% if user|has_perm_in_group:"Dashboard.change_equipment" %}
                         {% if 'brigade' in request.META.HTTP_REFERER %}
                             <a class="btn btn-outline-success"
-                               href="{% url 'equipment_update_by_brigade' equipment.id equipment.brigade.id %}">Изменить</a>
+                               href="{% url 'equipment_update_by_brigade' equipment.id equipment.brigade.id %}?search={{ request.GET.search }}">Изменить</a>
                         {% else %}
                             <a class="btn btn-outline-success"
-                               href="{% url 'equipment_update' equipment.id %}">Изменить</a>
+                               href="{% url 'equipment_update' equipment.id %}?search={{ request.GET.search }}">Изменить</a>
                         {% endif %}
                     {% endif %}
                 </ul>
             </div>
         </div>
-        <a href="{% url 'brigade_detail' equipment.brigade.id %}" class="btn btn-outline-secondary mt-3">
+        <a href="{% url 'brigade_detail' equipment.brigade.id %}?search={{ request.GET.search }}" class="btn btn-outline-secondary mt-3">
             <i class="bi bi-arrow-left"></i> Назад к списку оборудования
         </a>
     </div>

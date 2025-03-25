@@ -47,6 +47,9 @@ class BaseExportView(View):
     header = None
 
     def get_queryset(self):
+        q = self.request.GET.get("search")
+        if q:
+            return self.model.objects.filter(name__icontains=search)
         return self.model.objects.all()
 
     def get_data(self):
@@ -109,6 +112,7 @@ class EquipmentCSVExportView(BaseExportView):
     header = ['id', 'serial', 'name', 'category', 'brigade', 'condition', 'date_release', 'date_exploitation', 'manufacturer', 'certificate_start', 'certificate_end']
 
     def get_data(self):
+        """Возвращает данные для выгрузки."""
         queryset = self.get_queryset()
         data = []
         for obj in queryset:

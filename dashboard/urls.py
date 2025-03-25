@@ -28,7 +28,7 @@ urlpatterns = [
     path('categories/', categories.CategoryListView.as_view(), name='category_list'),
     path('categories/create/', categories.CategoryCreateView.as_view(), name='category_create'),
     path('categories/<int:pk>/update/', categories.CategoryUpdateView.as_view(), name='category_update'),
-    path('categories/<int:category_id>/delete/', categories.CategoryDeleteView.as_view(), name='category_delete'),
+    path('categories/<int:category_id>/delete/', categories.category_delete, name='category_delete'),
 
     path('equipment/', equipment.EquipmentListView.as_view(), name='equipment_list'),
     path('document/', equipment.DocumentListView.as_view(), name='document_list'),
