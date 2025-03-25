@@ -12,3 +12,5 @@ Unidecode
 whitenoise
 Faker~=33.3.0
 openpyxl~=3.1.5
+django-select2~=8.4.0
+psutil~=7.0.0

@@ -1,11 +1,13 @@
+from datetime import datetime
+
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
-from django.views.generic import ListView, UpdateView, CreateView, DetailView
+from django.views.generic import ListView, UpdateView, CreateView, DetailView, TemplateView
 
-from dashboard.forms import VehicleForm, VehicleMovementForm
+from dashboard.forms import VehicleForm, VehicleMovementForm, OtherEquipmentForm, OtherCategoryForm
 from dashboard.models import Transfer, OtherEquipment, OtherCategory, Vehicle, VehicleMovement
 
 
@@ -16,6 +18,19 @@ class TransferHistoryView(LoginRequiredMixin, ListView):
     context_object_name = 'transfers'
     paginate_by = 50
 
+
+class TransferIndexView(LoginRequiredMixin, TemplateView):
+    template_name = 'dashboard/transfers/transfers_index.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['other_equipment_count'] = OtherEquipment.objects.all().count()
+        context['other_category_count'] = OtherCategory.objects.all().count()
+        context['vehicle_count'] = Vehicle.objects.all().count()
+        context['vehicle_movement_count'] = VehicleMovement.objects.all().count()
+        context['year'] = datetime.now().strftime('%Y')
+        context['month'] = datetime.now().strftime('%m')
+        return context
 
 class VehicleListView(LoginRequiredMixin, ListView):
     model = Vehicle
@@ -55,10 +70,39 @@ def vehicle_delete(request, vehicle_id):
 class VehicleMovementListView(LoginRequiredMixin, ListView):
     model = VehicleMovement
     template_name = 'dashboard/transfers/vehicle_movement_list.html'
-    context_object_name = 'vehicle_movements'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        try:
+            month = int(self.request.GET.get('month'))
+            year =  int(self.request.GET.get('year'))
+        except:
+            month = datetime.now().month
+            year = datetime.now().year
+
+        previous_month = month - 1
+        next_month = month + 1
+
+        if previous_month < 1:
+            previous_month = 12
+            previous_year = year - 1
+            next_year = year
+        elif next_month > 12:
+            next_month = 1
+            next_year = year + 1
+            previous_year = year
+        else:
+            previous_year = year
+            next_year = year
+
+        context['month'] = month
+        context['year'] = year
+        context['previous_month'] = previous_month
+        context['next_month'] = next_month
+        context['previous_year'] =  previous_year
+        context['next_year'] =      next_year
+
+        context['vehicle_movements'] = VehicleMovement.objects.filter(date__month=month, date__year=year).order_by('date')
         context['vehicles'] = Vehicle.objects.all().order_by('brand')
         return context
 
@@ -82,13 +126,23 @@ class VehicleMovementUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateV
     template_name = 'dashboard/transfers/vehicle_movement_form.html'
 
     def get_success_url(self):
-        return reverse('vehicle_movement_list')
+        month = int(self.request.GET.get('month'))
+        year =  int(self.request.GET.get('year'))
+        return reverse('vehicle_movement_list') + f'?month={str(month)}&year={str(year)}'
 
 
 def vehicle_movement_delete(request, pk):
     vehicle_movement = VehicleMovement.objects.get(pk=pk)
     vehicle_movement.delete()
-    return redirect('vehicle_movement_list')
+    month = request.GET.get('month')  # Получаем как строку, если None
+    year = request.GET.get('year')    # Получаем как строку, если None
+
+    # Используем reverse() для создания URL и добавляем параметры через query string
+    url = reverse('vehicle_movement_list')
+    if month and year:
+        url += f'?month={month}&year={year}'
+
+    return redirect(url)
 
 
 class OtherCategoryListView(LoginRequiredMixin, ListView):
@@ -99,7 +153,7 @@ class OtherCategoryListView(LoginRequiredMixin, ListView):
 
 class OtherCategoryCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = OtherCategory
-    fields = ['name']
+    form_class = OtherCategoryForm
     template_name = 'dashboard/transfers/other_category_form.html'
 
     def get_success_url(self):
@@ -108,7 +162,7 @@ class OtherCategoryCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateVie
 
 class OtherCategoryUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = OtherCategory
-    fields = ['name']
+    form_class = OtherCategoryForm
     template_name = 'dashboard/transfers/other_category_form.html'
 
     def get_success_url(self):
@@ -139,7 +193,7 @@ class OtherEquipmentListView(LoginRequiredMixin, ListView):
 
 class OtherEquipmentCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = OtherEquipment
-    fields = ['name', 'category', 'amount']
+    form_class = OtherEquipmentForm
     template_name = 'dashboard/transfers/other_equipment_form.html'
 
     def get_success_url(self):
@@ -149,7 +203,7 @@ class OtherEquipmentCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateVi
 
 class OtherEquipmentUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = OtherEquipment
-    fields = ['name', 'category', 'amount']
+    form_class = OtherEquipmentForm
     template_name = 'dashboard/transfers/other_equipment_form.html'
 
     def get_success_url(self):
@@ -165,3 +219,5 @@ def other_equipment_delete(request, pk):
 class OtherEquipmentDetailView(LoginRequiredMixin, DetailView):
     model = OtherEquipment
     template_name = 'dashboard/transfers/other_equipment_detail.html'
+
+

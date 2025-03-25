@@ -7,9 +7,9 @@
     <div class="container bg-light p-5 mt-5 rounded">
         <h1>Система учета Rusgeolog.ru</h1>
         <p>Добро пожаловать, {{ user.get_full_name }}!</p>
+            <div class="row">
 
         {% if user|has_perm_in_group:"Dashboard.view_brigade" %}
-            <div class="row">
             <div class="col-md-4 mb-3">
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
                     <div class="card-header"><i class="fa fa-helmet-safety"></i> <b>Бригады:</b> <span
@@ -103,11 +103,12 @@
         {% endif %}
 
 
-        {% if request.user.is_superuser %}
+        {% if user|has_group:"Руководитель" or user|has_group:"Администратор" %}
             <div class="col-md-4 mb-3">
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
                     <div class="card-header"><i class="fa fa-mountain"></i>
-                        <b>Объектов:</b> <span class="badge bg-secondary-subtle text-dark">{{ work_object_count }}</span>
+                        <b>Объектов:</b> <span
+                                class="badge bg-secondary-subtle text-dark">{{ work_object_count }}</span>
                     </div>
                     <div class="card-body">
                         <h5 class="card-title">Месторождения</h5>
@@ -118,17 +119,19 @@
         {% endif %}
 
 
-        {% if request.user.is_superuser %}
+        {% if user|has_group:"Руководитель" or user|has_group:"Администратор" %}
             <div class="col-md-4 mb-3">
                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
                     <div class="card-header"><i class="fa fa-truck"></i>
-                        <b>Действий:</b> <span class="badge bg-secondary-subtle text-dark">{{ vehicle_movement_count }}</span>
+                        <b>Действий:</b> <span
+                                class="badge bg-secondary-subtle text-dark">{{ vehicle_movement_count }}</span>
                     </div>
                     <div class="card-body">
                         <h5 class="card-title">Снабжение</h5>
                         <p class="card-title text-muted">В разработке</p>
                     </div>
-                    <a href="{% url 'vehicle_movement_list' %}" class="m-1 btn btn-outline-info">Просмотреть</a>
+                    <a href="{% url 'transfer_index' %}?month={{ month }}&year={{ year }}"
+                       class="m-1 btn btn-outline-info">Просмотреть</a>
                 </div>
             </div>
         {% endif %}

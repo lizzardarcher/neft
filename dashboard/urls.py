@@ -48,6 +48,8 @@ urlpatterns = [
 
     path('transfers/history/', transfers.TransferHistoryView.as_view(), name='transfer_history'),
 
+    path('transfers/transfer_index', transfers.TransferIndexView.as_view(), name='transfer_index'),
+
     path('transfer/vehicle_list', transfers.VehicleListView.as_view(), name='vehicle_list'),
     path('transfer/vehicle_create', transfers.VehicleCreateView.as_view(), name='vehicle_create'),
     path('transfer/vehicle_update/<int:pk>', transfers.VehicleUpdateView.as_view(), name='vehicle_update'),
@@ -58,7 +60,7 @@ urlpatterns = [
     path('transfer/vehicle_movement_update/<int:pk>', transfers.VehicleMovementUpdateView.as_view(), name='vehicle_movement_update'),
     path('transfer/vehicle_movement_delete/<int:pk>', transfers.vehicle_movement_delete, name='vehicle_movement_delete'),
     path('transfer/vehicle_movement_detail/<int:pk>', transfers.VehicleMovementDetailView.as_view(), name='vehicle_movement_detail'),
-    path('transfer/vehicle_movement_list', transfers.VehicleMovementListView.as_view(), name='vehicle_movement_list'),
+    path('transfer/vehicle_movement_list/', transfers.VehicleMovementListView.as_view(), name='vehicle_movement_list'),
 
     path('transfer/other_category_list', transfers.OtherCategoryListView.as_view(), name='other_category_list'),
     path('transfer/other_category_create', transfers.OtherCategoryCreateView.as_view(), name='other_category_create'),

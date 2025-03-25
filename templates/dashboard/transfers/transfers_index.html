@@ -1,0 +1,66 @@
+{% extends "layouts/base.html" %}
+{% load custom_filters %}
+{% load static %}
+
+{% block content %}
+
+    <div class="container bg-light p-5 mt-5 rounded">
+        <div class="row">
+            <div class="col-sm-6 col-md-6 mb-3">
+                <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
+                    <div class="card-header"><i class="fa fa-truck"></i>
+                        <b>Действий:</b> <span
+                                class="badge bg-secondary-subtle text-dark">{{ vehicle_movement_count }}</span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Снабжение</h5>
+                    </div>
+                    <a href="{% url 'vehicle_movement_list' %}?month={{ month }}&year={{ year }}"
+                       class="m-1 btn btn-outline-info">Просмотреть</a>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-md-6 mb-3">
+                <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
+                    <div class="card-header"><i class="fa fa-automobile"></i>
+                        <b>Транспорт:</b> <span
+                                class="badge bg-secondary-subtle text-dark">{{ vehicle_count }}</span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Автопарк</h5>
+                    </div>
+                    <a href="{% url 'vehicle_list' %}"
+                    class="m-1 btn btn-outline-info">Просмотреть</a>
+                </div>
+            </div>
+
+
+            <div class="col-sm-6 col-md-6 mb-3">
+                <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
+                    <div class="card-header"><i class="fa fa-list"></i>
+                        <b>Всего:</b> <span
+                                class="badge bg-secondary-subtle text-dark">{{ other_category_count }}</span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Категории оборудования</h5>
+                    </div>
+                    <a href="{% url 'other_category_list' %}"
+                       class="m-1 btn btn-outline-info">Просмотреть</a>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-6 mb-3">
+                <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
+                    <div class="card-header"><i class="fa fa-wrench"></i>
+                        <b>Всего:</b> <span
+                                class="badge bg-secondary-subtle text-dark">{{ other_equipment_count }}</span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Оборудование</h5>
+                    </div>
+                    <a href="{% url 'other_equipment_list' %}"
+                       class="m-1 btn btn-outline-info">Просмотреть</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

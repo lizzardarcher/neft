@@ -3,19 +3,25 @@
 {% block content %}
     <div class="m-5">
         <div class="row">
-            <div class="col-3">
-                <h1>База транспорта</h1>
-                <a href="{% url 'vehicle_create' %}" class="btn btn-success mb-3"><i class="fa fa-plus"></i> Добавить
-                    автомобиль</a>
-                {% include 'dashboard/transfers/_vehicle_table.html' %}
+            <div class="col-sm-12 col-md-2">
             </div>
-            <div class="col-8">
-                <h1>Снабжение</h1>
-                <a href="{% url 'vehicle_movement_create' %}" class="btn btn-success mb-3"><i class="fa fa-plus"></i>
+            <div class="col-sm-12 col-md-8">
+                <div>
+                    <h3>Снабжение  <span>{{ month }}-{{ year }}</span> </h3>
+                </div>
+                <a href="{% url 'vehicle_movement_create' %}?month={{ request.GET.month }}&year={{ request.GET.year }}"
+                   class="btn btn-success mb-3"><i class="fa fa-plus"></i>
                     Добавить движение</a>
+                <a href="{% url 'vehicle_movement_list' %}?month={{ previous_month }}&year={{ previous_year }}"
+                   class="btn btn-outline-secondary mb-3"><<<</a>
+                <a href="{% url 'vehicle_movement_list' %}?month={{ next_month }}&year={{ next_year }}"
+                   class="btn btn-outline-secondary mb-3">>>></a>
+
                 {% include 'dashboard/transfers/_vehicle_movement_table.html' %}
+
+                <a href="{% url 'transfer_index' %}" class="btn btn-secondary mb-3">Назад</a>
             </div>
-            <div class="col-2"></div>
+            <div class="col-sm-12 col-md-2"></div>
         </div>
     </div>
 {% endblock %}

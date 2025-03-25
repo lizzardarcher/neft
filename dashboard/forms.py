@@ -3,9 +3,9 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group, Permission
 from django.core.exceptions import ValidationError
-
+from django_select2 import forms as s2forms
 from dashboard.models import Brigade, Equipment, Document, Category, UserProfile, Manufacturer, WorkerActivity, \
-    BrigadeActivity, WorkObject, Vehicle, VehicleMovement, OtherEquipment
+    BrigadeActivity, WorkObject, Vehicle, VehicleMovement, OtherEquipment, OtherCategory
 
 DATE_STYLE = {'style': 'width: 15rem;'}
 
@@ -516,8 +516,25 @@ class VehicleForm(forms.ModelForm):
         }
 
 
+# class VehicleMovementForm(forms.ModelForm):
+#     equipment = forms.ModelMultipleChoiceField(queryset=OtherEquipment.objects.all(), widget=forms.CheckboxSelectMultiple, required=False)
+#
+#     class Meta:
+#         model = VehicleMovement
+#         fields = ['vehicle', 'date', 'brigade_from', 'brigade_to', 'equipment']
+#         widgets = {
+#             'vehicle': forms.Select(attrs={'class': 'form-control'}),
+#             'brigade_from': forms.Select(attrs={'class': 'form-control'}),
+#             'brigade_to': forms.Select(attrs={'class': 'form-control'}),
+#             'date': forms.DateInput(format='%Y-%m-%d', attrs={'class': 'form-control', 'type': 'date', 'style': DATE_STYLE['style']}),
+#         }
+
 class VehicleMovementForm(forms.ModelForm):
-    equipment = forms.ModelMultipleChoiceField(queryset=OtherEquipment.objects.all(), widget=forms.CheckboxSelectMultiple, required=False)
+    equipment = forms.ModelMultipleChoiceField(
+        queryset=OtherEquipment.objects.all(),
+        widget=s2forms.Select2MultipleWidget(attrs={'class': 'form-control'}),
+        required=False
+    )
 
     class Meta:
         model = VehicleMovement
@@ -526,5 +543,25 @@ class VehicleMovementForm(forms.ModelForm):
             'vehicle': forms.Select(attrs={'class': 'form-control'}),
             'brigade_from': forms.Select(attrs={'class': 'form-control'}),
             'brigade_to': forms.Select(attrs={'class': 'form-control'}),
-            'date': forms.DateInput(format='%Y-%m-%d', attrs={'class': 'form-control', 'type': 'date', 'style': DATE_STYLE['style']}),
+            'date': forms.DateInput(format='%Y-%m-%d',
+                                    attrs={'class': 'form-control', 'type': 'date', 'style': DATE_STYLE['style']}),
+        }
+
+class OtherEquipmentForm(forms.ModelForm):
+    class Meta:
+        model = OtherEquipment
+        fields = ['name', 'category', 'amount']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'category': forms.Select(attrs={'class': 'form-control'}),
+            'amount': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+
+class OtherCategoryForm(forms.ModelForm):
+    class Meta:
+        model = OtherCategory
+        fields = ['name']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
         }

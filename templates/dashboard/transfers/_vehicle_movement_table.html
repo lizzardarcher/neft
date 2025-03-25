@@ -38,7 +38,7 @@
                 </td>
                 <td>
                     {% if movement.brigade_to %}
-                        <a href="{% url 'brigade_detail' movement.brigade_to.id %}">{{ movement.brigade_to.name }}</a>
+                        {{ movement.equipment.all|join:", " }}
                     {% else %}
                         ---
                     {% endif %}
@@ -69,7 +69,7 @@
                                             data-bs-dismiss="modal">
                                         Отмена
                                     </button>
-                                    <a href="{% url 'vehicle_movement_delete' movement.id %}"
+                                    <a href="{% url 'vehicle_movement_delete' movement.id %}?month={{ request.GET.month }}&year={{ request.GET.year }}"
                                        class="btn btn-danger">Удалить</a>
                                 </div>
                             </div>
@@ -79,6 +79,7 @@
             </tr>
         {% empty %}
             <tr>
+                <td>---</td>
                 <td>---</td>
                 <td>---</td>
                 <td>---</td>
