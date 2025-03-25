@@ -3,9 +3,11 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group, Permission
 from django.core.exceptions import ValidationError
+from django.forms import inlineformset_factory
 from django_select2 import forms as s2forms
+
 from dashboard.models import Brigade, Equipment, Document, Category, UserProfile, Manufacturer, WorkerActivity, \
-    BrigadeActivity, WorkObject, Vehicle, VehicleMovement, OtherEquipment, OtherCategory
+    BrigadeActivity, WorkObject, Vehicle, VehicleMovement, OtherEquipment, OtherCategory, VehicleMovementEquipment
 
 DATE_STYLE = {'style': 'width: 15rem;'}
 
@@ -529,23 +531,58 @@ class VehicleForm(forms.ModelForm):
 #             'date': forms.DateInput(format='%Y-%m-%d', attrs={'class': 'form-control', 'type': 'date', 'style': DATE_STYLE['style']}),
 #         }
 
-class VehicleMovementForm(forms.ModelForm):
-    equipment = forms.ModelMultipleChoiceField(
-        queryset=OtherEquipment.objects.all().order_by('name'),
-        widget=s2forms.Select2MultipleWidget(attrs={'class': 'form-control', 'style':'height: 25rem;'}),
-        required=False
-    )
+# class VehicleMovementForm(forms.ModelForm):
+#     equipment = forms.ModelMultipleChoiceField(
+#         queryset=OtherEquipment.objects.all().order_by('name'),
+#         widget=s2forms.Select2MultipleWidget(attrs={'class': 'form-control', 'style':'height: 25rem;'}),
+#         required=False
+#     )
+#
+#     class Meta:
+#         model = VehicleMovement
+#         fields = ['vehicle', 'date', 'brigade_from', 'brigade_to', 'equipment']
+#         widgets = {
+#             'vehicle': forms.Select(attrs={'class': 'form-control'}),
+#             'brigade_from': forms.Select(attrs={'class': 'form-control'}),
+#             'brigade_to': forms.Select(attrs={'class': 'form-control'}),
+#             'date': forms.DateInput(format='%Y-%m-%d',
+#                                     attrs={'class': 'form-control', 'type': 'date', 'style': DATE_STYLE['style']}),
+#         }
 
+
+class VehicleMovementForm(forms.ModelForm):
     class Meta:
         model = VehicleMovement
-        fields = ['vehicle', 'date', 'brigade_from', 'brigade_to', 'equipment']
+        fields = ['driver', 'vehicle', 'date', 'brigade_from', 'brigade_to']
         widgets = {
+            'driver': forms.Select(attrs={'class': 'form-control'}),
             'vehicle': forms.Select(attrs={'class': 'form-control'}),
             'brigade_from': forms.Select(attrs={'class': 'form-control'}),
             'brigade_to': forms.Select(attrs={'class': 'form-control'}),
-            'date': forms.DateInput(format='%Y-%m-%d',
-                                    attrs={'class': 'form-control', 'type': 'date', 'style': DATE_STYLE['style']}),
+            'date': forms.DateInput(format='%Y-%m-%d', attrs={'class': 'form-control', 'type': 'date', 'style': DATE_STYLE['style']}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['driver'].queryset = User.objects.order_by('last_name')
+        self.fields['driver'].label_from_instance = self.driver_label_from_instance
+
+    def driver_label_from_instance(self, obj):
+        return f"{obj.last_name} {obj.first_name}"
+
+
+VehicleMovementEquipmentFormSet = inlineformset_factory(
+    VehicleMovement,
+    VehicleMovementEquipment,
+    fields=('equipment', 'quantity'),
+    extra=5,
+    can_delete=True,
+    widgets = {
+        'equipment': forms.Select(attrs={'class': 'form-control'}),
+        'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
+    }
+)
+
 
 class OtherEquipmentForm(forms.ModelForm):
     class Meta:

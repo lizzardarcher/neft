@@ -244,6 +244,7 @@ class Vehicle(models.Model):
 
 
 class VehicleMovement(models.Model):
+    driver = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Водитель')
     vehicle = models.ForeignKey(Vehicle, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Автомобиль')
     brigade_from = models.ForeignKey(Brigade, on_delete=models.SET_NULL, null=True, blank=True,
                                      verbose_name='Из бригады', related_name='vehicle_movements_from')
@@ -251,3 +252,15 @@ class VehicleMovement(models.Model):
                                    related_name='vehicle_movements_to')
     date = models.DateField(auto_now_add=False, auto_now=False, null=False, blank=False, verbose_name='Дата')
     equipment = models.ManyToManyField(OtherEquipment, blank=True,  default=None, verbose_name='Оборудование')
+
+
+class VehicleMovementEquipment(models.Model):
+    vehicle_movement = models.ForeignKey(VehicleMovement, on_delete=models.CASCADE)
+    equipment = models.ForeignKey(OtherEquipment, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1, verbose_name='Количество')
+
+    class Meta:
+        unique_together = ('vehicle_movement', 'equipment')
+        ordering = ['equipment']
+    def __str__(self):
+        return f'{self.equipment.name} ({self.quantity})'

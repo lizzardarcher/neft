@@ -67,3 +67,7 @@ class VehicleAdmin(admin.ModelAdmin):
 @admin.register(VehicleMovement)
 class VehicleMovementAdmin(admin.ModelAdmin):
     ...
+
+@admin.register(VehicleMovementEquipment)
+class VehicleMovementEquipmentAdmin(admin.ModelAdmin):
+    ...

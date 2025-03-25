@@ -37,10 +37,10 @@
                     {% endif %}
                 </td>
                 <td>
-                    {% if movement.brigade_to %}
+                    {% if movement.vehiclemovementequipment_set.all %}
                         <ol>
-                            {% for move in movement.equipment.all %}
-                                <li>{{ move }}</li>
+                            {% for equipment_entry in movement.vehiclemovementequipment_set.all %}
+                                <li>{{ equipment_entry.equipment.name }} ({{ equipment_entry.quantity }} шт.)</li>
                             {% endfor %}
                         </ol>
                     {% else %}
@@ -48,8 +48,8 @@
                     {% endif %}
                 </td>
                 <td>
-                    <a href="{% url 'vehicle_movement_update' movement.id %}?month={{ request.GET.month }}&year={{ request.GET.year }}"
-                       class="btn btn-sm btn-warning"><i class="fa fa-edit"></i> </a>
+{#                    <a href="{% url 'vehicle_movement_update' movement.id %}?month={{ request.GET.month }}&year={{ request.GET.year }}"#}
+{#                       class="btn btn-sm btn-warning"><i class="fa fa-edit"></i> </a>#}
                     <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal"
                             data-bs-target="#deleteModal{{ movement.id }}"><i class="fa fa-trash"></i>
                     </button>

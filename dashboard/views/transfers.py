@@ -1,13 +1,15 @@
+import traceback
 from datetime import datetime
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.views.generic import ListView, UpdateView, CreateView, DetailView, TemplateView
 
-from dashboard.forms import VehicleForm, VehicleMovementForm, OtherEquipmentForm, OtherCategoryForm
+from dashboard.forms import VehicleForm, VehicleMovementForm, OtherEquipmentForm, OtherCategoryForm, \
+    VehicleMovementEquipmentFormSet
 from dashboard.models import Transfer, OtherEquipment, OtherCategory, Vehicle, VehicleMovement
 
 
@@ -111,19 +113,20 @@ class VehicleMovementDetailView(LoginRequiredMixin, DetailView):
     template_name = 'dashboard/transfers/vehicle_movement_detail.html'
 
 
-class VehicleMovementCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+
+
+class VehicleMovementCreateView(CreateView):
     model = VehicleMovement
     form_class = VehicleMovementForm
     template_name = 'dashboard/transfers/vehicle_movement_form.html'
 
-    def get_success_url(self):
-        return reverse('vehicle_movement_list')
-
-
-class VehicleMovementUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
-    model = VehicleMovement
-    form_class = VehicleMovementForm
-    template_name = 'dashboard/transfers/vehicle_movement_form.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.POST:
+            context['formset'] = VehicleMovementEquipmentFormSet(self.request.POST)
+        else:
+            context['formset'] = VehicleMovementEquipmentFormSet()
+        return context
 
     def get_success_url(self):
         try:
@@ -133,6 +136,81 @@ class VehicleMovementUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateV
             month = datetime.now().month
             year = datetime.now().year
         return reverse('vehicle_movement_list') + f'?month={str(month)}&year={str(year)}'
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        formset = context['formset']
+        if formset.is_valid():
+            self.object = form.save()
+            formset.instance = self.object  # Link formset to the new VehicleMovement object
+            formset.save()
+            return super().form_valid(form)
+        else:
+            return self.form_invalid(form)
+
+    def form_invalid(self, form):
+        return self.render_to_response(self.get_context_data(form=form))
+
+class VehicleMovementUpdateView(UpdateView):
+    model = VehicleMovement
+    form_class = VehicleMovementForm
+    template_name = 'dashboard/transfers/vehicle_movement_form.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        vehicle_movement = self.get_object()
+        context['formset'] = VehicleMovementEquipmentFormSet(instance=vehicle_movement)
+        return context
+
+    def get_success_url(self):
+        try:
+            month = int(self.request.GET.get('month'))
+            year =  int(self.request.GET.get('year'))
+        except:
+            month = datetime.now().month
+            year = datetime.now().year
+        return reverse('vehicle_movement_list') + f'?month={str(month)}&year={str(year)}'
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        formset = context['formset']
+        if formset.is_valid():
+            self.object = form.save()
+            formset.instance = self.object
+            formset.save()
+            return super().form_valid(form)
+        else:
+            messages.error(self.request, f"Пожалуйста, исправьте ошибки в форме. {formset.errors}\n"
+                                                    f"context: {context}"
+                                         f"formset.is_valid(): {formset.is_valid()}")
+            return self.form_invalid(form)
+
+    def form_invalid(self, form):
+        return self.render_to_response(self.get_context_data(form=form))
+
+
+# class VehicleMovementCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+#     model = VehicleMovement
+#     form_class = VehicleMovementForm
+#     template_name = 'dashboard/transfers/vehicle_movement_form.html'
+#
+#     def get_success_url(self):
+#         return reverse('vehicle_movement_list')
+#
+#
+# class VehicleMovementUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+#     model = VehicleMovement
+#     form_class = VehicleMovementForm
+#     template_name = 'dashboard/transfers/vehicle_movement_form.html'
+#
+#     def get_success_url(self):
+#         try:
+#             month = int(self.request.GET.get('month'))
+#             year =  int(self.request.GET.get('year'))
+#         except:
+#             month = datetime.now().month
+#             year = datetime.now().year
+#         return reverse('vehicle_movement_list') + f'?month={str(month)}&year={str(year)}'
 
 
 def vehicle_movement_delete(request, pk):
