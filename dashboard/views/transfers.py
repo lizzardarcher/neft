@@ -199,6 +199,8 @@ class OtherEquipmentCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateVi
     def get_success_url(self):
         return reverse('other_equipment_list')
 
+    def get_success_message(self, cleaned_data):
+        return f'Оборудование {self.object} успешно добавлено'
 
 
 class OtherEquipmentUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
@@ -209,6 +211,8 @@ class OtherEquipmentUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateVi
     def get_success_url(self):
         return reverse('other_equipment_list')
 
+    def get_success_message(self, cleaned_data):
+        return f'Оборудование {self.object} успешно обновлено'
 
 def other_equipment_delete(request, pk):
     other_equipment = OtherEquipment.objects.get(pk=pk)

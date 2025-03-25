@@ -2,6 +2,8 @@
 
 {% block content %}
     <div class="container mt-4">
+            {% if other_equipments.count > 15 %}
+            <a href="{% url 'transfer_index' %}" class="btn btn-secondary mb-3">Назад</a>{% endif %}
         <h1>Оборудование</h1>
         <a href="{% url 'other_equipment_create' %}" class="btn btn-success mb-3"><i class="fa fa-plus"></i> Добавить
             оборудование</a>
@@ -22,26 +24,26 @@
                         <td>{{ equipment.name }}</td>
                         <td>
                             {% if equipment.category %}
-                                <a href="{% url 'other_category_detail' equipment.category.pk %}">{{ equipment.category.name }}</a>
+                                <a href="{% url 'other_category_detail' equipment.category.id %}">{{ equipment.category.name }}</a>
                             {% else %}
                                 ---
                             {% endif %}
                         </td>
                         <td>{{ equipment.amount }}</td>
                         <td>
-                            <a href="{% url 'other_equipment_update' equipment.pk %}" class="btn btn-sm btn-warning"><i
-                                    class="fa fa-edit"></i> Редактировать</a>
+                            <a href="{% url 'other_equipment_update' equipment.id %}" class="btn btn-sm btn-warning"><i
+                                    class="fa fa-edit"></i> </a>
                             <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal"
-                                    data-bs-target="#deleteModal{{ equipment.pk }}"><i class="fa fa-trash"></i> Удалить
+                                    data-bs-target="#deleteModal{{ equipment.id }}"><i class="fa fa-trash"></i>
                             </button>
 
                             <!-- Modal для подтверждения удаления -->
-                            <div class="modal fade" id="deleteModal{{ equipment.pk }}" tabindex="-1"
-                                 aria-labelledby="deleteModalLabel{{ equipment.pk }}" aria-hidden="true">
+                            <div class="modal fade" id="deleteModal{{ equipment.id }}" tabindex="-1"
+                                 aria-labelledby="deleteModalLabel{{ equipment.id }}" aria-hidden="true">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
                                         <div class="modal-header">
-                                            <h5 class="modal-title" id="deleteModalLabel{{ equipment.pk }}">
+                                            <h5 class="modal-title" id="deleteModalLabel{{ equipment.id }}">
                                                 Подтверждение удаления</h5>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                     aria-label="Close"></button>
@@ -53,7 +55,7 @@
                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                                                 Отмена
                                             </button>
-                                            <a href="{% url 'other_equipment_delete' equipment.pk %}"
+                                            <a href="{% url 'other_equipment_delete' equipment.id %}"
                                                class="btn btn-danger">Удалить</a>
                                         </div>
                                     </div>

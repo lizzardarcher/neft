@@ -2,10 +2,12 @@
 
 {% block content %}
     <div class="m-5">
+
         <div class="row">
             <div class="col-sm-12 col-md-2">
             </div>
             <div class="col-sm-12 col-md-8">
+                {% if vehicle_movements.count > 15 %}<a href="{% url 'transfer_index' %}" class="btn btn-secondary mb-3">Назад</a>{% endif %}
                 <div>
                     <h3>Снабжение  <span>{{ month }}-{{ year }}</span> </h3>
                 </div>

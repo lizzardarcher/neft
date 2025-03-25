@@ -221,7 +221,7 @@ class OtherCategory(models.Model):
 
 class OtherEquipment(models.Model):
     name = models.CharField(max_length=200, unique=True, null=False, blank=False, verbose_name='Название оборудования')
-    category = models.ForeignKey(OtherCategory, on_delete=models.SET_NULL, null=True, blank=True,
+    category = models.ForeignKey(OtherCategory, on_delete=models.SET_NULL, null=True, blank=True, default=None,
                                  verbose_name='Категория')
     amount = models.IntegerField(null=False, blank=False, default=1, verbose_name='Количество')
 

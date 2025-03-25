@@ -19,19 +19,19 @@
                     <tr>
                         <td>{{ category.name }}</td>
                         <td>
-                            <a href="{% url 'other_category_update' category.pk %}" class="btn btn-sm btn-warning"><i
-                                    class="fa fa-edit"></i> Редактировать</a>
+                            <a href="{% url 'other_category_update' category.id %}" class="btn btn-sm btn-warning"><i
+                                    class="fa fa-edit"></i> </a>
                             <button type="button" class="btn btn-sm btn-danger" data-toggle="modal"
-                                    data-target="#deleteModal{{ category.pk }}"><i class="fa fa-trash"></i> Удалить
+                                    data-target="#deleteModal{{ category.id }}"><i class="fa fa-trash"></i>
                             </button>
 
                             <!-- Modal для подтверждения удаления -->
-                            <div class="modal fade" id="deleteModal{{ category.pk }}" tabindex="-1"
-                                 aria-labelledby="deleteModalLabel{{ category.pk }}" aria-hidden="true">
+                            <div class="modal fade" id="deleteModal{{ category.id }}" tabindex="-1"
+                                 aria-labelledby="deleteModalLabel{{ category.id }}" aria-hidden="true">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
                                         <div class="modal-header">
-                                            <h5 class="modal-title" id="deleteModalLabel{{ category.pk }}">Подтверждение
+                                            <h5 class="modal-title" id="deleteModalLabel{{ category.id }}">Подтверждение
                                                 удаления</h5>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                     aria-label="Close"></button>
@@ -43,7 +43,7 @@
                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                                                 Отмена
                                             </button>
-                                            <a href="{% url 'other_category_delete' category.pk %}"
+                                            <a href="{% url 'other_category_delete' category.id %}"
                                                class="btn btn-danger">Удалить</a>
                                         </div>
                                     </div>

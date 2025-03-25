@@ -21,7 +21,7 @@ class UserActionLoggerMiddleware:
 
             log = UserActionLog(user=request.user, action_type=f"Запрос {request.method} по url {url_name}")
 
-            if "equipment_update" in url_name:
+            if "equipment_update" in url_name and not "other" in url_name:
                 log.content_type = ContentType.objects.get(app_label='dashboard', model='equipment')
                 object_id = resolve(request.path_info).kwargs.get('pk')
                 log.description = f'Обновлены данные оборудования: {Equipment.objects.get(pk=object_id)}'
