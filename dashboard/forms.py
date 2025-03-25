@@ -531,8 +531,8 @@ class VehicleForm(forms.ModelForm):
 
 class VehicleMovementForm(forms.ModelForm):
     equipment = forms.ModelMultipleChoiceField(
-        queryset=OtherEquipment.objects.all(),
-        widget=s2forms.Select2MultipleWidget(attrs={'class': 'form-control'}),
+        queryset=OtherEquipment.objects.all().order_by('name'),
+        widget=s2forms.Select2MultipleWidget(attrs={'class': 'form-control', 'style':'height: 25rem;'}),
         required=False
     )
 

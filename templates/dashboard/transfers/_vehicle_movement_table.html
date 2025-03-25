@@ -38,13 +38,17 @@
                 </td>
                 <td>
                     {% if movement.brigade_to %}
-                        {{ movement.equipment.all|join:", " }}
+                        <ol>
+                            {% for move in movement.equipment.all %}
+                                <li>{{ move }}</li>
+                            {% endfor %}
+                        </ol>
                     {% else %}
                         ---
                     {% endif %}
                 </td>
                 <td>
-                    <a href="{% url 'vehicle_movement_update' movement.id %}"
+                    <a href="{% url 'vehicle_movement_update' movement.id %}?month={{ request.GET.month }}&year={{ request.GET.year }}"
                        class="btn btn-sm btn-warning"><i class="fa fa-edit"></i> </a>
                     <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal"
                             data-bs-target="#deleteModal{{ movement.id }}"><i class="fa fa-trash"></i>

@@ -13,3 +13,26 @@
 
     </div>
 {% endblock %}
+{% block extrascript %}
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css">
+    <script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+    <script>
+        let table1 = new DataTable('#vehicle_table', {
+            sorting: false,
+            searching: false,
+            columnDefs: [
+                {"orderable": false, "targets": [3]}
+            ],
+            paging: false,
+            language: {
+                info: ' ',
+                infoEmpty: 'Нет записей',
+                infoFiltered: '(filtered from _MAX_ total records)',
+                lengthMenu: 'Показать _MENU_ на странице',
+                zeroRecords: 'Nothing found - sorry'
+            },
+            stateSave: true,
+        });
+    </script>
+{% endblock extrascript %}

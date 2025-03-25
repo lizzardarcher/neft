@@ -49,7 +49,7 @@ class VehicleCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     template_name = 'dashboard/transfers/vehicle_form.html'
 
     def get_success_url(self):
-        return reverse('vehicle_movement_list')
+        return reverse('vehicle_list')
 
 class VehicleUpdateView(LoginRequiredMixin, SuccessMessageMixin,  UpdateView):
     model = Vehicle
@@ -57,14 +57,14 @@ class VehicleUpdateView(LoginRequiredMixin, SuccessMessageMixin,  UpdateView):
     template_name = 'dashboard/transfers/vehicle_form.html'
 
     def get_success_url(self):
-        return reverse('vehicle_movement_list')
+        return reverse('vehicle_list')
 
 
 def vehicle_delete(request, vehicle_id):
     vehicle = get_object_or_404(Vehicle, id=vehicle_id)
     vehicle.delete()
     messages.success(request, 'Транспорт успешно удален!')
-    return redirect('vehicle_movement_list')
+    return redirect('vehicle_list')
 
 
 class VehicleMovementListView(LoginRequiredMixin, ListView):
@@ -126,8 +126,12 @@ class VehicleMovementUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateV
     template_name = 'dashboard/transfers/vehicle_movement_form.html'
 
     def get_success_url(self):
-        month = int(self.request.GET.get('month'))
-        year =  int(self.request.GET.get('year'))
+        try:
+            month = int(self.request.GET.get('month'))
+            year =  int(self.request.GET.get('year'))
+        except:
+            month = datetime.now().month
+            year = datetime.now().year
         return reverse('vehicle_movement_list') + f'?month={str(month)}&year={str(year)}'
 
 

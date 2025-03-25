@@ -228,6 +228,8 @@ class OtherEquipment(models.Model):
     def __str__(self):
         return f"{self.name} ({self.category})"
 
+    class Meta:
+        ordering = ['name']
 
 class Vehicle(models.Model):
     brand = models.CharField(max_length=200, null=False, blank=False, verbose_name='Марка')
