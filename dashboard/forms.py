@@ -518,38 +518,6 @@ class VehicleForm(forms.ModelForm):
         }
 
 
-# class VehicleMovementForm(forms.ModelForm):
-#     equipment = forms.ModelMultipleChoiceField(queryset=OtherEquipment.objects.all(), widget=forms.CheckboxSelectMultiple, required=False)
-#
-#     class Meta:
-#         model = VehicleMovement
-#         fields = ['vehicle', 'date', 'brigade_from', 'brigade_to', 'equipment']
-#         widgets = {
-#             'vehicle': forms.Select(attrs={'class': 'form-control'}),
-#             'brigade_from': forms.Select(attrs={'class': 'form-control'}),
-#             'brigade_to': forms.Select(attrs={'class': 'form-control'}),
-#             'date': forms.DateInput(format='%Y-%m-%d', attrs={'class': 'form-control', 'type': 'date', 'style': DATE_STYLE['style']}),
-#         }
-
-# class VehicleMovementForm(forms.ModelForm):
-#     equipment = forms.ModelMultipleChoiceField(
-#         queryset=OtherEquipment.objects.all().order_by('name'),
-#         widget=s2forms.Select2MultipleWidget(attrs={'class': 'form-control', 'style':'height: 25rem;'}),
-#         required=False
-#     )
-#
-#     class Meta:
-#         model = VehicleMovement
-#         fields = ['vehicle', 'date', 'brigade_from', 'brigade_to', 'equipment']
-#         widgets = {
-#             'vehicle': forms.Select(attrs={'class': 'form-control'}),
-#             'brigade_from': forms.Select(attrs={'class': 'form-control'}),
-#             'brigade_to': forms.Select(attrs={'class': 'form-control'}),
-#             'date': forms.DateInput(format='%Y-%m-%d',
-#                                     attrs={'class': 'form-control', 'type': 'date', 'style': DATE_STYLE['style']}),
-#         }
-
-
 class VehicleMovementForm(forms.ModelForm):
     class Meta:
         model = VehicleMovement
@@ -575,14 +543,13 @@ VehicleMovementEquipmentFormSet = inlineformset_factory(
     VehicleMovement,
     VehicleMovementEquipment,
     fields=('equipment', 'quantity'),
-    extra=5,
+    extra=10,
     can_delete=True,
     widgets = {
-        'equipment': forms.Select(attrs={'class': 'form-control'}),
+        'equipment': forms.Select(attrs={'class': 'form-control', 'autocomplete': 'on'}),
         'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
     }
 )
-
 
 class OtherEquipmentForm(forms.ModelForm):
     class Meta:

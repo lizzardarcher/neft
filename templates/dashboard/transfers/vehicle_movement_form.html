@@ -1,85 +1,3 @@
-{#{% extends 'layouts/base.html' %}#}
-{##}
-{#{% block title %}Форма снабжения{% endblock %}#}
-{##}
-{#{% block content %}#}
-{#    <div class="container mt-5">#}
-{#        <div class="card shadow-lg">#}
-{#            <div class="card-header bg-secondary text-white py-3">#}
-{#                <h5 class="mb-0">Форма снабжения</h5>#}
-{#            </div>#}
-{#            <div class="card-body p-4">#}
-{#                <form method="post">#}
-{#                    {% csrf_token %}#}
-{##}
-{#                    <div class="mb-3">#}
-{#                        <label for="{{ form.date.id_for_label }}" class="form-label">Дата:</label>#}
-{#                        {{ form.date }}#}
-{#                        {% if form.date.errors %}#}
-{#                            <div class="invalid-feedback d-block">#}
-{#                                {% for error in form.date.errors %}#}
-{#                                    {{ error }}#}
-{#                                {% endfor %}#}
-{#                            </div>#}
-{#                        {% endif %}#}
-{#                    </div>#}
-{##}
-{#                    <div class="mb-3">#}
-{#                        <label for="{{ form.vehicle.id_for_label }}" class="form-label">Автомобиль:</label>#}
-{#                        {{ form.vehicle }}#}
-{#                        {% if form.vehicle.errors %}#}
-{#                            <div class="invalid-feedback d-block">#}
-{#                                {% for error in form.vehicle.errors %}#}
-{#                                    {{ error }}#}
-{#                                {% endfor %}#}
-{#                            </div>#}
-{#                        {% endif %}#}
-{#                    </div>#}
-{##}
-{#                    <div class="mb-3">#}
-{#                        <label for="{{ form.brigade_from.id_for_label }}" class="form-label">Из бригады:</label>#}
-{#                        {{ form.brigade_from }}#}
-{#                        {% if form.brigade_from.errors %}#}
-{#                            <div class="invalid-feedback d-block">#}
-{#                                {% for error in form.brigade_from.errors %}#}
-{#                                    {{ error }}#}
-{#                                {% endfor %}#}
-{#                            </div>#}
-{#                        {% endif %}#}
-{#                    </div>#}
-{##}
-{#                    <div class="mb-3">#}
-{#                        <label for="{{ form.brigade_to.id_for_label }}" class="form-label">В бригаду:</label>#}
-{#                        {{ form.brigade_to }}#}
-{#                        {% if form.brigade_to.errors %}#}
-{#                            <div class="invalid-feedback d-block">#}
-{#                                {% for error in form.brigade_to.errors %}#}
-{#                                    {{ error }}#}
-{#                                {% endfor %}#}
-{#                            </div>#}
-{#                        {% endif %}#}
-{#                    </div>#}
-{##}
-{#                    <div class="mb-3">#}
-{#                        <label for="{{ form.equipment.id_for_label }}" class="form-label">Оборудование:</label><br>#}
-{#                        <small>Зажмите [Ctrl] чтобы выбрать несколько позиций</small>#}
-{#                        {{ form.equipment }}#}
-{#                        {% if form.equipment.errors %}#}
-{#                            <div class="invalid-feedback d-block">#}
-{#                                {% for error in form.equipment.errors %}#}
-{#                                    {{ error }}#}
-{#                                {% endfor %}#}
-{#                            </div>#}
-{#                        {% endif %}#}
-{#                    </div>#}
-{##}
-{#                    <button class="btn btn-success" type="submit">Сохранить</button>#}
-{#                </form>#}
-{#                <a href="{% url 'vehicle_movement_list' %}" class="btn btn-secondary mt-3">Назад</a>#}
-{#            </div>#}
-{#        </div>#}
-{#    </div>#}
-{#{% endblock %}#}
 {% extends 'layouts/base.html' %}
 
 {% block title %}Форма снабжения{% endblock %}
@@ -97,97 +15,53 @@
                     <div class="mb-3">
                         <label for="{{ form.date.id_for_label }}" class="form-label">Дата:</label>
                         {{ form.date }}
-                        {% if form.date.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.date.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
                     </div>
 
                     <div class="mb-3">
                         <label for="{{ form.driver.id_for_label }}" class="form-label">Водитель:</label>
                         {{ form.driver }}
-                        {% if form.driver.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.driver.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
                     </div>
 
                     <div class="mb-3">
                         <label for="{{ form.vehicle.id_for_label }}" class="form-label">Автомобиль:</label>
                         {{ form.vehicle }}
-                        {% if form.vehicle.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.vehicle.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
                     </div>
 
                     <div class="mb-3">
                         <label for="{{ form.brigade_from.id_for_label }}" class="form-label">Из бригады:</label>
                         {{ form.brigade_from }}
-                        {% if form.brigade_from.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.brigade_from.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
                     </div>
 
                     <div class="mb-3">
                         <label for="{{ form.brigade_to.id_for_label }}" class="form-label">В бригаду:</label>
                         {{ form.brigade_to }}
-                        {% if form.brigade_to.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.brigade_to.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
                     </div>
 
                     <h5 class="mt-4">Оборудование:</h5>
-                    {{ formset.management_form }}
-                    {% for form in formset %}
-                        <div class="row mb-3 border p-2">
-                            <div class="col-md-6">
-                                <label for="{{ form.equipment.id_for_label }}" class="form-label">Оборудование:</label>
-                                {{ form.equipment }}
-                                {% if form.equipment.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {% for error in form.equipment.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-4">
-                                <label for="{{ form.quantity.id_for_label }}" class="form-label">Количество:</label>
-                                {{ form.quantity }}
-                                {% if form.quantity.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {% for error in form.quantity.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-2">
-                                {{ form.DELETE.label_tag }}
-                                {{ form.DELETE }}
-                            </div>
-                        </div>
-                    {% endfor %}
 
-
+                        {{ formset.management_form }}
+                        {% for form in formset %}
+                            <div id="form-id-{{ form.equipment.id_for_label }}" class="row mb-3 border p-2">
+                                {{ form.id }}
+                                <div class="col-md-6">
+                                    <label for="{{ form.equipment.id_for_label }}"
+                                           class="form-label">Оборудование:</label>
+                                    {{ form.equipment }}
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="{{ form.quantity.id_for_label }}" class="form-label">Количество:</label>
+                                    {{ form.quantity }}
+                                </div>
+                                <div class="col-md-2">
+                                    {{ form.DELETE.label_tag }}
+                                    {{ form.DELETE }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    <button type="button" id="add-equipment" class="btn btn-outline-secondary">Добавить оборудование +
+                    </button>
+                    <br>
+                    <br>
                     <button class="btn btn-success" type="submit">Сохранить</button>
                 </form>
             </div>
@@ -195,3 +69,40 @@
         <a href="{% url 'vehicle_movement_list' %}" class="btn btn-secondary mt-3">Назад</a>
     </div>
 {% endblock %}
+{% block extrascript %}
+    {% if '_update' not in request.path %}
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script>
+            $(document).ready(function () {
+                const maxForms = {{ formset.management_form.TOTAL_FORMS.value }};
+                const formset = [
+                    $("#form-id-id_vehiclemovementequipment_set-1-equipment"),
+                    $("#form-id-id_vehiclemovementequipment_set-2-equipment"),
+                    $("#form-id-id_vehiclemovementequipment_set-3-equipment"),
+                    $("#form-id-id_vehiclemovementequipment_set-4-equipment"),
+                    $("#form-id-id_vehiclemovementequipment_set-5-equipment"),
+                    $("#form-id-id_vehiclemovementequipment_set-6-equipment"),
+                    $("#form-id-id_vehiclemovementequipment_set-7-equipment"),
+                    $("#form-id-id_vehiclemovementequipment_set-8-equipment"),
+                    $("#form-id-id_vehiclemovementequipment_set-9-equipment"),
+                    $("#form-id-id_vehiclemovementequipment_set-10-equipment")
+                ]
+                for (let i = 0; i < maxForms; i++) {
+                    formset[i].prop('hidden', true)
+                }
+                $("#add-equipment").click(function () {
+                    if (formset[7].prop('hidden') === false) {
+                        $("#add-equipment").prop('disabled', true)
+                    }
+                    for (let i = 0; i < maxForms; i++) {
+                        if (formset[i].prop('hidden') === true) {
+                            formset[i].prop('hidden', false)
+                            break
+                        }
+                    }
+                });
+            });
+        </script>
+    {% endif %}
+{% endblock extrascript %}
+

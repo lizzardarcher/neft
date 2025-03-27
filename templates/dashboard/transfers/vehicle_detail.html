@@ -1,13 +1,108 @@
 {% extends 'layouts/base.html' %}
+{% load custom_filters %}
 
 {% block title %}{{ vehicle.brand }} {{ vehicle.model }} {% endblock %}
 
 {% block content %}
     <div class="container">
+        <h1>{{ vehicle.brand }} {{ vehicle.model }}</h1>
         <div class="card">
-            <div class="card-body p-3 m-2">
-                {{ vehicle }}
+            <div class="card-body">
+                <h5 class="card-title">Информация об автомобиле</h5>
+                <table class="table table-bordered">
+                    <tbody>
+                    <tr>
+                        <th>Марка</th>
+                        <td>{{ vehicle.brand }}</td>
+                    </tr>
+                    <tr>
+                        <th>Модель</th>
+                        <td>{{ vehicle.model }}</td>
+                    </tr>
+                    <tr>
+                        <th>Гос Номер</th>
+                        <td>{{ vehicle.number }}</td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5 class="card-title">Перемещения автомобиля</h5>
+
+                <!-- Date Filtering Form -->
+                <form method="get" class="mb-3">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label for="month">Месяц: {% if selected_month %}{{ selected_month|get_month_name }}{% endif %}</label>
+                            <select class="form-control" id="month" name="month">
+                                <option value="">Все месяцы</option>
+                                {% for month_num, month_name in months.items %}
+                                    <option value="{{ month_num }}"
+                                            {% if selected_month == month_num %}selected{% endif %}>{{ month_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="year">Год: {% if selected_year %}{{ selected_year }}{% endif %}</label>
+                            <select class="form-control" id="year" name="year">
+                                <option value="">Все годы</option>
+                                {% for year in years %}
+                                    <option value="{{ year }}"
+                                            {% if selected_year == year %}selected{% endif %}>{{ year }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-success mt-4">Поиск</button>
+                            <a href="{% url 'vehicle_detail' vehicle.pk %}" class="btn btn-secondary mt-4">Сбросить</a>
+                        </div>
+                    </div>
+                </form>
+
+
+                {% if movements %}
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th>Дата</th>
+                            <th>Водитель</th>
+                            <th>Из бригады</th>
+                            <th>В бригаду</th>
+                            <th>Оборудование</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for movement in movements %}
+                            <tr>
+                                <td>{{ movement.date }}</td>
+                                <td>{{ movement.driver|default:"-" }}</td>
+                                <td>{{ movement.brigade_from|default:"-" }}</td>
+                                <td>{{ movement.brigade_to|default:"-" }}</td>
+                                <td>
+                                    {% if movement.vehiclemovementequipment_set.all %}
+                                        <ol>
+                                            {% for equipment_entry in movement.vehiclemovementequipment_set.all %}
+                                                <li>{{ equipment_entry.equipment.name }} ({{ equipment_entry.quantity }}
+                                                    шт.)
+                                                </li>
+                                            {% endfor %}
+                                        </ol>
+                                    {% else %}
+                                        ---
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>Нет данных о перемещениях для данного автомобиля за выбранный период.</p>
+                {% endif %}
+            </div>
+            
         </div>
     </div>
 {% endblock %}

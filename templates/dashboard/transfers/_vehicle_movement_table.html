@@ -3,6 +3,7 @@
         <thead class="thead-dark">
         <tr>
             <th>Дата</th>
+            <th>ФИО Водителя</th>
             <th>Автомобиль</th>
             <th>Из бригады</th>
             <th>В бригаду</th>
@@ -13,7 +14,14 @@
         <tbody>
         {% for movement in vehicle_movements %}
             <tr>
-                <td>{{ movement.date|date:"d.m.Y" }}</td>
+                <td>
+                        {{ movement.date|date:"d.m.Y" }}
+                </td>
+
+                <td>
+                    {{ movement.driver.last_name }} {{ movement.driver.first_name }}
+                </td>
+
                 <td>
                     {% if movement.vehicle %}
                         <a href="{% url 'vehicle_detail' movement.vehicle.id %}">{{ movement.vehicle.brand }}
@@ -22,20 +30,23 @@
                         ---
                     {% endif %}
                 </td>
+
                 <td>
                     {% if movement.brigade_from %}
-                        <a href="{% url 'brigade_detail' movement.brigade_from.id %}">{{ movement.brigade_from.name }}</a>
+                        {{ movement.brigade_from.name }}
                     {% else %}
                         ---
                     {% endif %}
                 </td>
+
                 <td>
                     {% if movement.brigade_to %}
-                        <a href="{% url 'brigade_detail' movement.brigade_to.id %}">{{ movement.brigade_to.name }}</a>
+                        {{ movement.brigade_to.name }}
                     {% else %}
                         ---
                     {% endif %}
                 </td>
+
                 <td>
                     {% if movement.vehiclemovementequipment_set.all %}
                         <ol>
@@ -47,9 +58,10 @@
                         ---
                     {% endif %}
                 </td>
+
                 <td>
-{#                    <a href="{% url 'vehicle_movement_update' movement.id %}?month={{ request.GET.month }}&year={{ request.GET.year }}"#}
-{#                       class="btn btn-sm btn-warning"><i class="fa fa-edit"></i> </a>#}
+                    <a href="{% url 'vehicle_movement_update' movement.id %}?month={{ request.GET.month }}&year={{ request.GET.year }}"
+                       class="btn btn-sm btn-warning"><i class="fa fa-edit"></i> </a>
                     <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal"
                             data-bs-target="#deleteModal{{ movement.id }}"><i class="fa fa-trash"></i>
                     </button>
@@ -83,6 +95,7 @@
             </tr>
         {% empty %}
             <tr>
+                <td>---</td>
                 <td>---</td>
                 <td>---</td>
                 <td>---</td>

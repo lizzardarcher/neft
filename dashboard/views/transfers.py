@@ -1,12 +1,14 @@
-import traceback
 from datetime import datetime
+import calendar
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse
 from django.views.generic import ListView, UpdateView, CreateView, DetailView, TemplateView
+from django.shortcuts import render
+from django.views import View
 
 from dashboard.forms import VehicleForm, VehicleMovementForm, OtherEquipmentForm, OtherCategoryForm, \
     VehicleMovementEquipmentFormSet
@@ -40,10 +42,49 @@ class VehicleListView(LoginRequiredMixin, ListView):
     context_object_name = 'vehicles'
 
 
-class VehicleDetailView(LoginRequiredMixin, DetailView):
-    model = Vehicle
+class VehicleDetailView(LoginRequiredMixin, View):
     template_name = 'dashboard/transfers/vehicle_detail.html'
 
+    RUSSIAN_MONTHS = {
+        1: "Январь",
+        2: "Февраль",
+        3: "Март",
+        4: "Апрель",
+        5: "Май",
+        6: "Июнь",
+        7: "Июль",
+        8: "Август",
+        9: "Сентябрь",
+        10: "Октябрь",
+        11: "Ноябрь",
+        12: "Декабрь",
+    }
+
+
+    def get(self, request, pk):
+        vehicle = get_object_or_404(Vehicle, pk=pk)
+        year = request.GET.get('year')
+        month = request.GET.get('month')
+
+        movements = vehicle.vehiclemovement_set.all()
+
+        if year:
+            movements = movements.filter(date__year=year)
+        if month:
+            movements = movements.filter(date__month=month)
+
+        years = VehicleMovement.objects.dates('date', 'year')
+
+        context = {
+            'vehicle': vehicle,
+            'movements': movements,
+            'years': [d.year for d in years],
+            'selected_year': year,
+            'RUSSIAN_MONTHS': self.RUSSIAN_MONTHS,
+            'selected_month': month,
+            'months': self.RUSSIAN_MONTHS, # Use the static dictionary
+        }
+        return render(request, self.template_name, context)
 
 class VehicleCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Vehicle
@@ -142,7 +183,7 @@ class VehicleMovementCreateView(CreateView):
         formset = context['formset']
         if formset.is_valid():
             self.object = form.save()
-            formset.instance = self.object  # Link formset to the new VehicleMovement object
+            formset.instance = self.object
             formset.save()
             return super().form_valid(form)
         else:
@@ -159,7 +200,10 @@ class VehicleMovementUpdateView(UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         vehicle_movement = self.get_object()
-        context['formset'] = VehicleMovementEquipmentFormSet(instance=vehicle_movement)
+        if self.request.POST:
+            context['formset'] = VehicleMovementEquipmentFormSet(self.request.POST, instance=vehicle_movement)
+        else:
+            context['formset'] = VehicleMovementEquipmentFormSet(instance=vehicle_movement)
         return context
 
     def get_success_url(self):
@@ -180,37 +224,12 @@ class VehicleMovementUpdateView(UpdateView):
             formset.save()
             return super().form_valid(form)
         else:
-            messages.error(self.request, f"Пожалуйста, исправьте ошибки в форме. {formset.errors}\n"
-                                                    f"context: {context}"
-                                         f"formset.is_valid(): {formset.is_valid()}")
+            messages.error(self.request, f"Пожалуйста, исправьте ошибки в форме. {formset.get_form_error()}")
             return self.form_invalid(form)
 
     def form_invalid(self, form):
         return self.render_to_response(self.get_context_data(form=form))
 
-
-# class VehicleMovementCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
-#     model = VehicleMovement
-#     form_class = VehicleMovementForm
-#     template_name = 'dashboard/transfers/vehicle_movement_form.html'
-#
-#     def get_success_url(self):
-#         return reverse('vehicle_movement_list')
-#
-#
-# class VehicleMovementUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
-#     model = VehicleMovement
-#     form_class = VehicleMovementForm
-#     template_name = 'dashboard/transfers/vehicle_movement_form.html'
-#
-#     def get_success_url(self):
-#         try:
-#             month = int(self.request.GET.get('month'))
-#             year =  int(self.request.GET.get('year'))
-#         except:
-#             month = datetime.now().month
-#             year = datetime.now().year
-#         return reverse('vehicle_movement_list') + f'?month={str(month)}&year={str(year)}'
 
 
 def vehicle_movement_delete(request, pk):
