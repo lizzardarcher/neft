@@ -41,6 +41,7 @@ class ManufacturerAdmin(admin.ModelAdmin):
 
 @admin.register(WorkerActivity)
 class WorkerActivityAdmin(admin.ModelAdmin):
+    search_fields = ('user__username', 'user__first_name', 'user__last_name')
     list_display = ('user', 'brigade', 'date', 'work_type')
     ordering = ('date', 'user')
 

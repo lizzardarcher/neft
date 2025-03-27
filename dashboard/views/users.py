@@ -160,13 +160,21 @@ def create_worker_activity(request):
         else:
             if brigade and user and work_type and date:
                 # Обновление или создание активности
-                worker_activity, created = WorkerActivity.objects.update_or_create(
-                    user=user,
-                    brigade=brigade,
-                    date=date,
-                    defaults={'work_type': work_type}
-                )
-                if created:
+
+                worker_activity = WorkerActivity.objects.filter(user=user, date=date).first()
+
+                if worker_activity:
+                    worker_activity.work_type = work_type
+                    worker_activity.brigade = brigade
+                    worker_activity.save()
+                else:
+                    WorkerActivity.objects.create(
+                        user=user,
+                        brigade=brigade,
+                        date=date,
+                        work_type=work_type
+                    )
+                if not worker_activity:
                     messages.success(request, 'Активность успешно создана!')
                 else:
                     messages.success(request, 'Активность успешно обновлена!')
