@@ -102,7 +102,7 @@
                     <p>Нет данных о перемещениях для данного автомобиля за выбранный период.</p>
                 {% endif %}
             </div>
-            
         </div>
+        <a class="btn btn-secondary mt-3" href="{% url 'vehicle_movement_list' %}?month={{ month }}&year={{ year }}">Назад</a>
     </div>
 {% endblock %}
