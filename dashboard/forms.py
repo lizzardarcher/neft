@@ -569,3 +569,21 @@ class OtherCategoryForm(forms.ModelForm):
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
         }
+
+class VehicleMovementFilterForm(forms.Form):
+    month = forms.IntegerField(required=False, label='Месяц', min_value=1, max_value=12, widget=forms.NumberInput(attrs={'type': 'number', 'class': 'form-control'}))
+    year = forms.IntegerField(required=False, label='Год', min_value=1900, max_value=2100, widget=forms.NumberInput(attrs={'type': 'number', 'class': 'form-control'}))
+    brigade_from = forms.ModelChoiceField(queryset=Brigade.objects.all(), required=False, label='Из бригады', widget=forms.Select(attrs={'class': 'form-control'}))
+    brigade_to = forms.ModelChoiceField(queryset=Brigade.objects.all(), required=False, label='В бригаду', widget=forms.Select(attrs={'class': 'form-control'}))
+    driver = forms.ModelChoiceField(queryset=User.objects.all(), required=False, label='Водитель', widget=forms.Select(attrs={'class': 'form-control'}))
+    vehicle = forms.ModelChoiceField(queryset=Vehicle.objects.all(), required=False, label='Автомобиль', widget=forms.Select(attrs={'class': 'form-control'}))
+    start_date = forms.DateField(required=False, label='Начальная дата', widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}))
+    end_date = forms.DateField(required=False, label='Конечная дата', widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['driver'].queryset = User.objects.order_by('last_name')
+        self.fields['driver'].label_from_instance = self.driver_label_from_instance
+
+    def driver_label_from_instance(self, obj):
+        return f"{obj.last_name} {obj.first_name}"

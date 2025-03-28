@@ -14,6 +14,9 @@
                     </div>
                     <div class="card-body">
                         <h5 class="card-title">Снабжение</h5>
+                        <a href="{% url 'vehicle_movement_list_total' %}" class="btn btn-outline-primary mt-auto">
+                        <i class="fa fa-search mr-1"></i> Расширенный анализ
+                    </a>
                     </div>
                     <a href="{% url 'vehicle_movement_list' %}?month={{ month }}&year={{ year }}"
                        class="m-1 btn btn-outline-info">Просмотреть</a>

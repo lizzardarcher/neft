@@ -27,13 +27,11 @@
                         {{ movement.brigade_from.name }}
                     {% else %}---{% endif %}
                 </td>
-
                 <td>
                     {% if movement.brigade_to %}
                         {{ movement.brigade_to.name }}
                     {% else %}---{% endif %}
                 </td>
-
                 <td>
                     {% if movement.vehiclemovementequipment_set.all %}
                         <ol>
@@ -43,14 +41,12 @@
                         </ol>
                     {% else %}---{% endif %}
                 </td>
-
                 <td>
                     <a href="{% url 'vehicle_movement_update' movement.id %}?month={{ request.GET.month }}&year={{ request.GET.year }}"
                        class="btn btn-sm btn-warning"><i class="fa fa-edit"></i> </a>
                     <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal"
                             data-bs-target="#deleteModal{{ movement.id }}"><i class="fa fa-trash"></i>
                     </button>
-
                     <!-- Modal для подтверждения удаления -->
                     <div class="modal fade" id="deleteModal{{ movement.id }}" tabindex="-1"
                          aria-labelledby="deleteModalLabel{{ movement.id }}" aria-hidden="true">

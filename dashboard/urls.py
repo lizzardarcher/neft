@@ -61,6 +61,7 @@ urlpatterns = [
     path('transfer/vehicle_movement_delete/<int:pk>', transfers.vehicle_movement_delete, name='vehicle_movement_delete'),
     path('transfer/vehicle_movement_detail/<int:pk>', transfers.VehicleMovementDetailView.as_view(), name='vehicle_movement_detail'),
     path('transfer/vehicle_movement_list/', transfers.VehicleMovementListView.as_view(), name='vehicle_movement_list'),
+    path('transfer/vehicle_movement_list_total/', transfers.VehicleMovementTotalListView.as_view(), name='vehicle_movement_list_total'),
 
     path('transfer/other_category_list', transfers.OtherCategoryListView.as_view(), name='other_category_list'),
     path('transfer/other_category_create', transfers.OtherCategoryCreateView.as_view(), name='other_category_create'),

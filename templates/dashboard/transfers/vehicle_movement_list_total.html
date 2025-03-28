@@ -1,0 +1,194 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+    <div class="m-5">
+
+        <h1 class="m-5">Снабжение сводная таблица Перемещения техники</h1>
+        <a href="{% url 'transfer_index' %}" class="btn btn-secondary m-auto">Назад</a>
+
+        <div class="row">
+            <div class="col-sm-12 col-md-2">
+                <form method="get">
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="card-title m-2">Фильтр</h5>
+                        </div>
+                        <div class="card-body">
+                            {{ filter_form.as_p }}
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-success m-1">Поиск</button>
+                            <a href="{% url 'vehicle_movement_list_total' %}" class="btn btn-secondary m-1">Сбросить</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-sm-12 col-md-10">
+                {% include 'dashboard/transfers/_vehicle_movement_table_total.html' %}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <h2>Общая информация</h2>
+                <div class="card">
+                    <div class="card-body">
+                        <p class="card-text">Всего перемещений: <strong>{{ total_movements }}</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <h3>Перемещения по месяцам:</h3>
+                <table class="table table-bordered table-striped">
+                    <thead>
+                    <tr>
+                        <th>Месяц</th>
+                        <th>Количество</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in movements_by_month %}
+                        <tr>
+                            <td>{{ item.month_year|date:"m.Y" }}</td>
+                            <td>{{ item.count }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="col-md-6">
+                <h3>Перемещения из бригад:</h3>
+                <table class="table table-bordered table-striped">
+                    <thead>
+                    <tr>
+                        <th>Бригада</th>
+                        <th>Количество</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in movements_by_brigade_from %}
+                        <tr>
+                            <td>{{ item.brigade_from__name|default:"Не указана" }}</td>
+                            <td>{{ item.count }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <h3>Перемещения в бригады:</h3>
+                <table class="table table-bordered table-striped">
+                    <thead>
+                    <tr>
+                        <th>Бригада</th>
+                        <th>Количество</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in movements_by_brigade_to %}
+                        <tr>
+                            <td>{{ item.brigade_to__name|default:"Не указана" }}</td>
+                            <td>{{ item.count }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="col-md-6">
+                <h3>Перемещения по водителям:</h3>
+                <table class="table table-bordered table-striped">
+                    <thead>
+                    <tr>
+                        <th>Водитель</th>
+                        <th>Количество</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in movements_by_driver %}
+                        <tr>
+                            <td>{{ item.driver__last_name }} {{ item.driver__first_name }}</td>
+                            <td>{{ item.count }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <h3>Перемещения по автомобилям:</h3>
+                <table class="table table-bordered table-striped">
+                    <thead>
+                    <tr>
+                        <th>Автомобиль</th>
+                        <th>Количество</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in movements_by_vehicle %}
+                        <tr>
+                            <td>{{ item.vehicle__brand }} {{ item.vehicle__model }} {{ item.vehicle__number }}</td>
+                            <td>{{ item.count }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="col-md-6">
+                <h3>Перемещения по оборудованию:</h3>
+                <table class="table table-bordered table-striped">
+                    <thead>
+                    <tr>
+                        <th>Оборудование</th>
+                        <th>Количество</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for equipment, quantity in equipment_summary.items %}
+                        <tr>
+                            <td>{{ equipment }}</td>
+                            <td>{{ quantity }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block extrascript %}
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css">
+    <script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+
+    <script>
+
+        let table2 = new DataTable('#movement_table', {
+            sorting: false,
+            searching: false,
+            columnDefs: [
+                {"orderable": false, "targets": [6]}
+            ],
+            paging: true,
+
+            language: {
+                info: ' ',
+                infoEmpty: 'Нет записей',
+                infoFiltered: '(filtered from _MAX_ total records)',
+                lengthMenu: 'Показать _MENU_ на странице',
+                zeroRecords: 'Nothing found - sorry'
+            },
+            stateSave: true,
+        });
+    </script>
+{% endblock extrascript %}

@@ -4,6 +4,8 @@ import calendar
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.db.models import Count
+from django.db.models.functions import TruncMonth
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.generic import ListView, UpdateView, CreateView, DetailView, TemplateView
@@ -11,7 +13,7 @@ from django.shortcuts import render
 from django.views import View
 
 from dashboard.forms import VehicleForm, VehicleMovementForm, OtherEquipmentForm, OtherCategoryForm, \
-    VehicleMovementEquipmentFormSet
+    VehicleMovementEquipmentFormSet, VehicleMovementFilterForm
 from dashboard.models import Transfer, OtherEquipment, OtherCategory, Vehicle, VehicleMovement
 
 
@@ -35,6 +37,7 @@ class TransferIndexView(LoginRequiredMixin, TemplateView):
         context['year'] = datetime.now().strftime('%Y')
         context['month'] = datetime.now().strftime('%m')
         return context
+
 
 class VehicleListView(LoginRequiredMixin, ListView):
     model = Vehicle
@@ -60,7 +63,6 @@ class VehicleDetailView(LoginRequiredMixin, View):
         12: "Декабрь",
     }
 
-
     def get(self, request, pk):
         vehicle = get_object_or_404(Vehicle, pk=pk)
         year = request.GET.get('year')
@@ -82,9 +84,10 @@ class VehicleDetailView(LoginRequiredMixin, View):
             'selected_year': year,
             'RUSSIAN_MONTHS': self.RUSSIAN_MONTHS,
             'selected_month': month,
-            'months': self.RUSSIAN_MONTHS, # Use the static dictionary
+            'months': self.RUSSIAN_MONTHS,  # Use the static dictionary
         }
         return render(request, self.template_name, context)
+
 
 class VehicleCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Vehicle
@@ -94,7 +97,8 @@ class VehicleCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     def get_success_url(self):
         return reverse('vehicle_list')
 
-class VehicleUpdateView(LoginRequiredMixin, SuccessMessageMixin,  UpdateView):
+
+class VehicleUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Vehicle
     form_class = VehicleForm
     template_name = 'dashboard/transfers/vehicle_form.html'
@@ -118,7 +122,7 @@ class VehicleMovementListView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         try:
             month = int(self.request.GET.get('month'))
-            year =  int(self.request.GET.get('year'))
+            year = int(self.request.GET.get('year'))
         except:
             month = datetime.now().month
             year = datetime.now().year
@@ -142,18 +146,80 @@ class VehicleMovementListView(LoginRequiredMixin, ListView):
         context['year'] = year
         context['previous_month'] = previous_month
         context['next_month'] = next_month
-        context['previous_year'] =  previous_year
-        context['next_year'] =      next_year
+        context['previous_year'] = previous_year
+        context['next_year'] = next_year
 
-        context['vehicle_movements'] = VehicleMovement.objects.filter(date__month=month, date__year=year).order_by('date')
+        context['vehicle_movements'] = VehicleMovement.objects.filter(date__month=month, date__year=year).order_by(
+            'date')
         context['vehicles'] = Vehicle.objects.all().order_by('brand')
         return context
+
+
+class VehicleMovementTotalListView(LoginRequiredMixin, ListView):
+    model = VehicleMovement
+    template_name = 'dashboard/transfers/vehicle_movement_list_total.html'
+    context_object_name = 'vehicle_movements'
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        form = VehicleMovementFilterForm(self.request.GET)
+        if form.is_valid():
+            month = form.cleaned_data.get('month')
+            year = form.cleaned_data.get('year')
+
+            brigade_from = form.cleaned_data.get('brigade_from')
+            brigade_to = form.cleaned_data.get('brigade_to')
+            driver = form.cleaned_data.get('driver')
+            vehicle = form.cleaned_data.get('vehicle')
+            start_date = form.cleaned_data.get('start_date')
+            end_date = form.cleaned_data.get('end_date')
+
+            if month:
+                queryset = queryset.filter(date__month=month)
+            if year:
+                queryset = queryset.filter(date__year=year)
+
+            if brigade_from:
+                queryset = queryset.filter(brigade_from=brigade_from)
+            if brigade_to:
+                queryset = queryset.filter(brigade_to=brigade_to)
+            if driver:
+                queryset = queryset.filter(driver=driver)
+            if vehicle:
+                queryset = queryset.filter(vehicle=vehicle)
+            if start_date:
+                queryset = queryset.filter(date__gte=start_date)
+            if end_date:
+                queryset = queryset.filter(date__lte=end_date)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['filter_form'] = VehicleMovementFilterForm(self.request.GET)
+        queryset = self.get_queryset()
+        context['total_movements'] = queryset.count()
+        context['movements_by_month'] = queryset.annotate(month_year=TruncMonth('date')).values('month_year').annotate(count=Count('id')).order_by('month_year')
+        context['movements_by_brigade_from'] = queryset.values('brigade_from__name').annotate(count=Count('id')).order_by('-count')
+        context['movements_by_brigade_to'] = queryset.values('brigade_to__name').annotate(count=Count('id')).order_by('-count')
+        context['movements_by_driver'] = queryset.values('driver__last_name', 'driver__first_name').annotate( count=Count('id')).order_by('-count')
+        context['movements_by_vehicle'] = queryset.values('vehicle__brand', 'vehicle__model', 'vehicle__number').annotate(count=Count('id')).order_by('-count')
+
+        equipment_summary = {}
+        for movement in queryset:
+            for equipment_entry in movement.vehiclemovementequipment_set.all():
+                equipment_name = equipment_entry.equipment.name
+                if equipment_name not in equipment_summary:
+                    equipment_summary[equipment_name] = 0
+                equipment_summary[equipment_name] += equipment_entry.quantity
+
+        context['equipment_summary'] = equipment_summary
+        return context
+
 
 class VehicleMovementDetailView(LoginRequiredMixin, DetailView):
     model = VehicleMovement
     template_name = 'dashboard/transfers/vehicle_movement_detail.html'
-
-
 
 
 class VehicleMovementCreateView(CreateView):
@@ -172,7 +238,7 @@ class VehicleMovementCreateView(CreateView):
     def get_success_url(self):
         try:
             month = int(self.request.GET.get('month'))
-            year =  int(self.request.GET.get('year'))
+            year = int(self.request.GET.get('year'))
         except:
             month = datetime.now().month
             year = datetime.now().year
@@ -192,6 +258,7 @@ class VehicleMovementCreateView(CreateView):
     def form_invalid(self, form):
         return self.render_to_response(self.get_context_data(form=form))
 
+
 class VehicleMovementUpdateView(UpdateView):
     model = VehicleMovement
     form_class = VehicleMovementForm
@@ -209,7 +276,7 @@ class VehicleMovementUpdateView(UpdateView):
     def get_success_url(self):
         try:
             month = int(self.request.GET.get('month'))
-            year =  int(self.request.GET.get('year'))
+            year = int(self.request.GET.get('year'))
         except:
             month = datetime.now().month
             year = datetime.now().year
@@ -231,12 +298,11 @@ class VehicleMovementUpdateView(UpdateView):
         return self.render_to_response(self.get_context_data(form=form))
 
 
-
 def vehicle_movement_delete(request, pk):
     vehicle_movement = VehicleMovement.objects.get(pk=pk)
     vehicle_movement.delete()
     month = request.GET.get('month')  # Получаем как строку, если None
-    year = request.GET.get('year')    # Получаем как строку, если None
+    year = request.GET.get('year')  # Получаем как строку, если None
 
     # Используем reverse() для создания URL и добавляем параметры через query string
     url = reverse('vehicle_movement_list')
@@ -273,7 +339,6 @@ class OtherCategoryUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateVie
         return f'Категория {self.object} успешно обновлена'
 
 
-
 def other_category_delete(request, pk):
     other_category = OtherCategory.objects.get(pk=pk)
     other_category.delete()
@@ -289,7 +354,6 @@ class OtherEquipmentListView(LoginRequiredMixin, ListView):
     model = OtherEquipment
     template_name = 'dashboard/transfers/other_equipment_list.html'
     context_object_name = 'other_equipments'
-
 
 
 class OtherEquipmentCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
@@ -315,6 +379,7 @@ class OtherEquipmentUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateVi
     def get_success_message(self, cleaned_data):
         return f'Оборудование {self.object} успешно обновлено'
 
+
 def other_equipment_delete(request, pk):
     other_equipment = OtherEquipment.objects.get(pk=pk)
     other_equipment.delete()
@@ -324,5 +389,3 @@ def other_equipment_delete(request, pk):
 class OtherEquipmentDetailView(LoginRequiredMixin, DetailView):
     model = OtherEquipment
     template_name = 'dashboard/transfers/other_equipment_detail.html'
-
-
