@@ -1,17 +1,22 @@
 import calendar
+import io
 from datetime import datetime
 from re import search
 
 import openpyxl
+from openpyxl.styles import Font, PatternFill, Border, Side
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.contrib.messages.views import SuccessMessageMixin
+from django.db.models import Count
+from django.db.models.functions import TruncMonth
 from django.views.generic import TemplateView
 from django.http import HttpResponse
 from django.views import View
 import csv
 from openpyxl import Workbook
 
+from dashboard.forms import VehicleMovementFilterForm
 from dashboard.models import Brigade, Category, Equipment, UserActionLog, Transfer, Document, BrigadeActivity, \
     WorkerActivity, WorkObject, VehicleMovement
 from dashboard.utils.utils import get_days_in_month
@@ -311,3 +316,188 @@ class WorkerActivityExcelView(LoginRequiredMixin, View):
         workbook.save(response)
 
         return response
+
+
+
+class VehicleMovementExcelExportView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        form = VehicleMovementFilterForm(request.GET)
+        queryset = VehicleMovement.objects.all()
+
+        if form.is_valid():
+            month = form.cleaned_data.get('month')
+            year = form.cleaned_data.get('year')
+            brigade_from = form.cleaned_data.get('brigade_from')
+            brigade_to = form.cleaned_data.get('brigade_to')
+            driver = form.cleaned_data.get('driver')
+            vehicle = form.cleaned_data.get('vehicle')
+            start_date = form.cleaned_data.get('start_date')
+            end_date = form.cleaned_data.get('end_date')
+
+            if month:
+                queryset = queryset.filter(date__month=month)
+            if year:
+                queryset = queryset.filter(date__year=year)
+            if brigade_from:
+                queryset = queryset.filter(brigade_from=brigade_from)
+            if brigade_to:
+                queryset = queryset.filter(brigade_to=brigade_to)
+            if driver:
+                queryset = queryset.filter(driver=driver)
+            if vehicle:
+                queryset = queryset.filter(vehicle=vehicle)
+            if start_date:
+                queryset = queryset.filter(date__gte=start_date)
+            if end_date:
+                queryset = queryset.filter(date__lte=end_date)
+
+        # Create a workbook and add a worksheet.
+        output = io.BytesIO()
+        workbook = Workbook()
+        worksheet = workbook.active
+        worksheet.title = "Vehicle Movements"
+
+        # Define styles
+        header_font = Font(bold=True)
+        header_fill = PatternFill(start_color="D7E4BC", end_color="D7E4BC", fill_type="solid")
+        border = Border(left=Side(style='thin'),
+                        right=Side(style='thin'),
+                        top=Side(style='thin'),
+                        bottom=Side(style='thin'))
+
+        def apply_header_style(cell):
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.border = border
+
+        def apply_cell_style(cell):
+            cell.border = border
+
+        # Write headers
+        headers = [
+            'Дата', 'ФИО Водителя', 'Автомобиль', 'Из бригады', 'В бригаду', 'Оборудование'
+        ]
+        for col_num, header in enumerate(headers, start=1):
+            cell = worksheet.cell(row=1, column=col_num, value=header)
+            apply_header_style(cell)
+            worksheet.column_dimensions[get_column_letter(col_num)].width = 20
+
+        # Write data
+        for row_num, movement in enumerate(queryset, start=2):
+            worksheet.cell(row=row_num, column=1, value=movement.date.strftime('%d.%m.%Y'))
+            if movement.driver:
+                worksheet.cell(row=row_num, column=2, value=f'{movement.driver.last_name} {movement.driver.first_name}')
+            else:
+                worksheet.cell(row=row_num, column=2, value='---')
+            worksheet.cell(row=row_num, column=3, value=str(movement.vehicle) if movement.vehicle else '---')
+            worksheet.cell(row=row_num, column=4, value=movement.brigade_from.name if movement.brigade_from else '---')
+            worksheet.cell(row=row_num, column=5, value=movement.brigade_to.name if movement.brigade_to else '---')
+
+            equipment_list = '\n'.join([f'{e.equipment.name} ({e.quantity} шт.)' for e in movement.vehiclemovementequipment_set.all()])
+            worksheet.cell(row=row_num, column=6, value=equipment_list)
+            for col in range(1,7):
+                apply_cell_style(worksheet.cell(row=row_num, column=col))
+
+        # Add analytics sheet
+        analytics_worksheet = workbook.create_sheet(title="Analytics")
+
+        # Add Total Movements Count
+        analytics_worksheet.cell(row=1, column=1, value='Total Movements')
+        apply_header_style(analytics_worksheet.cell(row=1, column=1))
+        analytics_worksheet.cell(row=1, column=2, value=queryset.count())
+        apply_cell_style(analytics_worksheet.cell(row=1, column=2))
+
+        # Movements by Month
+        analytics_worksheet.cell(row=3, column=1, value='Movements by Month')
+        apply_header_style(analytics_worksheet.cell(row=3, column=1))
+        analytics_worksheet.cell(row=3, column=2, value='Month')
+        apply_header_style(analytics_worksheet.cell(row=3, column=2))
+        analytics_worksheet.cell(row=3, column=3, value='Count')
+        apply_header_style(analytics_worksheet.cell(row=3, column=3))
+
+        movements_by_month = queryset.annotate(month_year=TruncMonth('date')).values('month_year').annotate(
+            count=Count('id')).order_by('month_year')
+
+        for row_num, item in enumerate(movements_by_month, start=4):
+            analytics_worksheet.cell(row=row_num, column=2, value=item['month_year'].strftime('%m.%Y'))
+            analytics_worksheet.cell(row=row_num, column=3, value=item['count'])
+            for col in range(2,4):
+                apply_cell_style(analytics_worksheet.cell(row=row_num, column=col))
+
+        # Movements by Brigade From
+        analytics_worksheet.cell(row=len(movements_by_month) + 6, column=1, value='Movements by Brigade From')
+        apply_header_style(analytics_worksheet.cell(row=len(movements_by_month) + 6, column=1))
+        analytics_worksheet.cell(row=len(movements_by_month) + 6, column=2, value='Brigade')
+        apply_header_style(analytics_worksheet.cell(row=len(movements_by_month) + 6, column=2))
+        analytics_worksheet.cell(row=len(movements_by_month) + 6, column=3, value='Count')
+        apply_header_style(analytics_worksheet.cell(row=len(movements_by_month) + 6, column=3))
+
+        movements_by_brigade_from = queryset.values('brigade_from__name').annotate(count=Count('id')).order_by(
+            '-count')
+
+        for row_num, item in enumerate(movements_by_brigade_from, start=len(movements_by_month) + 7):
+            analytics_worksheet.cell(row=row_num, column=2, value=item['brigade_from__name'] or '---')
+            analytics_worksheet.cell(row=row_num, column=3, value=item['count'])
+            for col in range(2,4):
+                apply_cell_style(analytics_worksheet.cell(row=row_num, column=col))
+
+
+        # Movements by Brigade To
+        analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + 9, column=1, value='Movements by Brigade To')
+        apply_header_style(analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + 9, column=1))
+        analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + 9, column=2, value='Brigade')
+        apply_header_style(analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + 9, column=2))
+        analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + 9, column=3, value='Count')
+        apply_header_style(analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + 9, column=3))
+
+        movements_by_brigade_to = queryset.values('brigade_to__name').annotate(count=Count('id')).order_by(
+            '-count')
+
+        for row_num, item in enumerate(movements_by_brigade_to, start=len(movements_by_month) + len(movements_by_brigade_from) + 10):
+            analytics_worksheet.cell(row=row_num, column=2, value=item['brigade_to__name'] or '---')
+            analytics_worksheet.cell(row=row_num, column=3, value=item['count'])
+            for col in range(2,4):
+                apply_cell_style(analytics_worksheet.cell(row=row_num, column=col))
+
+        # Movements by Driver
+        analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + 12, column=1, value='Movements by Driver')
+        apply_header_style(analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + 12, column=1))
+        analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + 12, column=2, value='Driver')
+        apply_header_style(analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + 12, column=2))
+        analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + 12, column=3, value='Count')
+        apply_header_style(analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + 12, column=3))
+
+        movements_by_driver = queryset.values('driver__last_name', 'driver__first_name').annotate(count=Count('id')).order_by('-count')
+
+        for row_num, item in enumerate(movements_by_driver, start=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + 13):
+            analytics_worksheet.cell(row=row_num, column=2, value=f"{item['driver__last_name']} {item['driver__first_name']}")
+            analytics_worksheet.cell(row=row_num, column=3, value=item['count'])
+            for col in range(2,4):
+                apply_cell_style(analytics_worksheet.cell(row=row_num, column=col))
+
+        # Movements by Vehicle
+        analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + len(movements_by_driver) + 15, column=1, value='Movements by Vehicle')
+        apply_header_style(analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + len(movements_by_driver) + 15, column=1))
+        analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + len(movements_by_driver) + 15, column=2, value='Vehicle')
+        apply_header_style(analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + len(movements_by_driver) + 15, column=2))
+        analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + len(movements_by_driver) + 15, column=3, value='Count')
+        apply_header_style(analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + len(movements_by_driver) + 15, column=3))
+
+        movements_by_vehicle = queryset.values('vehicle__brand', 'vehicle__model', 'vehicle__number').annotate(count=Count('id')).order_by('-count')
+
+        for row_num, item in enumerate(movements_by_vehicle, start=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + len(movements_by_driver) + 16):
+            analytics_worksheet.cell(row=row_num, column=2, value=f"{item['vehicle__brand']} {item['vehicle__model']} {item['vehicle__number']}")
+            analytics_worksheet.cell(row=row_num, column=3, value=item['count'])
+            for col in range(2,4):
+                apply_cell_style(analytics_worksheet.cell(row=row_num, column=col))
+
+        workbook.save(output)
+        # Construct the response object
+        filename = 'vehicle_movements.xlsx'
+        response = HttpResponse(output.getvalue(),
+                                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+        return response
+
+from openpyxl.utils import get_column_letter

@@ -19,6 +19,10 @@
                         <div class="card-footer">
                             <button type="submit" class="btn btn-success m-1">Поиск</button>
                             <a href="{% url 'vehicle_movement_list_total' %}" class="btn btn-secondary m-1">Сбросить</a>
+                            <a href="{% url 'vehicle_movement_export_excel' %}?month={{ request.GET.month }}&year={{ request.GET.year }}&brigade_from={{ request.GET.brigade_from }}&brigade_to={{ request.GET.brigade_to }}&driver={{ request.GET.driver }}&vehicle={{ request.GET.vehicle }}&start_date={{ request.GET.start_date }}&end_date={{ request.GET.end_date }}"
+                               class="btn btn-success m-1">
+                                <i class="fas fa-file-excel mr-2"></i> Выгрузить в Excel
+                            </a>
                         </div>
                     </div>
                 </form>

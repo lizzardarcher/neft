@@ -109,5 +109,5 @@ urlpatterns = [
     path('equipment/export/csv/', index.EquipmentCSVExportView.as_view(), name='equipment_export_csv'),
     path('equipment/export/excel/', index.EquipmentExcelExportView.as_view(), name='equipment_export_excel'),
 
-
+    path('equipment/transfer/export/excel/', index.VehicleMovementExcelExportView.as_view(), name='vehicle_movement_export_excel'),
 ]
