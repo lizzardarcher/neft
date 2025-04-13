@@ -127,6 +127,7 @@ class UserProfile(models.Model):
                                           verbose_name='Дата начала работы в бригаде')
     brigade_end_date = models.DateField(auto_now_add=False, auto_now=False, null=True, blank=True,
                                         verbose_name='Дата окончания работы в бригаде')
+    is_driver = models.BooleanField(default=False, null=True, blank=True, verbose_name='Водитель')
     status = models.BooleanField(default=True, null=True, blank=True, verbose_name='Отпуск или работа')
     notes = models.TextField(default='', null=True, blank=True, verbose_name='Примечания')
 
@@ -199,6 +200,7 @@ class BrigadeActivity(models.Model):
         ('Простой', 'Простой'),
         ('Авария', 'Авария'),
         ('Движка', 'Движка'),
+        ('-', 'Удалить активность 🛑'),
     ]
     brigade = models.ForeignKey(Brigade, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Бригада')
     date = models.DateField(auto_now_add=False, auto_now=False, null=False, blank=False, verbose_name='Дата')
@@ -261,7 +263,7 @@ class VehicleMovementEquipment(models.Model):
     vehicle_movement = models.ForeignKey(VehicleMovement, on_delete=models.CASCADE)
     equipment = models.ForeignKey(OtherEquipment, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1, verbose_name='Количество')
-
+    comment = models.TextField(null=True, blank=True, default='', verbose_name='Комментарий')
     class Meta:
         # unique_together = ('vehicle_movement', 'equipment')
         ordering = ['equipment']

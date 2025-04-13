@@ -147,10 +147,10 @@ class UserCreateForm(forms.ModelForm):
         required=False
     )
 
-    status = forms.BooleanField(
+    is_driver = forms.BooleanField(
         required=False,
-        label="Работа/Отпуск",
-        widget=forms.CheckboxInput(attrs={'class': 'required checkbox', 'checked': 'checked'}))
+        label="Водитель",
+        widget=forms.CheckboxInput(attrs={'class': 'required checkbox'}))
 
     notes = forms.CharField(
         max_length=200,
@@ -163,7 +163,7 @@ class UserCreateForm(forms.ModelForm):
         model = User
         fields = ['username', 'first_name', 'last_name', 'email', 'password', 'groups', 'is_active', 'is_staff',
                   'is_superuser', 'position', 'phone_number', 'brigade', 'brigade_start_date', 'brigade_end_date',
-                  'status', 'notes']
+                  'is_driver', 'notes']
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control'}),
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
@@ -190,7 +190,7 @@ class UserCreateForm(forms.ModelForm):
                                                                     self.instance.profile.brigade_start_date)
                 self.fields['brigade_end_date'].initial = getattr(self.instance, 'brigade_end_date',
                                                                   self.instance.profile.brigade_end_date)
-                self.fields['status'].initial = getattr(self.instance, 'status', self.instance.profile.status)
+                self.fields['is_driver'].initial = getattr(self.instance, 'is_driver', self.instance.profile.is_driver)
                 self.fields['notes'].initial = getattr(self.instance, 'notes', self.instance.profile.notes)
 
             # if self.instance.pk:  # if the form is being used to update an existing user
@@ -215,7 +215,7 @@ class UserCreateForm(forms.ModelForm):
         brigade = self.cleaned_data.get('brigade')
         brigade_start_date = self.cleaned_data.get('brigade_start_date')
         brigade_end_date = self.cleaned_data.get('brigade_end_date')
-        status = self.cleaned_data.get('status')
+        is_driver = self.cleaned_data.get('is_driver')
         notes = self.cleaned_data.get('notes')
         user.set_password(password)
         if commit:
@@ -228,7 +228,7 @@ class UserCreateForm(forms.ModelForm):
                                            brigade=brigade,
                                            brigade_start_date=brigade_start_date,
                                            brigade_end_date=brigade_end_date,
-                                           status=status,
+                                           is_driver=is_driver,
                                            notes=notes)
             except:
                 profile = UserProfile.objects.get(user=user)
@@ -237,7 +237,7 @@ class UserCreateForm(forms.ModelForm):
                 profile.brigade = brigade
                 profile.brigade_start_date = brigade_start_date
                 profile.brigade_end_date = brigade_end_date
-                profile.status = status
+                profile.is_driver = is_driver
                 profile.notes = notes
                 profile.save()
         return user
@@ -266,10 +266,11 @@ class UserUpdateByBrigadeForm(forms.ModelForm):
         widget=forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date', 'class': 'form-control text-info'}),
         required=False
     )
-    status = forms.BooleanField(
+    is_driver = forms.BooleanField(
         required=False,
-        label="Работа/Отпуск",
-        widget=forms.CheckboxInput(attrs={'class': 'required checkbox', 'checked': 'checked'}))
+        label="Водитель",
+        widget=forms.CheckboxInput(attrs={'class': 'required checkbox'}))
+
     notes = forms.CharField(
         max_length=200,
         required=False,
@@ -280,7 +281,7 @@ class UserUpdateByBrigadeForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'email', 'position', 'phone_number',
-                  'brigade_start_date', 'brigade_end_date', 'status', 'notes']
+                  'brigade_start_date', 'brigade_end_date', 'is_driver', 'notes']
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control'}),
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
@@ -299,7 +300,7 @@ class UserUpdateByBrigadeForm(forms.ModelForm):
                                                                     self.instance.profile.brigade_start_date)
                 self.fields['brigade_end_date'].initial = getattr(self.instance, 'brigade_end_date',
                                                                   self.instance.profile.brigade_end_date)
-                self.fields['status'].initial = getattr(self.instance, 'status', self.instance.profile.status)
+                self.fields['is_driver'].initial = getattr(self.instance, 'is_driver', self.instance.profile.is_driver)
                 self.fields['notes'].initial = getattr(self.instance, 'notes', self.instance.profile.notes)
         except:
             pass
@@ -310,7 +311,7 @@ class UserUpdateByBrigadeForm(forms.ModelForm):
         phone_number = self.cleaned_data['phone_number']
         brigade_start_date = self.cleaned_data.get('brigade_start_date')
         brigade_end_date = self.cleaned_data.get('brigade_end_date')
-        status = self.cleaned_data.get('status')
+        is_driver = self.cleaned_data.get('is_driver')
         notes = self.cleaned_data.get('notes')
         if commit:
             user.save()
@@ -320,7 +321,7 @@ class UserUpdateByBrigadeForm(forms.ModelForm):
             profile.position = position
             profile.brigade_start_date = brigade_start_date
             profile.brigade_end_date = brigade_end_date
-            profile.status = status
+            profile.is_driver = is_driver
             profile.notes = notes
             profile.save()
         return user
@@ -355,10 +356,10 @@ class UserUpdateStaffForm(forms.ModelForm):
         widget=forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date', 'class': 'form-control text-info'}),
         required=False
     )
-    status = forms.BooleanField(
+    is_driver = forms.BooleanField(
         required=False,
-        label="Работа/Отпуск",
-        widget=forms.CheckboxInput(attrs={'class': 'required checkbox', 'checked': 'checked'}))
+        label="Водитель",
+        widget=forms.CheckboxInput(attrs={'class': 'required checkbox'}))
     notes = forms.CharField(
         max_length=200,
         required=False,
@@ -369,7 +370,7 @@ class UserUpdateStaffForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'email', 'brigade', 'position', 'phone_number',
-                  'brigade_start_date', 'brigade_end_date', 'status', 'notes']
+                  'brigade_start_date', 'brigade_end_date', 'is_driver', 'notes']
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control'}),
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
@@ -389,7 +390,7 @@ class UserUpdateStaffForm(forms.ModelForm):
                                                                     self.instance.profile.brigade_start_date)
                 self.fields['brigade_end_date'].initial = getattr(self.instance, 'brigade_end_date',
                                                                   self.instance.profile.brigade_end_date)
-                self.fields['status'].initial = getattr(self.instance, 'status', self.instance.profile.status)
+                self.fields['is_driver'].initial = getattr(self.instance, 'is_driver', self.instance.profile.is_driver)
                 self.fields['notes'].initial = getattr(self.instance, 'notes', self.instance.profile.notes)
         except:
             pass
@@ -400,7 +401,7 @@ class UserUpdateStaffForm(forms.ModelForm):
         phone_number = self.cleaned_data['phone_number']
         brigade_start_date = self.cleaned_data.get('brigade_start_date')
         brigade_end_date = self.cleaned_data.get('brigade_end_date')
-        status = self.cleaned_data.get('status')
+        is_driver = self.cleaned_data.get('is_driver')
         notes = self.cleaned_data.get('notes')
         if commit:
             user.save()
@@ -410,7 +411,7 @@ class UserUpdateStaffForm(forms.ModelForm):
             profile.position = position
             profile.brigade_start_date = brigade_start_date
             profile.brigade_end_date = brigade_end_date
-            profile.status = status
+            profile.is_driver = is_driver
             profile.notes = notes
             profile.save()
         return user
@@ -532,7 +533,7 @@ class VehicleMovementForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['driver'].queryset = User.objects.order_by('last_name')
+        self.fields['driver'].queryset = User.objects.order_by('last_name').filter(profile__is_driver=True)
         self.fields['driver'].label_from_instance = self.driver_label_from_instance
 
     def driver_label_from_instance(self, obj):
@@ -542,12 +543,13 @@ class VehicleMovementForm(forms.ModelForm):
 VehicleMovementEquipmentFormSet = inlineformset_factory(
     VehicleMovement,
     VehicleMovementEquipment,
-    fields=('equipment', 'quantity'),
+    fields=('equipment', 'quantity', 'comment'),
     extra=10,
     can_delete=True,
     widgets = {
         'equipment': forms.Select(attrs={'class': 'form-control', 'autocomplete': 'on'}),
         'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
+        'comment': forms.TextInput(attrs={'class': 'form-control'}),
     }
 )
 
@@ -575,14 +577,14 @@ class VehicleMovementFilterForm(forms.Form):
     year = forms.IntegerField(required=False, label='Год', min_value=1900, max_value=2100, widget=forms.NumberInput(attrs={'type': 'number', 'class': 'form-control'}))
     brigade_from = forms.ModelChoiceField(queryset=Brigade.objects.all(), required=False, label='Из бригады', widget=forms.Select(attrs={'class': 'form-control'}))
     brigade_to = forms.ModelChoiceField(queryset=Brigade.objects.all(), required=False, label='В бригаду', widget=forms.Select(attrs={'class': 'form-control'}))
-    driver = forms.ModelChoiceField(queryset=User.objects.all(), required=False, label='Водитель', widget=forms.Select(attrs={'class': 'form-control'}))
+    driver = forms.ModelChoiceField(queryset=User.objects.filter(profile__is_driver=True), required=False, label='Водитель', widget=forms.Select(attrs={'class': 'form-control'}))
     vehicle = forms.ModelChoiceField(queryset=Vehicle.objects.all(), required=False, label='Автомобиль', widget=forms.Select(attrs={'class': 'form-control'}))
     start_date = forms.DateField(required=False, label='Начальная дата', widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}))
     end_date = forms.DateField(required=False, label='Конечная дата', widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['driver'].queryset = User.objects.order_by('last_name')
+        self.fields['driver'].queryset = User.objects.order_by('last_name').filter(profile__is_driver=True)
         self.fields['driver'].label_from_instance = self.driver_label_from_instance
 
     def driver_label_from_instance(self, obj):

@@ -383,55 +383,60 @@ def brigade_activity_create(request, brigade_id):
     brigade = get_object_or_404(Brigade, id=brigade_id)
     date = request.POST.get('date')
     work_type = request.POST.get('work_type')
-    try:
-        work_object = get_object_or_404(WorkObject, id=request.POST.get('work_object'))
-    except:
-        work_object = None
-
-    if brigade and work_type and date:
-        brigade_activity = BrigadeActivity.objects.filter(
-            brigade=brigade,
-            date=date, ).first()
-        if brigade_activity:
-            brigade_activity.brigade = brigade
-            brigade_activity.date = date
-            brigade_activity.work_object = work_object
-            brigade_activity.work_type = work_type
-
-            # Добавляем работников бригады к активности
-            for worker in UserProfile.objects.filter(brigade=brigade):  # Получаем всех пользователей, связанных с бригадой
-                brigade_activity.workers.add(worker.user)
-
-            brigade_activity.save()
-            messages.success(request, f'Активность успешно обновлена!')
-        else:
-            brigade_activity = BrigadeActivity.objects.create(
-                brigade=brigade,
-                date=date,
-                work_object=work_object,
-                work_type=work_type,
-            )
-
-            # Добавляем работников бригады к активности
-            for worker in UserProfile.objects.filter(brigade=brigade):  # Получаем всех пользователей, связанных с бригадой
-                brigade_activity.workers.add(worker.user)
-
-            messages.success(request, f'Активность успешно создана!')
+    if work_type == '-':
+        BrigadeActivity.objects.filter(brigade=brigade, date=date).delete()
+        messages.success(request, 'Активность успешно удалена!')
         return redirect(request.META.get('HTTP_REFERER'))
     else:
-        if form.is_valid():
-            activity = form.save(commit=False)
-            activity.brigade = brigade
+        try:
+            work_object = get_object_or_404(WorkObject, id=request.POST.get('work_object'))
+        except:
+            work_object = None
 
-            # Добавляем работников бригады к активности
-            for worker in UserProfile.objects.filter(brigade=brigade):  # Получаем всех пользователей, связанных с бригадой
-                activity.workers.add(worker.user)
+        if brigade and work_type and date:
+            brigade_activity = BrigadeActivity.objects.filter(
+                brigade=brigade,
+                date=date, ).first()
+            if brigade_activity:
+                brigade_activity.brigade = brigade
+                brigade_activity.date = date
+                brigade_activity.work_object = work_object
+                brigade_activity.work_type = work_type
 
-            activity.save()
-            messages.success(request, 'Активность успешно создана!')
+                # Добавляем работников бригады к активности
+                for worker in UserProfile.objects.filter(brigade=brigade):  # Получаем всех пользователей, связанных с бригадой
+                    brigade_activity.workers.add(worker.user)
+
+                brigade_activity.save()
+                messages.success(request, f'Активность успешно обновлена!')
+            else:
+                brigade_activity = BrigadeActivity.objects.create(
+                    brigade=brigade,
+                    date=date,
+                    work_object=work_object,
+                    work_type=work_type,
+                )
+
+                # Добавляем работников бригады к активности
+                for worker in UserProfile.objects.filter(brigade=brigade):  # Получаем всех пользователей, связанных с бригадой
+                    brigade_activity.workers.add(worker.user)
+
+                messages.success(request, f'Активность успешно создана!')
+            return redirect(request.META.get('HTTP_REFERER'))
         else:
-            messages.error(request, 'Произошла ошибка при создании активности!')
-        return redirect(request.META.get('HTTP_REFERER'))
+            if form.is_valid():
+                activity = form.save(commit=False)
+                activity.brigade = brigade
+
+                # Добавляем работников бригады к активности
+                for worker in UserProfile.objects.filter(brigade=brigade):  # Получаем всех пользователей, связанных с бригадой
+                    activity.workers.add(worker.user)
+
+                activity.save()
+                messages.success(request, 'Активность успешно создана!')
+            else:
+                messages.error(request, 'Произошла ошибка при создании активности!')
+            return redirect(request.META.get('HTTP_REFERER'))
 
 
 def work_object_create(request):

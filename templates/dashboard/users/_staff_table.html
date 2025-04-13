@@ -103,7 +103,7 @@
                 <th>Бригада</th>
                 <th>Работа_с</th>
                 <th>Работа_по</th>
-                <th>Работа/Отпуск</th>
+                <th>Водитель</th>
                 <th>Примечания</th>
                 <th>Действия</th>
             </tr>
@@ -122,7 +122,7 @@
                         ---{% endif %}</td>
                     <td>{% if user.profile.brigade_end_date %}{{ user.profile.brigade_end_date|date:"d-m-Y" }}{% else %}
                         ---{% endif %}</td>
-                    <td>{% if user.profile.status %}Работа{% else %}Отпуск{% endif %}</td>
+                    <td>{% if user.profile.is_driver %}✅{% else %}{% endif %}</td>
                     <td>{% if user.profile.notes %}{{ user.profile.notes }}{% else %}---{% endif %}</td>
                     <td>
                         {% if request.user|has_perm_in_group:"auth.change_user" %}

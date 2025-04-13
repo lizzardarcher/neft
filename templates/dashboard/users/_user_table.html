@@ -19,7 +19,7 @@
                 <th>Бригада</th>
 {#                <th>Работа_с</th>#}
 {#                <th>Работа_по</th>#}
-                <th>Работа/Отпуск</th>
+                <th>Водитель</th>
                 <th>Примечания</th>
                 <th>Группы</th>
                 <th class="no-sort">Действия</th>
@@ -39,7 +39,7 @@
                         ---{% endif %}</td>
 {#                    <td>{% if user.profile.brigade_start_date %}{{ user.profile.brigade_start_date|date:"d-m-Y" }}{% else %}---{% endif %}</td>#}
 {#                    <td>{% if user.profile.brigade_end_date %}{{ user.profile.brigade_end_date|date:"d-m-Y" }}{% else %}---{% endif %}</td>#}
-                    <td>{% if user.profile.status %}Работа{% else %}Отпуск{% endif %}</td>
+                    <td>{% if user.profile.is_driver %}✅{% else %}{% endif %}</td>
                     <td>{% if user.profile.notes %}<small>{{ user.profile.notes }}</small>{% else %}---{% endif %}</td>
                     <td>
                         {% for group in user.groups.all %}
