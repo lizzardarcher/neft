@@ -9,6 +9,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy, reverse
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView, TemplateView
 
@@ -178,7 +179,7 @@ def create_worker_activity(request):
                     messages.success(request, 'Активность успешно создана!')
                 else:
                     messages.success(request, 'Активность успешно обновлена!')
-                return redirect(request.META.get('HTTP_REFERER'))
+                return redirect(request.META.get('HTTP_REFERER') + f'#{user.id}')
             else:
                 messages.error(request, 'Произошла ошибка при создании активности!')
                 return redirect('brigade_staff', pk=request.GET.get('brigade_id'))
@@ -214,11 +215,28 @@ class StaffTableTotalView(LoginRequiredMixin, SuccessMessageMixin, TemplateView)
         context['next_month'] = str(next_month)
         context['prev_year'] = prev_year
         context['next_year'] = next_year
-        context['users'] = User.objects.annotate(
+        # context['users'] = User.objects.annotate(
+        #     total_wa=Count('workeractivity',
+        #                    filter=Q(workeractivity__date__year=context['year'],
+        #                             workeractivity__date__month=context['month'],
+        #                             ))).all().order_by('first_name')
+
+        now = timezone.now()
+        current_year = now.year
+        current_month = now.month
+
+        context['users'] = User.objects.filter(
+            # profile__brigade_start_date__gte=datetime(current_year, current_month, 1),
+            # profile__brigade_end_date__lte=datetime(current_year, current_month, 28),
+            # workeractivity__date__month=context['month'],
+            # workeractivity__date__year=context['year'],
+        ).annotate(
             total_wa=Count('workeractivity',
-                           filter=Q(workeractivity__date__year=context['year'],
-                                    workeractivity__date__month=context['month'],
-                                    ))).all().order_by('first_name')
+                           filter=Q(workeractivity__date__year=context['month'],
+                                    workeractivity__date__month=context['year'],
+                                    ))).order_by('first_name')
+
+
         employee_data = [
             {
                 'user': user,

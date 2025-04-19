@@ -32,6 +32,7 @@ urlpatterns = [
 
     path('equipment/', equipment.EquipmentListView.as_view(), name='equipment_list'),
     path('document/', equipment.DocumentListView.as_view(), name='document_list'),
+
     path('equipment/create/', equipment.EquipmentCreateView.as_view(), name='equipment_create'),
     path('equipment/<int:brigade_id>/create/', equipment.EquipmentCreateByBrigadeIdView.as_view(),
          name='equipment_create_by_brigade'),

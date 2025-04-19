@@ -24,7 +24,7 @@
             </thead>
             <tbody>
             {% for data in employee_data %}
-                <tr>
+                <tr id="{{ data.user.id }}">
                     <td class="bg-light-subtle">{{ data.user.last_name }} {{ data.user.first_name }}</td>
                     <td class="bg-light-subtle">{{ data.user.profile.position }}</td>
                     <td class="bg-light-subtle">{% if data.user.profile.brigade %}<small><a href="{% url 'brigade_index' data.user.profile.brigade.id %}">{{ data.user.profile.brigade.name }}</a></small>{% endif %}</td>

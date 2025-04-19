@@ -193,7 +193,7 @@ class EquipmentUpdateByBrigadeView(LoginRequiredMixin, SuccessMessageMixin, Upda
 
     def get_success_url(self):
         search_request = self.request.GET.get("search")
-        return reverse('brigade_detail', args=[self.kwargs.get('brigade_id')]) + f'?search={search_request}'
+        return reverse('brigade_detail', args=[self.kwargs.get('brigade_id')]) + f'?search={search_request or ""}'
 
     def form_valid(self, form):
         manufacturer_id = self.request.POST.get('id_manufacturer')
@@ -266,7 +266,21 @@ class DocumentListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
                 queryset = queryset.order_by(sort_by)
         return queryset
 
+class DocumentShareListView(ListView):
+    model = Document
+    context_object_name = 'documents'
+    template_name = 'dashboard/equipment/document_share_list.html'
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        search_request = self.request.GET.get("search")
+        title = self.request.GET.get("title")
+        if search_request:
+            equipment_by_name = Document.objects.filter(title__icontains=search_request)
+            queryset = equipment_by_name
+        if title:
+            queryset = queryset.filter(title=title)
+        return queryset
 def document_delete(request, document_id):
     document = get_object_or_404(Document, id=document_id)
     document.delete()

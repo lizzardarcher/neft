@@ -3,7 +3,7 @@
 {% block content %}
     <div class="m-5">
 
-        <h1 class="m-5">Снабжение сводная таблица Перемещения техники</h1>
+        <h1 class="m-5">Сводная таблица снабжения бригад</h1>
         <a href="{% url 'transfer_index' %}" class="btn btn-secondary m-auto">Назад</a>
 
         <div class="row">
@@ -154,14 +154,14 @@
                     <thead>
                     <tr>
                         <th>Оборудование</th>
-                        <th>Количество</th>
+{#                        <th>Количество</th>#}
                     </tr>
                     </thead>
                     <tbody>
                     {% for equipment, quantity in equipment_summary.items %}
                         <tr>
                             <td>{{ equipment }}</td>
-                            <td>{{ quantity }}</td>
+{#                            <td>{{ quantity }}</td>#}
                         </tr>
                     {% endfor %}
                     </tbody>

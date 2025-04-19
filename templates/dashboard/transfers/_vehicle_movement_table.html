@@ -38,7 +38,8 @@
                     {% if movement.vehiclemovementequipment_set.all %}
                         <ol>
                             {% for equipment_entry in movement.vehiclemovementequipment_set.all %}
-                                <li>{{ equipment_entry.equipment.name }} ({{ equipment_entry.quantity }} шт.) {% if equipment_entry.comment %}({{ equipment_entry.comment }}){% endif %}</li>
+{#                                <li>{{ equipment_entry.equipment.name }} ({{ equipment_entry.quantity }} шт.) {% if equipment_entry.comment %}({{ equipment_entry.comment }}){% endif %}</li>#}
+                                <li>{{ equipment_entry.equipment.name }}{% if equipment_entry.comment %}({{ equipment_entry.comment }}){% endif %}</li>
                             {% endfor %}
                         </ol>
                     {% else %}---{% endif %}

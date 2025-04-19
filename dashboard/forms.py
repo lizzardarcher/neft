@@ -543,12 +543,15 @@ class VehicleMovementForm(forms.ModelForm):
 VehicleMovementEquipmentFormSet = inlineformset_factory(
     VehicleMovement,
     VehicleMovementEquipment,
-    fields=('equipment', 'quantity', 'comment'),
+    fields=(
+        'equipment',
+        # 'quantity',
+        'comment'),
     extra=10,
     can_delete=True,
     widgets = {
         'equipment': forms.Select(attrs={'class': 'form-control', 'autocomplete': 'on'}),
-        'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
+        # 'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
         'comment': forms.TextInput(attrs={'class': 'form-control'}),
     }
 )

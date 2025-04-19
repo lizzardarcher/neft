@@ -422,7 +422,7 @@ def brigade_activity_create(request, brigade_id):
                     brigade_activity.workers.add(worker.user)
 
                 messages.success(request, f'Активность успешно создана!')
-            return redirect(request.META.get('HTTP_REFERER'))
+            return redirect(request.META.get('HTTP_REFERER') + f'#{brigade.id}')
         else:
             if form.is_valid():
                 activity = form.save(commit=False)

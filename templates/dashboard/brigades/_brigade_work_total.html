@@ -24,7 +24,7 @@
         </thead>
         <tbody>
         {% for data in brigade_data %}
-            <tr>
+            <tr id="{{ data.brigade.id }}">
                 <td><small><a href="{% url 'brigade_index' data.brigade.id %}">{% if data.brigade.name %}{{ data.brigade.name }}</a>{% else %}---{% endif %}</small></td>
                 <td><small>{% if data.brigade.customer %}{{ data.brigade.customer }}{% else %}---{% endif %}</small>
                 </td>

@@ -19,11 +19,16 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
+from dashboard.views import equipment
+
 urlpatterns = [
     path('', include('home.urls')),
     path('', include('authentication.urls')),
     path('dashboard/', include('dashboard.urls')),
     path('admin/', admin.site.urls),
+
+    path('doc/', equipment.DocumentShareListView.as_view(), name='document_share_list'),
+
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
