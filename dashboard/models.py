@@ -52,6 +52,7 @@ class WorkerDocument(models.Model):
     class Meta:
         verbose_name = "Документ работников"
         verbose_name_plural = "Документы работников"
+        ordering = ['title']
 
 
 class Manufacturer(models.Model):

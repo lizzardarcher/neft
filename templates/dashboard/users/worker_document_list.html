@@ -9,7 +9,7 @@
     <div class="container">
         <h1>Список документов</h1>
         <a href="{% url 'worker_document_create' %}" class="btn btn-success float-right mr-2">Добавить документ</a>
-        <table class="table">
+        <table id="docs_table" class="table">
             <thead>
             <tr>
                 <th>Название</th>
@@ -36,6 +36,13 @@
                         </a>
                     </td>
                 </tr>
+            {% empty %}
+                <tr>
+                    <td>---</td>
+                    <td>---</td>
+                    <td>---</td>
+                    <td>---</td>
+                </tr>
             {% endfor %}
 
             </tbody>
@@ -43,3 +50,33 @@
     </div>
 
 {% endblock %}
+{% block extrascript %}
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css">
+    <script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+
+    <script>
+
+        let table2 = new DataTable('#docs_table', {
+            sorting: true,
+            searching: true,
+            columnDefs: [
+                {"orderable": false, "targets": [3]}
+            ],
+            paging: true,
+            lengthMenu: [
+                [50, 100, 300, -1],
+                [50, 100, 300, 'все записи']
+            ],
+            language: {
+                info: ' ',
+                infoEmpty: 'Нет записей',
+                infoFiltered: '(отфильтровано из _MAX_ записей)',
+                lengthMenu: 'Показать _MENU_ на странице',
+                zeroRecords: 'Ничего не найдено',
+                search: 'Поиск'
+            },
+            stateSave: true,
+        });
+    </script>
+{% endblock extrascript %}

@@ -220,8 +220,8 @@ class StaffTableTotalView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixi
         context['next_year'] = next_year
         context['users'] = User.objects.annotate(
             has_wa=Exists(WorkerActivity.objects.filter(user=OuterRef('pk'), date__month=context['month'],
-                                                        date__year=context['year'], is_staff=True))
-        ).order_by('-has_wa', 'first_name')
+                                                        date__year=context['year']))
+        ).filter(is_staff=True).order_by('-has_wa', 'first_name')
 
         employee_data = [
             {

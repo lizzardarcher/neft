@@ -464,8 +464,8 @@ class WorkerActivityForm(forms.ModelForm):
         widgets = {
             # 'user': forms.Select(attrs={'class': 'form-control'}),
             'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'work_type': forms.Select(attrs={'class': 'form-control'}),
-            'brigade': forms.Select(attrs={'class': 'form-control'}),
+            'work_type': forms.Select(attrs={'class': 'form-control', 'required': 'required'}),
+            'brigade': forms.Select(attrs={'class': 'form-control', 'required': 'required'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -479,8 +479,8 @@ class BrigadeActivityForm(forms.ModelForm):
         fields = ('date', 'work_type', 'work_object')
         widgets = {
             'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'work_type': forms.Select(attrs={'class': 'form-control'}),
-            'work_object': forms.Select(attrs={'class': 'form-control'}),
+            'work_type': forms.Select(attrs={'class': 'form-control', 'required': 'required'}),
+            'work_object': forms.Select(attrs={'class': 'form-control', 'required': 'required'}),
         }
 
     def __init__(self, *args, **kwargs):

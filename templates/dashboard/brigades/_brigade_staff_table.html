@@ -16,7 +16,7 @@
         </tr>
         </thead>
         <tbody>
-        {% for user in users %}
+        {% for user in brigade_users %}
             <tr>
                 <td>{{ user.last_name }} {{ user.first_name }}</td>
                 <td>{% if user.profile.position %}{{ user.profile.position }}{% else %}---{% endif %}</td>
@@ -113,19 +113,25 @@
                 {% for wa in data.wa %}
                     {% if wa.wa %}
                         {% if wa.wa.work_type == 'Y' %}
-                            <td class="bg-warning">Я          <br><span style="font-size: 10px">{{ wa.wa.brigade }}</span></td>
+                            <td class="bg-warning">Я <br><span style="font-size: 10px">{{ wa.wa.brigade }}</span></td>
                         {% elif wa.wa.work_type == 'G' %}
-                            <td class="bg-warning-subtle">Г   <br><span style="font-size: 10px">{{ wa.wa.brigade }}</span></td>
+                            <td class="bg-warning-subtle">Г <br><span style="font-size: 10px">{{ wa.wa.brigade }}</span>
+                            </td>
                         {% elif wa.wa.work_type == 'O' %}
-                            <td class="bg-info-subtle">О      <br><span style="font-size: 10px">{{ wa.wa.brigade }}</span></td>
+                            <td class="bg-info-subtle">О <br><span style="font-size: 10px">{{ wa.wa.brigade }}</span>
+                            </td>
                         {% elif wa.wa.work_type == 'S' %}
-                            <td class="bg-success-subtle">С   <br><span style="font-size: 10px">{{ wa.wa.brigade }}</span></td>
+                            <td class="bg-success-subtle">С <br><span style="font-size: 10px">{{ wa.wa.brigade }}</span>
+                            </td>
                         {% elif wa.wa.work_type == 'T' %}
-                            <td style="background-color: #d1dc99">Т <br><span style="font-size: 10px">{{ wa.wa.brigade }}</span></td>
+                            <td style="background-color: #d1dc99">Т <br><span
+                                    style="font-size: 10px">{{ wa.wa.brigade }}</span></td>
                         {% elif wa.wa.work_type == 'D' %}
-                            <td style="background-color: #bbcced">Д <br><span style="font-size: 10px">{{ wa.wa.brigade }}</span></td>
+                            <td style="background-color: #bbcced">Д <br><span
+                                    style="font-size: 10px">{{ wa.wa.brigade }}</span></td>
                         {% elif wa.wa.work_type == 'N' %}
-                            <td style="background-color: #c99ee6">Н <br><span style="font-size: 10px">{{ wa.wa.brigade }}</span></td>
+                            <td style="background-color: #c99ee6">Н <br><span
+                                    style="font-size: 10px">{{ wa.wa.brigade }}</span></td>
                         {% endif %}
                     {% else %}
                         <td class="bg-light-subtle">-</td>
@@ -133,10 +139,12 @@
                 {% endfor %}
                 <td>
                     {{ data.total_wa }}
-                    <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal"
-                            data-target="#wa-modal{{ data.user }}">
-                        <i class="fa fa-add"></i>
-                    </button>
+                    {% if data.user.profile.brigade == brigade %}  <!--  Добавлена проверка -->
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal"
+                                data-target="#wa-modal{{ data.user }}">
+                            <i class="fa fa-add"></i>
+                        </button>
+                    {% endif %}
                 </td>
             </tr>
         {% endfor %}

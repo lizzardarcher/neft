@@ -8,7 +8,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import IntegrityError
-from django.db.models import Count, Q
+from django.db.models import Count, Q, When
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -20,7 +20,8 @@ from dashboard.forms import BrigadeForm, BrigadeActivityForm, WorkObjectForm
 from dashboard.mixins import StaffOnlyMixin
 from dashboard.models import Brigade, Equipment, Manufacturer, WorkerActivity, BrigadeActivity, WorkObject, UserProfile
 from dashboard.utils.utils import get_days_in_month
-
+from django.db.models import Q, Count
+from django.db.models import Value, IntegerField, Case
 
 class BrigadeListView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, ListView):
     model = Brigade
@@ -113,27 +114,86 @@ class BrigadeStaffView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, 
         context['next_month'] = str(next_month)
         context['prev_year'] = prev_year
         context['next_year'] = next_year
-        context['users'] = User.objects.annotate(
+        # context['users'] = User.objects.annotate(
+        #     total_wa=Count('workeractivity',
+        #                    filter=Q(workeractivity__date__year=,
+        #                             workeractivity__date__month=context['month'],
+        #                             workeractivity__brigade=brigade, ))).filter(profile__brigade=brigade,
+        #                                                                         is_staff=True).order_by(
+        #     'username')
+        # employee_data = [
+        #     {
+        #         'user': user,
+        #         'total_wa': WorkerActivity.objects.filter(user=user, date__month=context['month'],
+        #                                                   date__year=context['year']).count(),
+        #         'wa': [
+        #             {'day': day, 'wa': WorkerActivity.objects.filter(user=user, date__month=context['month'],
+        #                                                              date__year=context['year'], date__day=day).last()}
+        #             for day in context['days']
+        #         ],
+        #     } for user in context['users']
+        # ]
+        # context['employee_data'] = employee_data
+
+        # 1. Пользователи, которые сейчас числятся в бригаде
+        current_brigade_users = User.objects.filter(
+            profile__brigade=brigade,
+            is_staff=True,
+            workeractivity__date__year=context['year'],
+            workeractivity__date__month=context['month'],
+            workeractivity__brigade=brigade
+        ).annotate(
+            has_wa=Case(
+                When(workeractivity__date__year=context['year'], workeractivity__date__month=context['month'],
+                     workeractivity__brigade=brigade, then=Value(1)),
+                default=Value(0),
+                output_field=IntegerField()
+            ),
             total_wa=Count('workeractivity',
-                           filter=Q(workeractivity__date__year=context['year'],
-                                    workeractivity__date__month=context['month'],
-                                    workeractivity__brigade=brigade, ))).filter(profile__brigade=brigade,
-                                                                                is_staff=True).order_by(
-            'username')
+                           filter=Q(workeractivity__date__year=context['year'], workeractivity__date__month=context['month'],
+                                    workeractivity__brigade=brigade))
+        )
+
+        # 2. Пользователи, которые когда-либо работали в бригаде (через WorkerActivity)
+        past_brigade_users = User.objects.filter(
+            is_staff=True,
+            workeractivity__date__year=context['year'],
+            workeractivity__date__month=context['month'],
+            workeractivity__brigade=brigade
+        ).annotate(
+            has_wa=Case(
+                When(workeractivity__date__year=context['year'], workeractivity__date__month=context['month'],
+                     workeractivity__brigade=brigade, then=Value(1)),
+                default=Value(0),
+                output_field=IntegerField()
+            ),
+            total_wa=Count('workeractivity',
+                           filter=Q(workeractivity__date__year=context['year'], workeractivity__date__month=context['month'],
+                                    workeractivity__brigade=brigade))
+        )
+
+        # Объединяем два queryset-а и убираем дубликаты
+        all_brigade_users = current_brigade_users.union(past_brigade_users).order_by('-has_wa',
+                                                                                     'username')  # Убираем distinct(), так как union уже делает это
+
+        context['users'] = all_brigade_users
+        context['brigade_users'] = current_brigade_users
         employee_data = [
             {
                 'user': user,
                 'total_wa': WorkerActivity.objects.filter(user=user, date__month=context['month'],
-                                                          date__year=context['year'],
-                                                          brigade=context['brigade']).count(),
+                                                          date__year=context['year'], brigade=brigade).count(),
                 'wa': [
                     {'day': day, 'wa': WorkerActivity.objects.filter(user=user, date__month=context['month'],
-                                                                     date__year=context['year'], date__day=day).last()}
+                                                                     date__year=context['year'], date__day=day,
+                                                                     brigade=brigade).last()}
                     for day in context['days']
                 ],
-            } for user in context['users']
+            } for user in all_brigade_users
         ]
         context['employee_data'] = employee_data
+
+
         return context
 
 

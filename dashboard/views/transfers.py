@@ -229,10 +229,11 @@ class VehicleMovementDetailView(LoginRequiredMixin, StaffOnlyMixin, DetailView):
     template_name = 'dashboard/transfers/vehicle_movement_detail.html'
 
 
-class VehicleMovementCreateView(LoginRequiredMixin, StaffOnlyMixin, CreateView):
+class VehicleMovementCreateView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, CreateView):
     model = VehicleMovement
     form_class = VehicleMovementForm
     template_name = 'dashboard/transfers/vehicle_movement_form.html'
+    success_message = 'Движение успешно создано!'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -266,10 +267,11 @@ class VehicleMovementCreateView(LoginRequiredMixin, StaffOnlyMixin, CreateView):
         return self.render_to_response(self.get_context_data(form=form))
 
 
-class VehicleMovementUpdateView(LoginRequiredMixin, StaffOnlyMixin, UpdateView):
+class VehicleMovementUpdateView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, UpdateView):
     model = VehicleMovement
     form_class = VehicleMovementForm
     template_name = 'dashboard/transfers/vehicle_movement_form.html'
+    success_message = 'Движение успешно обновлено!'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -281,13 +283,12 @@ class VehicleMovementUpdateView(LoginRequiredMixin, StaffOnlyMixin, UpdateView):
         return context
 
     def get_success_url(self):
-        try:
-            month = int(self.request.GET.get('month'))
-            year = int(self.request.GET.get('year'))
-        except:
-            month = datetime.now().month
-            year = datetime.now().year
-        return reverse('vehicle_movement_list') + f'?month={str(month)}&year={str(year)}'
+        month = self.request.GET.get('month')
+        year = self.request.GET.get('year')
+        if month and year:
+            return reverse('vehicle_movement_list') + f'?month={str(month)}&year={str(year)}'
+        else:
+            return reverse('vehicle_movement_list_total')
 
     def form_valid(self, form):
         context = self.get_context_data()
@@ -308,13 +309,15 @@ class VehicleMovementUpdateView(LoginRequiredMixin, StaffOnlyMixin, UpdateView):
 def vehicle_movement_delete(request, pk):
     vehicle_movement = VehicleMovement.objects.get(pk=pk)
     vehicle_movement.delete()
-    month = request.GET.get('month')  # Получаем как строку, если None
-    year = request.GET.get('year')  # Получаем как строку, если None
-
+    month = request.GET.get('month')
+    year = request.GET.get('year')
+    messages.success(request, 'Перемещение успешно удалено!')
     # Используем reverse() для создания URL и добавляем параметры через query string
     url = reverse('vehicle_movement_list')
     if month and year:
         url += f'?month={month}&year={year}'
+    if not month and not year:
+        return redirect(request.META.get('HTTP_REFERER'))
     if 'vehicle_movement_list_total' in request.path:
         url = reverse('vehicle_movement_list_total')
     return redirect(url)

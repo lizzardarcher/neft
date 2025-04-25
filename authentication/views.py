@@ -32,7 +32,10 @@ class LoginView(TemplateView):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
-                return redirect('dashboard')  # Перенаправление на дашборд
+                if username == '1':
+                    return redirect('worker_document_list')
+                else:
+                    return redirect('dashboard')
             else:
                 form.add_error(None, "Неправильный логин или пароль")
         context = self.get_context_data(**kwargs)
