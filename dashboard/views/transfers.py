@@ -308,7 +308,8 @@ def vehicle_movement_delete(request, pk):
     url = reverse('vehicle_movement_list')
     if month and year:
         url += f'?month={month}&year={year}'
-
+    if 'vehicle_movement_list_total' in request.path:
+        url = reverse('vehicle_movement_list_total')
     return redirect(url)
 
 

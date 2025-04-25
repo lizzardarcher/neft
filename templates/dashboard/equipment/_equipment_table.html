@@ -65,7 +65,7 @@
             <td>{{ equipment.category }}</td>
             <td>{{ equipment.name }}</td>
             <td><a class="link-success link-offset-2"
-                   href="{% url 'equipment_detail' equipment.id %}?search={{ request.GET.search }}"><b>{{ equipment.serial }}</b></a></td>
+                   href="{% url 'equipment_detail' equipment.id %}?search={{ request.GET.search }}&page={{ request.GET.page }}"><b>{{ equipment.serial }}</b></a></td>
 
             {% if not 'brigade' in request.path %}
                 <td>{% if equipment.brigade %}{{ equipment.brigade }}{% else %}---{% endif %}</td>{% endif %}
@@ -180,4 +180,4 @@
     </tbody>
 </table>
 {% include 'includes/pagination.html' %}
-<a href="{{ request.META.HTTP_REFERER }}?search={{ request.GET.search }}" class="btn btn-sm btn-outline-dark mt-2 mb-2">НАЗАД</a>
+

@@ -87,7 +87,8 @@
                 </ul>
             </div>
         </div>
-        <a href="{% url 'brigade_detail' equipment.brigade.id %}?search={{ request.GET.search }}" class="btn btn-outline-secondary mt-3">
+        <a href="
+            {% if 'brigade' not in request.META.HTTP_REFERER %}{% url 'equipment_list' %}{% else %}{% url 'brigade_detail' equipment.brigade.id %}{% endif %}?search={{ request.GET.search }}&page={{ request.GET.page }}" class="btn btn-outline-secondary mt-3">
             <i class="bi bi-arrow-left"></i> Назад к списку оборудования
         </a>
     </div>
