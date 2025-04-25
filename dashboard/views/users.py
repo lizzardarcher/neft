@@ -6,12 +6,13 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User, Group
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.messages.views import SuccessMessageMixin
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Exists, OuterRef
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy, reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView, TemplateView
+from django.db.models import Case, When, Value, IntegerField
 
 from dashboard.forms import UserCreateForm, UserUpdateForm, GroupForm, UserUpdateByBrigadeForm, WorkerActivityForm, \
     UserUpdateStaffForm
@@ -215,27 +216,10 @@ class StaffTableTotalView(LoginRequiredMixin, SuccessMessageMixin, TemplateView)
         context['next_month'] = str(next_month)
         context['prev_year'] = prev_year
         context['next_year'] = next_year
-        # context['users'] = User.objects.annotate(
-        #     total_wa=Count('workeractivity',
-        #                    filter=Q(workeractivity__date__year=context['year'],
-        #                             workeractivity__date__month=context['month'],
-        #                             ))).all().order_by('first_name')
-
-        now = timezone.now()
-        current_year = now.year
-        current_month = now.month
-
-        context['users'] = User.objects.filter(
-            # profile__brigade_start_date__gte=datetime(current_year, current_month, 1),
-            # profile__brigade_end_date__lte=datetime(current_year, current_month, 28),
-            # workeractivity__date__month=context['month'],
-            # workeractivity__date__year=context['year'],
-        ).annotate(
-            total_wa=Count('workeractivity',
-                           filter=Q(workeractivity__date__year=context['month'],
-                                    workeractivity__date__month=context['year'],
-                                    ))).order_by('first_name')
-
+        context['users'] = User.objects.annotate(
+            has_wa=Exists(WorkerActivity.objects.filter(user=OuterRef('pk'), date__month=context['month'],
+                                                        date__year=context['year']))
+        ).order_by('-has_wa', 'first_name')
 
         employee_data = [
             {
