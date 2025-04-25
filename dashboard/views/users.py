@@ -2,6 +2,7 @@ from calendar import month
 from datetime import datetime
 
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User, Group
 from django.contrib.contenttypes.models import ContentType
@@ -15,12 +16,13 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView, D
 from django.db.models import Case, When, Value, IntegerField
 
 from dashboard.forms import UserCreateForm, UserUpdateForm, GroupForm, UserUpdateByBrigadeForm, WorkerActivityForm, \
-    UserUpdateStaffForm
-from dashboard.models import UserActionLog, WorkerActivity, Brigade
+    UserUpdateStaffForm, WorkerDocumentForm
+from dashboard.mixins import StaffOnlyMixin
+from dashboard.models import UserActionLog, WorkerActivity, Brigade, WorkerDocument
 from dashboard.utils.utils import get_days_in_month
 
 
-class UserListView(LoginRequiredMixin, ListView):
+class UserListView(LoginRequiredMixin, StaffOnlyMixin, ListView):
     model = User
     context_object_name = 'users'
     template_name = 'dashboard/users/user_list.html'
@@ -28,18 +30,18 @@ class UserListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['content_types'] = ContentType.objects.all()
-        context['users'] = User.objects.all().order_by('username')
+        context['users'] = User.objects.filter(is_staff=True).order_by('username')
         context['logs'] = UserActionLog.objects.all().order_by('-action_time')[:10]
         return context
 
 
-class UserDetailView(LoginRequiredMixin, DetailView):
+class UserDetailView(LoginRequiredMixin, StaffOnlyMixin, DetailView):
     model = User
     context_object_name = 'user'
     template_name = 'dashboard/users/user_detail.html'
 
 
-class UserCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+class UserCreateView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, CreateView):
     model = User
     form_class = UserCreateForm
     template_name = 'dashboard/users/user_form.html'
@@ -47,7 +49,7 @@ class UserCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     success_message = 'Пользователь успешно создан!'
 
 
-class UserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class UserUpdateView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, UpdateView):
     model = User
     form_class = UserCreateForm
     template_name = 'dashboard/users/user_form.html'
@@ -55,7 +57,7 @@ class UserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     success_url = '/dashboard/users'
 
 
-class UserAccountUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class UserAccountUpdateView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, UpdateView):
     model = User
     form_class = UserUpdateForm
     template_name = 'dashboard/users/user_account_form.html'
@@ -69,7 +71,7 @@ class UserAccountUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView)
             return f'/dashboard/user/{self.request.user.id}/detail'
 
 
-class UserUpdateByBrigadeView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class UserUpdateByBrigadeView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, UpdateView):
     model = User
     form_class = UserUpdateByBrigadeForm
     template_name = 'dashboard/users/user_by_brigade_form.html'
@@ -84,7 +86,7 @@ class UserUpdateByBrigadeView(LoginRequiredMixin, SuccessMessageMixin, UpdateVie
         return reverse('brigade_staff', args=[self.kwargs.get('brigade_id')])
 
 
-class UserStaffUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class UserStaffUpdateView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, UpdateView):
     model = User
     form_class = UserUpdateStaffForm
     template_name = 'dashboard/users/user_staff_form.html'
@@ -101,7 +103,7 @@ def user_delete(request, user_id):
     return redirect('user_list')
 
 
-class UserActionLogView(ListView):
+class UserActionLogView(LoginRequiredMixin, StaffOnlyMixin, ListView):
     model = UserActionLog
     template_name = 'dashboard/users/user_action_log.html'
     context_object_name = 'logs'
@@ -109,33 +111,33 @@ class UserActionLogView(ListView):
     paginate_by = 10
 
 
-class GroupListView(ListView):
+class GroupListView(LoginRequiredMixin, StaffOnlyMixin, ListView):
     model = Group
     template_name = 'dashboard/users/group_list.html'
     context_object_name = 'groups'
 
 
-class GroupCreateView(CreateView):
+class GroupCreateView(LoginRequiredMixin, StaffOnlyMixin, CreateView):
     model = Group
     form_class = GroupForm
     template_name = 'dashboard/users/group_form.html'
     success_url = reverse_lazy('group_list')
 
 
-class GroupUpdateView(UpdateView):
+class GroupUpdateView(LoginRequiredMixin, StaffOnlyMixin, UpdateView):
     model = Group
     form_class = GroupForm
     template_name = 'dashboard/users/group_form.html'
     success_url = reverse_lazy('group_list')
 
 
-class GroupDeleteView(DeleteView):
+class GroupDeleteView(LoginRequiredMixin, StaffOnlyMixin, DeleteView):
     model = Group
     template_name = 'dashboard/users/group_confirm_delete.html'
     success_url = reverse_lazy('group_list')
 
 
-class WorkerActivityCreateView(CreateView):
+class WorkerActivityCreateView(LoginRequiredMixin, StaffOnlyMixin, CreateView):
     model = WorkerActivity
     form_class = WorkerActivityForm
     template_name = 'dashboard/users/worker_activity_form.html'
@@ -189,7 +191,7 @@ def create_worker_activity(request):
         return redirect('brigade_staff', pk=request.GET.get('brigade_id'))
 
 
-class StaffTableTotalView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
+class StaffTableTotalView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, TemplateView):
     template_name = 'dashboard/users/staff_table_total.html'
 
     def get_context_data(self, **kwargs):
@@ -218,7 +220,7 @@ class StaffTableTotalView(LoginRequiredMixin, SuccessMessageMixin, TemplateView)
         context['next_year'] = next_year
         context['users'] = User.objects.annotate(
             has_wa=Exists(WorkerActivity.objects.filter(user=OuterRef('pk'), date__month=context['month'],
-                                                        date__year=context['year']))
+                                                        date__year=context['year'], is_staff=True))
         ).order_by('-has_wa', 'first_name')
 
         employee_data = [
@@ -236,3 +238,29 @@ class StaffTableTotalView(LoginRequiredMixin, SuccessMessageMixin, TemplateView)
         context['employee_data'] = employee_data
         context['form'] = WorkerActivityForm
         return context
+
+
+@login_required
+def document_list(request):
+    documents = WorkerDocument.objects.all()
+    return render(request, 'dashboard/users/worker_document_list.html', {'documents': documents})
+
+
+@login_required
+def worker_document_create(request):
+    if request.method == 'POST':
+        form = WorkerDocumentForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('worker_document_list')
+    else:
+        form = WorkerDocumentForm()
+    return render(request, 'dashboard/users/worker_document_create.html', {'form': form})
+
+
+@login_required
+def worker_document_delete(request, pk):
+    document = get_object_or_404(WorkerDocument, pk=pk)
+    document.delete()
+    messages.success(request, 'Документ успешно удален!')
+    return redirect('worker_document_list')

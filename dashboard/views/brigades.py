@@ -17,11 +17,12 @@ from django.views.generic import ListView, CreateView, UpdateView, DetailView, T
 from django.utils.timezone import datetime
 
 from dashboard.forms import BrigadeForm, BrigadeActivityForm, WorkObjectForm
+from dashboard.mixins import StaffOnlyMixin
 from dashboard.models import Brigade, Equipment, Manufacturer, WorkerActivity, BrigadeActivity, WorkObject, UserProfile
 from dashboard.utils.utils import get_days_in_month
 
 
-class BrigadeListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
+class BrigadeListView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, ListView):
     model = Brigade
     context_object_name = 'brigades'
     template_name = 'dashboard/brigades/brigade_list.html'
@@ -43,7 +44,7 @@ class BrigadeListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
         return context
 
 
-class BrigadeDetailView(LoginRequiredMixin, SuccessMessageMixin, DetailView):
+class BrigadeDetailView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, DetailView):
     model = Brigade
     context_object_name = 'brigade'
     template_name = 'dashboard/brigades/brigade_detail.html'
@@ -83,7 +84,7 @@ class BrigadeDetailView(LoginRequiredMixin, SuccessMessageMixin, DetailView):
         return context
 
 
-class BrigadeStaffView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
+class BrigadeStaffView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, TemplateView):
     template_name = 'dashboard/brigades/brigade_staff.html'
 
     def get_context_data(self, **kwargs):
@@ -116,7 +117,8 @@ class BrigadeStaffView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
             total_wa=Count('workeractivity',
                            filter=Q(workeractivity__date__year=context['year'],
                                     workeractivity__date__month=context['month'],
-                                    workeractivity__brigade=brigade, ))).filter(profile__brigade=brigade).order_by(
+                                    workeractivity__brigade=brigade, ))).filter(profile__brigade=brigade,
+                                                                                is_staff=True).order_by(
             'username')
         employee_data = [
             {
@@ -135,7 +137,7 @@ class BrigadeStaffView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
         return context
 
 
-class BrigadeWorkView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
+class BrigadeWorkView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, TemplateView):
     template_name = 'dashboard/brigades/brigade_work.html'
 
     def form_valid(self, form):
@@ -178,9 +180,11 @@ class BrigadeWorkView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
         brigade_data = [
             {
                 'brigade': brigade,
-                'total_ba':  BrigadeActivity.objects.filter(brigade=brigade, date__month=month, date__year=year).count(),
+                'total_ba': BrigadeActivity.objects.filter(brigade=brigade, date__month=month, date__year=year).count(),
                 'ba': [
-                    {'day': day, 'ba': BrigadeActivity.objects.filter(brigade=brigade, date__month=month, date__year=year, date__day=day).last()}
+                    {'day': day,
+                     'ba': BrigadeActivity.objects.filter(brigade=brigade, date__month=month, date__year=year,
+                                                          date__day=day).last()}
                     for day in get_days_in_month(month, year)
                 ],
             }
@@ -208,7 +212,7 @@ class BrigadeWorkView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
         return context
 
 
-class BrigadeTableTotalView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
+class BrigadeTableTotalView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, TemplateView):
     template_name = 'dashboard/brigades/brigade_work_total.html'
 
     def get_context_data(self, **kwargs):
@@ -272,7 +276,7 @@ class BrigadeTableTotalView(LoginRequiredMixin, SuccessMessageMixin, TemplateVie
         return reverse('brigade_table_total') + f'?month={new_month}&year={new_year}'
 
 
-class BrigadeIndexView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
+class BrigadeIndexView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, TemplateView):
     template_name = 'dashboard/brigades/index.html'
 
     def get_context_data(self, **kwargs):
@@ -285,7 +289,7 @@ class BrigadeIndexView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
         return context
 
 
-class BrigadeCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+class BrigadeCreateView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, CreateView):
     model = Brigade
     context_object_name = 'brigade'
     template_name = 'dashboard/brigades/brigade_form_create.html'
@@ -296,7 +300,7 @@ class BrigadeCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         return f"Бригада {cleaned_data['name']} Успешно создана!"
 
 
-class BrigadeUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class BrigadeUpdateView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, UpdateView):
     model = Brigade
     context_object_name = 'brigade'
     template_name = 'dashboard/brigades/brigade_form_update.html'
@@ -307,7 +311,7 @@ class BrigadeUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return f"Бригада {cleaned_data['name']} Успешно обновлена!"
 
 
-class BrigadeUpdateFromTotalView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class BrigadeUpdateFromTotalView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, UpdateView):
     model = Brigade
     context_object_name = 'brigade'
     template_name = 'dashboard/brigades/brigade_form_update.html'
@@ -320,7 +324,7 @@ class BrigadeUpdateFromTotalView(LoginRequiredMixin, SuccessMessageMixin, Update
         return f"Бригада {cleaned_data['name']} Успешно обновлена!"
 
 
-class BrigadeUpdateFromWorkView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class BrigadeUpdateFromWorkView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, UpdateView):
     model = Brigade
     context_object_name = 'brigade'
     template_name = 'dashboard/brigades/brigade_form_update.html'
@@ -404,7 +408,8 @@ def brigade_activity_create(request, brigade_id):
                 brigade_activity.work_type = work_type
 
                 # Добавляем работников бригады к активности
-                for worker in UserProfile.objects.filter(brigade=brigade):  # Получаем всех пользователей, связанных с бригадой
+                for worker in UserProfile.objects.filter(
+                        brigade=brigade):  # Получаем всех пользователей, связанных с бригадой
                     brigade_activity.workers.add(worker.user)
 
                 brigade_activity.save()
@@ -418,7 +423,8 @@ def brigade_activity_create(request, brigade_id):
                 )
 
                 # Добавляем работников бригады к активности
-                for worker in UserProfile.objects.filter(brigade=brigade):  # Получаем всех пользователей, связанных с бригадой
+                for worker in UserProfile.objects.filter(
+                        brigade=brigade):  # Получаем всех пользователей, связанных с бригадой
                     brigade_activity.workers.add(worker.user)
 
                 messages.success(request, f'Активность успешно создана!')
@@ -429,7 +435,8 @@ def brigade_activity_create(request, brigade_id):
                 activity.brigade = brigade
 
                 # Добавляем работников бригады к активности
-                for worker in UserProfile.objects.filter(brigade=brigade):  # Получаем всех пользователей, связанных с бригадой
+                for worker in UserProfile.objects.filter(
+                        brigade=brigade):  # Получаем всех пользователей, связанных с бригадой
                     activity.workers.add(worker.user)
 
                 activity.save()
@@ -458,7 +465,7 @@ def work_object_delete(request, work_object_id):
     return redirect(request.META.get('HTTP_REFERER'))
 
 
-class WorkObjectUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class WorkObjectUpdateView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, UpdateView):
     model = WorkObject
     context_object_name = 'work_object'
     template_name = 'dashboard/brigades/work_object_edit.html'
@@ -480,12 +487,13 @@ def get_locations(request):
     return JsonResponse(data, safe=False)
 
 
-class WorkObjectListView(LoginRequiredMixin, ListView):
+class WorkObjectListView(LoginRequiredMixin, StaffOnlyMixin, ListView):
     model = WorkObject
     context_object_name = 'work_objects'
     template_name = 'dashboard/brigades/work_object_list.html'
 
-class WorkObjectDetailView(LoginRequiredMixin, DetailView):
+
+class WorkObjectDetailView(LoginRequiredMixin, StaffOnlyMixin, DetailView):
     model = WorkObject
     context_object_name = 'work_object'
     template_name = 'dashboard/brigades/work_object_detail.html'

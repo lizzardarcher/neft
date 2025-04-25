@@ -10,10 +10,11 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView, D
 from django.views.generic.detail import SingleObjectMixin
 
 from dashboard.forms import EquipmentCreateByBrigadeForm, EquipmentAddDocumentsForm, DocumentForm, EquipmentCreateForm
+from dashboard.mixins import StaffOnlyMixin
 from dashboard.models import Equipment, Brigade, Document, Manufacturer
 
 
-class EquipmentListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
+class EquipmentListView(LoginRequiredMixin,  StaffOnlyMixin,SuccessMessageMixin, ListView):
     model = Equipment
     context_object_name = 'equipments'
     template_name = 'dashboard/equipment/equipment_list.html'
@@ -46,7 +47,7 @@ class EquipmentListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
         return queryset
 
 
-class EquipmentCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+class EquipmentCreateView(LoginRequiredMixin,  StaffOnlyMixin,SuccessMessageMixin, CreateView):
     model = Equipment
     form_class = EquipmentCreateForm
     template_name = 'dashboard/equipment/equipment_form.html'
@@ -72,7 +73,7 @@ class EquipmentCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         return super().form_valid(form)
 
 
-class EquipmentCreateByBrigadeIdView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+class EquipmentCreateByBrigadeIdView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, CreateView):
     model = Equipment
     form_class = EquipmentCreateByBrigadeForm
     template_name = 'dashboard/equipment/equipment_form_by_brigade.html'
@@ -104,7 +105,7 @@ class EquipmentCreateByBrigadeIdView(LoginRequiredMixin, SuccessMessageMixin, Cr
         return reverse('brigade_detail', args=[brigade_id])
 
 
-class EquipmentAddDocumentsView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+class EquipmentAddDocumentsView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, CreateView):
     model = Document
     form_class = EquipmentAddDocumentsForm
     template_name = 'dashboard/equipment/equipment_add_documents.html'
@@ -135,7 +136,7 @@ class EquipmentAddDocumentsView(LoginRequiredMixin, SuccessMessageMixin, CreateV
         return redirect(reverse('equipment_add_document', args=[equipment_id, brigade_id]))
 
 
-class EquipmentUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class EquipmentUpdateView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, UpdateView):
     model = Equipment
     form_class = EquipmentCreateForm
     template_name = 'dashboard/equipment/equipment_update.html'
@@ -180,7 +181,7 @@ class EquipmentUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
                 'form': EquipmentCreateForm(request.POST, instance=self.get_object())})
 
 
-class EquipmentUpdateByBrigadeView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class EquipmentUpdateByBrigadeView(LoginRequiredMixin,  StaffOnlyMixin,SuccessMessageMixin, UpdateView):
     model = Equipment
     form_class = EquipmentCreateForm
     template_name = 'dashboard/equipment/equipment_update_by_brigade.html'
@@ -226,7 +227,7 @@ class EquipmentUpdateByBrigadeView(LoginRequiredMixin, SuccessMessageMixin, Upda
             })
 
 
-class EquipmentDetailView(LoginRequiredMixin, SuccessMessageMixin, DetailView):
+class EquipmentDetailView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, DetailView):
     model = Equipment
     context_object_name = 'equipment'
     template_name = 'dashboard/equipment/equipment_detail.html'
@@ -241,7 +242,7 @@ def equipment_delete(request, equipment_id):
     # return redirect('equipment_list')
 
 
-class DocumentListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
+class DocumentListView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, ListView):
     model = Document
     context_object_name = 'documents'
     template_name = 'dashboard/equipment/document_list.html'
@@ -266,21 +267,6 @@ class DocumentListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
                 queryset = queryset.order_by(sort_by)
         return queryset
 
-class DocumentShareListView(ListView):
-    model = Document
-    context_object_name = 'documents'
-    template_name = 'dashboard/equipment/document_share_list.html'
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        search_request = self.request.GET.get("search")
-        title = self.request.GET.get("title")
-        if search_request:
-            equipment_by_name = Document.objects.filter(title__icontains=search_request)
-            queryset = equipment_by_name
-        if title:
-            queryset = queryset.filter(title=title)
-        return queryset
 def document_delete(request, document_id):
     document = get_object_or_404(Document, id=document_id)
     document.delete()

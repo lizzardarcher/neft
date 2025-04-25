@@ -7,7 +7,8 @@ from django.forms import inlineformset_factory
 from django_select2 import forms as s2forms
 
 from dashboard.models import Brigade, Equipment, Document, Category, UserProfile, Manufacturer, WorkerActivity, \
-    BrigadeActivity, WorkObject, Vehicle, VehicleMovement, OtherEquipment, OtherCategory, VehicleMovementEquipment
+    BrigadeActivity, WorkObject, Vehicle, VehicleMovement, OtherEquipment, OtherCategory, VehicleMovementEquipment, \
+    WorkerDocument
 
 DATE_STYLE = {'style': 'width: 15rem;'}
 
@@ -592,3 +593,12 @@ class VehicleMovementFilterForm(forms.Form):
 
     def driver_label_from_instance(self, obj):
         return f"{obj.last_name} {obj.first_name}"
+
+class WorkerDocumentForm(forms.ModelForm):
+    class Meta:
+        model = WorkerDocument
+        fields = ['title', 'file']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'file': forms.FileInput(attrs={'class': 'form-control'}),
+        }

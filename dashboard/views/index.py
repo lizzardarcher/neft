@@ -17,6 +17,7 @@ import csv
 from openpyxl import Workbook
 
 from dashboard.forms import VehicleMovementFilterForm
+from dashboard.mixins import StaffOnlyMixin
 from dashboard.models import Brigade, Category, Equipment, UserActionLog, Transfer, Document, BrigadeActivity, \
     WorkerActivity, WorkObject, VehicleMovement
 from dashboard.utils.utils import get_days_in_month
@@ -31,7 +32,7 @@ class DashboardView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
         context['categories_count'] = Category.objects.all().count()
         context['equipment_count'] = Equipment.objects.all().count()
         context['work_object_count'] = WorkObject.objects.all().count()
-        context['users_count'] = User.objects.all().count()
+        context['users_count'] = User.objects.filter(is_staff=True).count()
         context['user_log_count'] = UserActionLog.objects.all().count()
         context['transfers_count'] = Transfer.objects.all().count()
         context['vehicle_movement_count'] = VehicleMovement.objects.all().count()
@@ -41,7 +42,7 @@ class DashboardView(LoginRequiredMixin, SuccessMessageMixin, TemplateView):
         return context
 
 
-class InstructionView(LoginRequiredMixin, TemplateView):
+class InstructionView(LoginRequiredMixin, StaffOnlyMixin, TemplateView):
     template_name = 'dashboard/instruction.html'
 
 
@@ -75,7 +76,7 @@ class BaseExportView(View):
         return data
 
 
-class BrigadeCSVExportView(BaseExportView):
+class BrigadeCSVExportView(LoginRequiredMixin, StaffOnlyMixin, BaseExportView):
     """Выгрузка данных бригады в CSV."""
     model = Brigade
     filename = 'brigades.csv'
@@ -91,7 +92,7 @@ class BrigadeCSVExportView(BaseExportView):
         return response
 
 
-class BrigadeExcelExportView(BaseExportView):
+class BrigadeExcelExportView(LoginRequiredMixin, StaffOnlyMixin, BaseExportView):
     """Выгрузка данных бригады в Excel."""
     model = Brigade
     filename = 'brigades.xlsx'
@@ -110,11 +111,12 @@ class BrigadeExcelExportView(BaseExportView):
         return response
 
 
-class EquipmentCSVExportView(BaseExportView):
+class EquipmentCSVExportView(LoginRequiredMixin, StaffOnlyMixin, BaseExportView):
     """Выгрузка данных оборудования в CSV."""
     model = Equipment
     filename = 'equipments.csv'
-    header = ['id', 'serial', 'name', 'category', 'brigade', 'condition', 'date_release', 'date_exploitation', 'manufacturer', 'certificate_start', 'certificate_end']
+    header = ['id', 'serial', 'name', 'category', 'brigade', 'condition', 'date_release', 'date_exploitation',
+              'manufacturer', 'certificate_start', 'certificate_end']
 
     def get_data(self):
         """Возвращает данные для выгрузки."""
@@ -146,10 +148,12 @@ class EquipmentCSVExportView(BaseExportView):
         writer.writerows(self.get_data())
         return response
 
-class EquipmentExcelExportView(LoginRequiredMixin, View):
+
+class EquipmentExcelExportView(LoginRequiredMixin, StaffOnlyMixin, View):
     """Выгрузка данных оборудования в Excel."""
     filename = 'equipments.xlsx'
-    header = ['id', 'serial', 'name', 'category', 'brigade', 'condition', 'date_release', 'date_exploitation', 'manufacturer', 'certificate_start', 'certificate_end']
+    header = ['id', 'serial', 'name', 'category', 'brigade', 'condition', 'date_release', 'date_exploitation',
+              'manufacturer', 'certificate_start', 'certificate_end']
 
     def get(self, request, *args, **kwargs):
 
@@ -190,7 +194,7 @@ class EquipmentExcelExportView(LoginRequiredMixin, View):
         return response
 
 
-class BrigadeActivityExcelView(LoginRequiredMixin, View):
+class BrigadeActivityExcelView(LoginRequiredMixin, StaffOnlyMixin, View):
     def get(self, request, *args, **kwargs):
         month = int(request.GET.get('month', datetime.now().month))
         year = int(request.GET.get('year', datetime.now().year))
@@ -233,7 +237,8 @@ class BrigadeActivityExcelView(LoginRequiredMixin, View):
             row_data = [brigade.name]
             total_ba = 0
             for day in days:
-                ba = BrigadeActivity.objects.filter(brigade=brigade, date__day=day, date__month=month, date__year=year).last()
+                ba = BrigadeActivity.objects.filter(brigade=brigade, date__day=day, date__month=month,
+                                                    date__year=year).last()
                 try:
                     activity_str = ba.work_object.short_name
                 except:
@@ -250,7 +255,6 @@ class BrigadeActivityExcelView(LoginRequiredMixin, View):
         for cell in worksheet[1]:
             cell.font = openpyxl.styles.Font(bold=True)
 
-
         # Create the response
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = f'attachment; filename=brigade_activities_{month}_{year}.xlsx'
@@ -261,7 +265,7 @@ class BrigadeActivityExcelView(LoginRequiredMixin, View):
         return response
 
 
-class WorkerActivityExcelView(LoginRequiredMixin, View):
+class WorkerActivityExcelView(LoginRequiredMixin, StaffOnlyMixin, View):
     def get(self, request, *args, **kwargs):
         month = int(request.GET.get('month', datetime.now().month))
         year = int(request.GET.get('year', datetime.now().year))
@@ -275,7 +279,7 @@ class WorkerActivityExcelView(LoginRequiredMixin, View):
         days_in_month = calendar.monthrange(year, month)[1]
         days = get_days_in_month(month, year)
 
-        users = User.objects.all().order_by('last_name', 'first_name')
+        users = User.objects.filter(is_staff=True).order_by('last_name', 'first_name')
 
         # Create a new workbook and add a worksheet.
         workbook = Workbook()
@@ -318,8 +322,7 @@ class WorkerActivityExcelView(LoginRequiredMixin, View):
         return response
 
 
-
-class VehicleMovementExcelExportView(LoginRequiredMixin, View):
+class VehicleMovementExcelExportView(LoginRequiredMixin, StaffOnlyMixin, View):
     def get(self, request, *args, **kwargs):
         form = VehicleMovementFilterForm(request.GET)
         queryset = VehicleMovement.objects.all()
@@ -393,9 +396,10 @@ class VehicleMovementExcelExportView(LoginRequiredMixin, View):
             worksheet.cell(row=row_num, column=4, value=movement.brigade_from.name if movement.brigade_from else '---')
             worksheet.cell(row=row_num, column=5, value=movement.brigade_to.name if movement.brigade_to else '---')
 
-            equipment_list = '\n'.join([f'{e.equipment.name} ({e.quantity} шт.)' for e in movement.vehiclemovementequipment_set.all()])
+            equipment_list = '\n'.join(
+                [f'{e.equipment.name} ({e.quantity} шт.)' for e in movement.vehiclemovementequipment_set.all()])
             worksheet.cell(row=row_num, column=6, value=equipment_list)
-            for col in range(1,7):
+            for col in range(1, 7):
                 apply_cell_style(worksheet.cell(row=row_num, column=col))
 
         # Add analytics sheet
@@ -421,7 +425,7 @@ class VehicleMovementExcelExportView(LoginRequiredMixin, View):
         for row_num, item in enumerate(movements_by_month, start=4):
             analytics_worksheet.cell(row=row_num, column=2, value=item['month_year'].strftime('%m.%Y'))
             analytics_worksheet.cell(row=row_num, column=3, value=item['count'])
-            for col in range(2,4):
+            for col in range(2, 4):
                 apply_cell_style(analytics_worksheet.cell(row=row_num, column=col))
 
         # Movements by Brigade From
@@ -438,57 +442,92 @@ class VehicleMovementExcelExportView(LoginRequiredMixin, View):
         for row_num, item in enumerate(movements_by_brigade_from, start=len(movements_by_month) + 7):
             analytics_worksheet.cell(row=row_num, column=2, value=item['brigade_from__name'] or '---')
             analytics_worksheet.cell(row=row_num, column=3, value=item['count'])
-            for col in range(2,4):
+            for col in range(2, 4):
                 apply_cell_style(analytics_worksheet.cell(row=row_num, column=col))
 
-
         # Movements by Brigade To
-        analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + 9, column=1, value='Movements by Brigade To')
-        apply_header_style(analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + 9, column=1))
-        analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + 9, column=2, value='Brigade')
-        apply_header_style(analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + 9, column=2))
-        analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + 9, column=3, value='Count')
-        apply_header_style(analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + 9, column=3))
+        analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + 9, column=1,
+                                 value='Movements by Brigade To')
+        apply_header_style(
+            analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + 9, column=1))
+        analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + 9, column=2,
+                                 value='Brigade')
+        apply_header_style(
+            analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + 9, column=2))
+        analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + 9, column=3,
+                                 value='Count')
+        apply_header_style(
+            analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + 9, column=3))
 
         movements_by_brigade_to = queryset.values('brigade_to__name').annotate(count=Count('id')).order_by(
             '-count')
 
-        for row_num, item in enumerate(movements_by_brigade_to, start=len(movements_by_month) + len(movements_by_brigade_from) + 10):
+        for row_num, item in enumerate(movements_by_brigade_to,
+                                       start=len(movements_by_month) + len(movements_by_brigade_from) + 10):
             analytics_worksheet.cell(row=row_num, column=2, value=item['brigade_to__name'] or '---')
             analytics_worksheet.cell(row=row_num, column=3, value=item['count'])
-            for col in range(2,4):
+            for col in range(2, 4):
                 apply_cell_style(analytics_worksheet.cell(row=row_num, column=col))
 
         # Movements by Driver
-        analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + 12, column=1, value='Movements by Driver')
-        apply_header_style(analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + 12, column=1))
-        analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + 12, column=2, value='Driver')
-        apply_header_style(analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + 12, column=2))
-        analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + 12, column=3, value='Count')
-        apply_header_style(analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + 12, column=3))
+        analytics_worksheet.cell(
+            row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + 12, column=1,
+            value='Movements by Driver')
+        apply_header_style(analytics_worksheet.cell(
+            row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + 12, column=1))
+        analytics_worksheet.cell(
+            row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + 12, column=2,
+            value='Driver')
+        apply_header_style(analytics_worksheet.cell(
+            row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + 12, column=2))
+        analytics_worksheet.cell(
+            row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + 12, column=3,
+            value='Count')
+        apply_header_style(analytics_worksheet.cell(
+            row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + 12, column=3))
 
-        movements_by_driver = queryset.values('driver__last_name', 'driver__first_name').annotate(count=Count('id')).order_by('-count')
+        movements_by_driver = queryset.values('driver__last_name', 'driver__first_name').annotate(
+            count=Count('id')).order_by('-count')
 
-        for row_num, item in enumerate(movements_by_driver, start=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + 13):
-            analytics_worksheet.cell(row=row_num, column=2, value=f"{item['driver__last_name']} {item['driver__first_name']}")
+        for row_num, item in enumerate(movements_by_driver,
+                                       start=len(movements_by_month) + len(movements_by_brigade_from) + len(
+                                               movements_by_brigade_to) + 13):
+            analytics_worksheet.cell(row=row_num, column=2,
+                                     value=f"{item['driver__last_name']} {item['driver__first_name']}")
             analytics_worksheet.cell(row=row_num, column=3, value=item['count'])
-            for col in range(2,4):
+            for col in range(2, 4):
                 apply_cell_style(analytics_worksheet.cell(row=row_num, column=col))
 
         # Movements by Vehicle
-        analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + len(movements_by_driver) + 15, column=1, value='Movements by Vehicle')
-        apply_header_style(analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + len(movements_by_driver) + 15, column=1))
-        analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + len(movements_by_driver) + 15, column=2, value='Vehicle')
-        apply_header_style(analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + len(movements_by_driver) + 15, column=2))
-        analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + len(movements_by_driver) + 15, column=3, value='Count')
-        apply_header_style(analytics_worksheet.cell(row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + len(movements_by_driver) + 15, column=3))
+        analytics_worksheet.cell(
+            row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + len(
+                movements_by_driver) + 15, column=1, value='Movements by Vehicle')
+        apply_header_style(analytics_worksheet.cell(
+            row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + len(
+                movements_by_driver) + 15, column=1))
+        analytics_worksheet.cell(
+            row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + len(
+                movements_by_driver) + 15, column=2, value='Vehicle')
+        apply_header_style(analytics_worksheet.cell(
+            row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + len(
+                movements_by_driver) + 15, column=2))
+        analytics_worksheet.cell(
+            row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + len(
+                movements_by_driver) + 15, column=3, value='Count')
+        apply_header_style(analytics_worksheet.cell(
+            row=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + len(
+                movements_by_driver) + 15, column=3))
 
-        movements_by_vehicle = queryset.values('vehicle__brand', 'vehicle__model', 'vehicle__number').annotate(count=Count('id')).order_by('-count')
+        movements_by_vehicle = queryset.values('vehicle__brand', 'vehicle__model', 'vehicle__number').annotate(
+            count=Count('id')).order_by('-count')
 
-        for row_num, item in enumerate(movements_by_vehicle, start=len(movements_by_month) + len(movements_by_brigade_from) + len(movements_by_brigade_to) + len(movements_by_driver) + 16):
-            analytics_worksheet.cell(row=row_num, column=2, value=f"{item['vehicle__brand']} {item['vehicle__model']} {item['vehicle__number']}")
+        for row_num, item in enumerate(movements_by_vehicle,
+                                       start=len(movements_by_month) + len(movements_by_brigade_from) + len(
+                                               movements_by_brigade_to) + len(movements_by_driver) + 16):
+            analytics_worksheet.cell(row=row_num, column=2,
+                                     value=f"{item['vehicle__brand']} {item['vehicle__model']} {item['vehicle__number']}")
             analytics_worksheet.cell(row=row_num, column=3, value=item['count'])
-            for col in range(2,4):
+            for col in range(2, 4):
                 apply_cell_style(analytics_worksheet.cell(row=row_num, column=col))
 
         workbook.save(output)
@@ -499,5 +538,6 @@ class VehicleMovementExcelExportView(LoginRequiredMixin, View):
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
         return response
+
 
 from openpyxl.utils import get_column_letter

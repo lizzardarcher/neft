@@ -14,10 +14,11 @@ from django.views import View
 
 from dashboard.forms import VehicleForm, VehicleMovementForm, OtherEquipmentForm, OtherCategoryForm, \
     VehicleMovementEquipmentFormSet, VehicleMovementFilterForm
+from dashboard.mixins import StaffOnlyMixin
 from dashboard.models import Transfer, OtherEquipment, OtherCategory, Vehicle, VehicleMovement
 
 
-class TransferHistoryView(LoginRequiredMixin, ListView):
+class TransferHistoryView(LoginRequiredMixin, StaffOnlyMixin, ListView):
     """Отображение истории перемещений оборудования."""
     model = Transfer
     template_name = 'dashboard/transfers/transfer_history.html'
@@ -25,7 +26,7 @@ class TransferHistoryView(LoginRequiredMixin, ListView):
     paginate_by = 50
 
 
-class TransferIndexView(LoginRequiredMixin, TemplateView):
+class TransferIndexView(LoginRequiredMixin, StaffOnlyMixin, TemplateView):
     template_name = 'dashboard/transfers/transfers_index.html'
 
     def get_context_data(self, **kwargs):
@@ -39,13 +40,13 @@ class TransferIndexView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class VehicleListView(LoginRequiredMixin, ListView):
+class VehicleListView(LoginRequiredMixin, StaffOnlyMixin, ListView):
     model = Vehicle
     template_name = 'dashboard/transfers/vehicle_list.html'
     context_object_name = 'vehicles'
 
 
-class VehicleDetailView(LoginRequiredMixin, View):
+class VehicleDetailView(LoginRequiredMixin, StaffOnlyMixin, View):
     template_name = 'dashboard/transfers/vehicle_detail.html'
 
     RUSSIAN_MONTHS = {
@@ -89,7 +90,7 @@ class VehicleDetailView(LoginRequiredMixin, View):
         return render(request, self.template_name, context)
 
 
-class VehicleCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+class VehicleCreateView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, CreateView):
     model = Vehicle
     form_class = VehicleForm
     template_name = 'dashboard/transfers/vehicle_form.html'
@@ -98,7 +99,7 @@ class VehicleCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         return reverse('vehicle_list')
 
 
-class VehicleUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class VehicleUpdateView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, UpdateView):
     model = Vehicle
     form_class = VehicleForm
     template_name = 'dashboard/transfers/vehicle_form.html'
@@ -114,7 +115,7 @@ def vehicle_delete(request, vehicle_id):
     return redirect('vehicle_list')
 
 
-class VehicleMovementListView(LoginRequiredMixin, ListView):
+class VehicleMovementListView(LoginRequiredMixin, StaffOnlyMixin, ListView):
     model = VehicleMovement
     template_name = 'dashboard/transfers/vehicle_movement_list.html'
 
@@ -155,7 +156,7 @@ class VehicleMovementListView(LoginRequiredMixin, ListView):
         return context
 
 
-class VehicleMovementTotalListView(LoginRequiredMixin, ListView):
+class VehicleMovementTotalListView(LoginRequiredMixin, StaffOnlyMixin, ListView):
     model = VehicleMovement
     template_name = 'dashboard/transfers/vehicle_movement_list_total.html'
     context_object_name = 'vehicle_movements'
@@ -199,11 +200,17 @@ class VehicleMovementTotalListView(LoginRequiredMixin, ListView):
         context['filter_form'] = VehicleMovementFilterForm(self.request.GET)
         queryset = self.get_queryset()
         context['total_movements'] = queryset.count()
-        context['movements_by_month'] = queryset.annotate(month_year=TruncMonth('date')).values('month_year').annotate(count=Count('id')).order_by('month_year')
-        context['movements_by_brigade_from'] = queryset.values('brigade_from__name').annotate(count=Count('id')).order_by('-count')
-        context['movements_by_brigade_to'] = queryset.values('brigade_to__name').annotate(count=Count('id')).order_by('-count')
-        context['movements_by_driver'] = queryset.values('driver__last_name', 'driver__first_name').annotate( count=Count('id')).order_by('-count')
-        context['movements_by_vehicle'] = queryset.values('vehicle__brand', 'vehicle__model', 'vehicle__number').annotate(count=Count('id')).order_by('-count')
+        context['movements_by_month'] = queryset.annotate(month_year=TruncMonth('date')).values('month_year').annotate(
+            count=Count('id')).order_by('month_year')
+        context['movements_by_brigade_from'] = queryset.values('brigade_from__name').annotate(
+            count=Count('id')).order_by('-count')
+        context['movements_by_brigade_to'] = queryset.values('brigade_to__name').annotate(count=Count('id')).order_by(
+            '-count')
+        context['movements_by_driver'] = queryset.values('driver__last_name', 'driver__first_name').annotate(
+            count=Count('id')).order_by('-count')
+        context['movements_by_vehicle'] = queryset.values('vehicle__brand', 'vehicle__model',
+                                                          'vehicle__number').annotate(count=Count('id')).order_by(
+            '-count')
 
         equipment_summary = {}
         for movement in queryset:
@@ -217,12 +224,12 @@ class VehicleMovementTotalListView(LoginRequiredMixin, ListView):
         return context
 
 
-class VehicleMovementDetailView(LoginRequiredMixin, DetailView):
+class VehicleMovementDetailView(LoginRequiredMixin, StaffOnlyMixin, DetailView):
     model = VehicleMovement
     template_name = 'dashboard/transfers/vehicle_movement_detail.html'
 
 
-class VehicleMovementCreateView(CreateView):
+class VehicleMovementCreateView(LoginRequiredMixin, StaffOnlyMixin, CreateView):
     model = VehicleMovement
     form_class = VehicleMovementForm
     template_name = 'dashboard/transfers/vehicle_movement_form.html'
@@ -259,7 +266,7 @@ class VehicleMovementCreateView(CreateView):
         return self.render_to_response(self.get_context_data(form=form))
 
 
-class VehicleMovementUpdateView(UpdateView):
+class VehicleMovementUpdateView(LoginRequiredMixin, StaffOnlyMixin, UpdateView):
     model = VehicleMovement
     form_class = VehicleMovementForm
     template_name = 'dashboard/transfers/vehicle_movement_form.html'
@@ -313,13 +320,13 @@ def vehicle_movement_delete(request, pk):
     return redirect(url)
 
 
-class OtherCategoryListView(LoginRequiredMixin, ListView):
+class OtherCategoryListView(LoginRequiredMixin, StaffOnlyMixin, ListView):
     model = OtherCategory
     template_name = 'dashboard/transfers/other_category_list.html'
     context_object_name = 'other_categories'
 
 
-class OtherCategoryCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+class OtherCategoryCreateView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, CreateView):
     model = OtherCategory
     form_class = OtherCategoryForm
     template_name = 'dashboard/transfers/other_category_form.html'
@@ -328,7 +335,7 @@ class OtherCategoryCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateVie
         return reverse('other_category_list')
 
 
-class OtherCategoryUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class OtherCategoryUpdateView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, UpdateView):
     model = OtherCategory
     form_class = OtherCategoryForm
     template_name = 'dashboard/transfers/other_category_form.html'
@@ -346,18 +353,18 @@ def other_category_delete(request, pk):
     return redirect('other_category_list')
 
 
-class OtherCategoryDetailView(LoginRequiredMixin, DetailView):
+class OtherCategoryDetailView(LoginRequiredMixin, StaffOnlyMixin, DetailView):
     model = OtherCategory
     template_name = 'dashboard/transfers/other_category_detail.html'
 
 
-class OtherEquipmentListView(LoginRequiredMixin, ListView):
+class OtherEquipmentListView(LoginRequiredMixin, StaffOnlyMixin, ListView):
     model = OtherEquipment
     template_name = 'dashboard/transfers/other_equipment_list.html'
     context_object_name = 'other_equipments'
 
 
-class OtherEquipmentCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+class OtherEquipmentCreateView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, CreateView):
     model = OtherEquipment
     form_class = OtherEquipmentForm
     template_name = 'dashboard/transfers/other_equipment_form.html'
@@ -369,7 +376,7 @@ class OtherEquipmentCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateVi
         return f'Оборудование {self.object} успешно добавлено'
 
 
-class OtherEquipmentUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class OtherEquipmentUpdateView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, UpdateView):
     model = OtherEquipment
     form_class = OtherEquipmentForm
     template_name = 'dashboard/transfers/other_equipment_form.html'
@@ -387,6 +394,6 @@ def other_equipment_delete(request, pk):
     return redirect('other_equipment_list')
 
 
-class OtherEquipmentDetailView(LoginRequiredMixin, DetailView):
+class OtherEquipmentDetailView(LoginRequiredMixin, StaffOnlyMixin, DetailView):
     model = OtherEquipment
     template_name = 'dashboard/transfers/other_equipment_detail.html'

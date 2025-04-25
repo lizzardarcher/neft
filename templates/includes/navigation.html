@@ -10,8 +10,9 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse justify-content-between" id="navbarText">
-            <ul class="navbar-nav mb-2 mb-lg-0 mx-auto">  <!-- mx-auto для центрирования -->
-                <li class="nav-item mx-3">  <!-- mx-3 добавляет горизонтальный отступ -->
+            {% if request.user.is_staff %}
+            <ul class="navbar-nav mb-2 mb-lg-0 mx-auto">
+                <li class="nav-item mx-3">
                     <a class="nav-link fw-bold" href="{% url 'dashboard' %}">Управление</a>
                 </li>
                 <li class="nav-item mx-3">
@@ -25,9 +26,9 @@
                         {{ group.name }}
                         </span>
                         {% endfor %}</a>
-
                 </li>
             </ul>
+            {% endif %}
             <ul class="navbar-nav mb-2 mb-lg-0"> <!-- для выравнивания "Выход" вправо -->
                 <li class="nav-item">
                     <form action="{% url 'logout' %}" method="post">

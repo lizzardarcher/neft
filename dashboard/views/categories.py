@@ -2,15 +2,17 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Count
+from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse
 
 from dashboard.forms import CategoryCreateViewForm
+from dashboard.mixins import StaffOnlyMixin
 from dashboard.models import Category, Equipment
 
 
-class CategoryListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
+class CategoryListView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, ListView):
     model = Category
     context_object_name = 'categories'
     template_name = 'dashboard/categories/category_list.html'
@@ -34,7 +36,8 @@ class CategoryListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
         context["categories"] = categories
         return context
 
-class CategoryCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+
+class CategoryCreateView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, CreateView):
     model = Category
     form_class = CategoryCreateViewForm
     template_name = 'dashboard/categories/category_form.html'
@@ -46,7 +49,8 @@ class CategoryCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     def get_success_url(self):
         return reverse('category_list')
 
-class CategoryUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+
+class CategoryUpdateView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, UpdateView):
     model = Category
     form_class = CategoryCreateViewForm
     template_name = 'dashboard/categories/category_form.html'
@@ -59,11 +63,14 @@ class CategoryUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return reverse('category_list')
 
 
-class CategoryDeleteView(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
+class CategoryDeleteView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, DeleteView):
     ...
 
 
 def category_delete(request, category_id):
+    if not request.user.is_staff:
+        return redirect('worker_document_list')
+
     category = get_object_or_404(Category, id=category_id)
     category.delete()
     messages.success(request, 'Оборудование успешно удалено!')

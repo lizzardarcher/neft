@@ -1,0 +1,30 @@
+{% extends 'layouts/base.html' %}
+{% load custom_filters %}
+
+{% block title %}
+    Документы
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="card">
+            <div class="card-body p-3 m-2">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% if form.errors  %}
+                    	{% for field in form %}
+                            {% for error in field.errors %}
+                                <div class="alert alert-danger mt-2">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        {% endfor %}
+                    {% endif %}
+                    {{ form.as_p }}
+                    <button class="btn btn-primary" type="submit">Сохранить</button>
+                </form>
+            </div>
+        </div>
+        <a href="{% url 'worker_document_list' %}" class="btn btn-secondary mt-3">Назад</a>
+    </div>
+{% endblock %}

@@ -41,6 +41,19 @@ class Document(models.Model):
         return f"{self.file.url} ({self.upload_date.strftime('%Y-%m-%d %H:%M')})"
 
 
+class WorkerDocument(models.Model):
+    title = models.CharField(max_length=200, verbose_name="Название документа", null=False, blank=False)
+    file = models.FileField(upload_to='documents/', verbose_name="Файл", null=False, blank=False )
+    uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата загрузки")
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = "Документ работников"
+        verbose_name_plural = "Документы работников"
+
+
 class Manufacturer(models.Model):
     name = models.CharField(max_length=200, unique=True, null=False, blank=False, verbose_name='Название производителя')
 
