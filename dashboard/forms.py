@@ -480,7 +480,7 @@ class BrigadeActivityForm(forms.ModelForm):
         widgets = {
             'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'work_type': forms.Select(attrs={'class': 'form-control', 'required': 'required'}),
-            'work_object': forms.Select(attrs={'class': 'form-control', 'required': 'required'}),
+            'work_object': forms.Select(attrs={'class': 'form-control'}),
         }
 
     def __init__(self, *args, **kwargs):

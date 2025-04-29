@@ -8,7 +8,9 @@
 {% block content %}
     <div class="container">
         <h1>Список документов</h1>
-        <a href="{% url 'worker_document_create' %}" class="btn btn-success float-right mr-2">Добавить документ</a>
+        {% if request.user.username != '1' %}
+            <a href="{% url 'worker_document_create' %}" class="btn btn-success float-right mr-2">Добавить документ</a>
+        {% endif %}
         <table id="docs_table" class="table">
             <thead>
             <tr>
@@ -29,11 +31,15 @@
                     </td>
                     <td>{{ document.uploaded_at }}</td>
                     <td>
-                        <a class="btn btn-sm btn-outline-danger"
-                                href="{% url 'worker_document_delete' document.id %}"
-                           onclick="return confirm('Вы уверены, что хотите удалить документ? {{ document.title }}')">
-                            <i class="fa fa-trash-can"></i>
-                        </a>
+                        {% if request.user.username != '1' %}
+                            <a class="btn btn-sm btn-outline-danger"
+                               href="{% url 'worker_document_delete' document.id %}"
+                               onclick="return confirm('Вы уверены, что хотите удалить документ? {{ document.title }}')">
+                                <i class="fa fa-trash-can"></i>
+                            </a>
+                        {% else %}
+                            <a class="btn btn-sm btn-outline-secondary" disabled><i class="fa fa-trash-can"></i></a>
+                        {% endif %}
                     </td>
                 </tr>
             {% empty %}

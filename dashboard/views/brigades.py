@@ -468,8 +468,7 @@ def brigade_activity_create(request, brigade_id):
                 brigade_activity.work_type = work_type
 
                 # Добавляем работников бригады к активности
-                for worker in UserProfile.objects.filter(
-                        brigade=brigade):  # Получаем всех пользователей, связанных с бригадой
+                for worker in UserProfile.objects.filter(brigade=brigade):
                     brigade_activity.workers.add(worker.user)
 
                 brigade_activity.save()
