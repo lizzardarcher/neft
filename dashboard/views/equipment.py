@@ -1,4 +1,5 @@
 from datetime import date
+from unicodedata import category
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -149,7 +150,8 @@ class EquipmentUpdateView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixi
 
     def get_success_url(self):
         search_request = self.request.GET.get("search")
-        return reverse('equipment_list') + f'?search={search_request}'
+        category = self.request.GET.get("category")
+        return reverse('equipment_list') + f'?search={search_request}&category={category}'
 
     def form_valid(self, form):
         manufacturer_id = self.request.POST.get('id_manufacturer')

@@ -5,6 +5,11 @@
 {% block content %}
     <div class="bg-light p-5 mt-5 rounded">
         <div class="p-2">
+            <div class="mb-3">
+                <h3>{{ month }}/{{ year }}</h3>
+                <a href="{{ prev_month_url }}" class="btn btn-secondary"> <<< </a>
+                <a href="{{ next_month_url }}" class="btn btn-secondary"> >>> </a>
+            </div>
             <table id="brigade_actions_table" class="table table-bordered">
                 <thead class="table-secondary">
                 <tr>

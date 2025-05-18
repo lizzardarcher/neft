@@ -25,6 +25,7 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
 X_FRAME_OPTIONS = 'DENY'
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -104,12 +105,6 @@ AUTH_PASSWORD_VALIDATORS = [
             'min_length': 3,
         }
     },
-    # {
-    #     'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    # },
-    # {
-    #     'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    # },
 ]
 
 LANGUAGE_CODE = 'ru-ru'
