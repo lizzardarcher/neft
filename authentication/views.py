@@ -1,9 +1,5 @@
 # -*- encoding: utf-8 -*-
-"""
-Copyright (c) 2019 - present AppSeed.us
-"""
 from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView, PasswordChangeView
-# Create your views here.
 from django.shortcuts import render, redirect
 from django.core.mail import send_mail
 from django.conf import settings

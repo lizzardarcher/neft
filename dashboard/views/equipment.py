@@ -1,5 +1,4 @@
 from datetime import date
-from unicodedata import category
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -7,8 +6,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
-from django.views.generic.detail import SingleObjectMixin
+from django.views.generic import ListView, CreateView, UpdateView, DetailView
 
 from dashboard.forms import EquipmentCreateByBrigadeForm, EquipmentAddDocumentsForm, DocumentForm, EquipmentCreateForm
 from dashboard.mixins import StaffOnlyMixin

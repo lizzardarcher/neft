@@ -190,6 +190,7 @@ class WorkObject(models.Model):
                             verbose_name='№ Скважины')
     name = models.CharField(max_length=200, unique=False, null=False, blank=False, verbose_name='Месторождение')
     short_name = models.CharField(max_length=200, unique=False, null=False, blank=False, verbose_name='№ куста')
+    is_active = models.BooleanField(default=True, null=True, blank=True, verbose_name='Активно')
 
     def __str__(self):
         return f'{self.short_name} / {self.hole}'

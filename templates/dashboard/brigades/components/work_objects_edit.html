@@ -12,6 +12,7 @@
                         <th>№ Скважины</th>
                         <th>№ Куста</th>
                         <th>Месторождение</th>
+                        <th>Активно</th>
                         <th>Действия</th>
                     </tr>
                     </thead>
@@ -21,6 +22,7 @@
                             <td>{{ obj.hole }}</td>
                             <td>{{ obj.short_name }}</td>
                             <td>{{ obj.name }}</td>
+                            <td>{% if obj.is_active %}✅{% else %}❌{% endif %}</td>
                             <td>
                                 <a class="text-warning" href="{% url 'work_object_update' obj.id %}">
                                     <i class="fa fa-edit"></i>

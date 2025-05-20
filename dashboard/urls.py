@@ -1,4 +1,3 @@
-# dashboard/urls.py
 from django.urls import path
 from .views import index, reports, users, brigades, transfers, categories, equipment
 
@@ -23,7 +22,6 @@ urlpatterns = [
     path('brigades/<int:work_object_id>/work_object_delete', brigades.work_object_delete, name='work_object_delete'),
     path('brigades/<int:pk>/work_object_detail', brigades.WorkObjectDetailView.as_view(), name='work_object_detail'),
     path('brigades/work_object_list', brigades.WorkObjectListView.as_view(), name='work_object_list'),
-
 
     path('categories/', categories.CategoryListView.as_view(), name='category_list'),
     path('categories/create/', categories.CategoryCreateView.as_view(), name='category_create'),

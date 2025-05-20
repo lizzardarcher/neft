@@ -2,14 +2,13 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Count
-from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse
 
 from dashboard.forms import CategoryCreateViewForm
 from dashboard.mixins import StaffOnlyMixin
-from dashboard.models import Category, Equipment
+from dashboard.models import Category
 
 
 class CategoryListView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, ListView):

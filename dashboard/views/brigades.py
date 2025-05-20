@@ -5,23 +5,19 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.contrib.messages.views import SuccessMessageMixin
-from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
-from django.db import IntegrityError
-from django.db.models import Count, Q, When
+from django.db.models import Q, Count, When
+from django.db.models import Value, IntegerField, Case
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
-from django.views import View
+from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import ListView, CreateView, UpdateView, DetailView, TemplateView
+from django.urls import reverse
 from django.utils.timezone import datetime
 
 from dashboard.forms import BrigadeForm, BrigadeActivityForm, WorkObjectForm
 from dashboard.mixins import StaffOnlyMixin
 from dashboard.models import Brigade, Equipment, Manufacturer, WorkerActivity, BrigadeActivity, WorkObject, UserProfile
 from dashboard.utils.utils import get_days_in_month
-from django.db.models import Q, Count
-from django.db.models import Value, IntegerField, Case
 
 class BrigadeListView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, ListView):
     model = Brigade
@@ -114,26 +110,6 @@ class BrigadeStaffView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, 
         context['next_month'] = str(next_month)
         context['prev_year'] = prev_year
         context['next_year'] = next_year
-        # context['users'] = User.objects.annotate(
-        #     total_wa=Count('workeractivity',
-        #                    filter=Q(workeractivity__date__year=,
-        #                             workeractivity__date__month=context['month'],
-        #                             workeractivity__brigade=brigade, ))).filter(profile__brigade=brigade,
-        #                                                                         is_staff=True).order_by(
-        #     'username')
-        # employee_data = [
-        #     {
-        #         'user': user,
-        #         'total_wa': WorkerActivity.objects.filter(user=user, date__month=context['month'],
-        #                                                   date__year=context['year']).count(),
-        #         'wa': [
-        #             {'day': day, 'wa': WorkerActivity.objects.filter(user=user, date__month=context['month'],
-        #                                                              date__year=context['year'], date__day=day).last()}
-        #             for day in context['days']
-        #         ],
-        #     } for user in context['users']
-        # ]
-        # context['employee_data'] = employee_data
 
         # 1. Пользователи, которые сейчас числятся в бригаде
         current_brigade_users = User.objects.filter(
@@ -404,44 +380,6 @@ def brigade_delete(request, brigade_id):
     return redirect('brigade_list')
 
 
-# def brigade_activity_create(request, brigade_id):
-#     form = BrigadeActivityForm(request.POST)
-#     brigade = get_object_or_404(Brigade, id=brigade_id)
-#     date = request.POST.get('date')
-#     work_type = request.POST.get('work_type')
-#     try:
-#         work_object = get_object_or_404(WorkObject, id=request.POST.get('work_object'))
-#     except:
-#         work_object = None
-#     if brigade and work_type and date:
-#         brigade_activity = BrigadeActivity.objects.filter(
-#             brigade=brigade,
-#             date=date, ).first()
-#         if brigade_activity:
-#             brigade_activity.brigade = brigade
-#             brigade_activity.date = date
-#             brigade_activity.work_object = work_object
-#             brigade_activity.work_type = work_type
-#             brigade_activity.save()
-#             messages.success(request, f'Активность успешно обновлена!')
-#         else:
-#             BrigadeActivity.objects.create(
-#                 brigade=brigade,
-#                 date=date,
-#                 work_object=work_object,
-#                 work_type=work_type,
-#             )
-#             messages.success(request, f'Активность успешно создана!')
-#         return redirect(request.META.get('HTTP_REFERER'))
-#     else:
-#         if form.is_valid():
-#             activity = form.save(commit=False)
-#             activity.brigade = brigade
-#             activity.save()
-#             messages.success(request, 'Активность успешно создана!')
-#         else:
-#             messages.error(request, 'Произошла ошибка при создании активности!')
-#         return redirect(request.META.get('HTTP_REFERER'))
 def brigade_activity_create(request, brigade_id):
     form = BrigadeActivityForm(request.POST)
     brigade = get_object_or_404(Brigade, id=brigade_id)

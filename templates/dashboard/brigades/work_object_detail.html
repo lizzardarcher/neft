@@ -10,6 +10,7 @@
                     <h6 class="card-title m-2">Скважина: {{ work_object.hole }}</h6>
                     <h6 class="card-title m-2">Куст: {{ work_object.short_name }}</h6>
                     <h6 class="card-title m-2">Месторождение: {{ work_object.name }}</h6>
+                    <h6 class="card-title m-2">Активно: {% if work_object.is_active %}✅{% else %}❌{% endif %}</h6>
                 </div>
                 <div class="card-body p-3 m-2">
                     <table class="table table-bordered">

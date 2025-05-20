@@ -3,8 +3,7 @@ import io
 from datetime import datetime
 from re import search
 
-import openpyxl
-from openpyxl.styles import Font, PatternFill, Border, Side
+import csv
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.contrib.messages.views import SuccessMessageMixin
@@ -13,7 +12,8 @@ from django.db.models.functions import TruncMonth
 from django.views.generic import TemplateView
 from django.http import HttpResponse
 from django.views import View
-import csv
+import openpyxl
+from openpyxl.styles import Font, PatternFill, Border, Side
 from openpyxl import Workbook
 
 from dashboard.forms import VehicleMovementFilterForm

@@ -1,4 +1,3 @@
-from calendar import month
 from datetime import datetime
 
 from django.contrib import messages
@@ -7,13 +6,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User, Group
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.messages.views import SuccessMessageMixin
-from django.db.models import Count, Q, Exists, OuterRef
+from django.db.models import Exists, OuterRef
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy, reverse
-from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView, TemplateView
-from django.db.models import Case, When, Value, IntegerField
 
 from dashboard.forms import UserCreateForm, UserUpdateForm, GroupForm, UserUpdateByBrigadeForm, WorkerActivityForm, \
     UserUpdateStaffForm, WorkerDocumentForm

@@ -1,10 +1,7 @@
 from django import forms
-from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group, Permission
-from django.core.exceptions import ValidationError
 from django.forms import inlineformset_factory
-from django_select2 import forms as s2forms
 
 from dashboard.models import Brigade, Equipment, Document, Category, UserProfile, Manufacturer, WorkerActivity, \
     BrigadeActivity, WorkObject, Vehicle, VehicleMovement, OtherEquipment, OtherCategory, VehicleMovementEquipment, \
@@ -485,7 +482,7 @@ class BrigadeActivityForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['work_object'].queryset = WorkObject.objects.order_by('short_name')
+        self.fields['work_object'].queryset = WorkObject.objects.filter(is_active=True).order_by('short_name')
 
     def save(self, commit=True):
         brigade_activity = super(BrigadeActivityForm, self).save(commit=False)
@@ -496,17 +493,13 @@ class BrigadeActivityForm(forms.ModelForm):
 class WorkObjectForm(forms.ModelForm):
     class Meta:
         model = WorkObject
-        fields = ('hole', 'short_name', 'name',)
+        fields = ('hole', 'short_name', 'name', 'is_active')
         widgets = {
             'hole': forms.TextInput(attrs={'class': 'form-control'}),
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'short_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
-
-    # def __init__(self, *args, **kwargs):
-    #     super().__init__(*args, **kwargs)
-    #     existing_locations = WorkObject.objects.values_list('name', 'name').distinct()  # Получаем кортежи (value, label)
-    #     self.fields['name'].widget = forms.Select(choices=existing_locations)
 
 
 class VehicleForm(forms.ModelForm):

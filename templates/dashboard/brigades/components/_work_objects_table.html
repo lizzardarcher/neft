@@ -4,6 +4,7 @@
         <th>№ Скважины</th>
         <th>№ Куста</th>
         <th>Месторождение</th>
+        <th>Активно</th>
         <th>Действия</th>
     </tr>
     </thead>
@@ -13,6 +14,7 @@
             <td><a class="link-dark link-underline-light" href="{% url 'work_object_detail' obj.id %}">{{ obj.hole }}</a></td>
             <td><a class="link-dark link-underline-light" href="{% url 'work_object_detail' obj.id %}">{{ obj.short_name }}</a></td>
             <td><a class="link-dark link-underline-light" href="{% url 'work_object_detail' obj.id %}">{{ obj.name }}</a></td>
+            <td><a class="link-dark link-underline-light" href="{% url 'work_object_detail' obj.id %}">{% if obj.is_active %}✅{% else %}❌{% endif %}</a></td>
             <td>
                 <a class="text-warning" href="{% url 'work_object_update' obj.id %}">
                     <i class="fa fa-edit"></i>
