@@ -11,7 +11,7 @@ from django.db.models import Value, IntegerField, Case
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import ListView, CreateView, UpdateView, DetailView, TemplateView
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.utils.timezone import datetime
 
 from dashboard.forms import BrigadeForm, BrigadeActivityForm, WorkObjectForm
@@ -455,24 +455,7 @@ def work_object_create(request):
             return redirect(request.META.get('HTTP_REFERER'))
 
 
-def work_object_delete(request, work_object_id):
-    work_object = get_object_or_404(WorkObject, id=work_object_id)
-    work_object.delete()
-    messages.success(request, 'Объект успешно удален!')
-    return redirect(request.META.get('HTTP_REFERER'))
 
-
-class WorkObjectUpdateView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, UpdateView):
-    model = WorkObject
-    context_object_name = 'work_object'
-    template_name = 'dashboard/brigades/work_object_edit.html'
-    form_class = WorkObjectForm
-
-    def get_success_url(self):
-        return f'/dashboard/brigade/brigade_table_total/?month={datetime.now().month}&year={datetime.now().year}'
-
-    def get_success_message(self, cleaned_data):
-        return f"Объект {cleaned_data['name']} Успешно обновлен!"
 
 
 def get_locations(request):
@@ -499,3 +482,32 @@ class WorkObjectDetailView(LoginRequiredMixin, StaffOnlyMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context['activities'] = BrigadeActivity.objects.filter(work_object=self.object).order_by('date')
         return context
+
+
+class WorkObjectCreateView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, CreateView):
+    model = WorkObject
+    template_name = 'dashboard/brigades/work_object_edit.html'
+    form_class = WorkObjectForm
+    success_message = 'Объект успешно создан!'
+    success_url = reverse_lazy('work_object_list')
+
+class WorkObjectUpdateView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, UpdateView):
+    model = WorkObject
+    context_object_name = 'work_object'
+    template_name = 'dashboard/brigades/work_object_edit.html'
+    form_class = WorkObjectForm
+    def get_success_url(self):
+
+        if 'brigade_table_total' in self.request.GET.get('from'):
+            return f'/dashboard/brigade/brigade_table_total/?month={datetime.now().month}&year={datetime.now().year}'
+        else:
+            return reverse('work_object_list')
+
+    def get_success_message(self, cleaned_data):
+        return f"Объект {cleaned_data['name']} Успешно обновлен!"
+
+def work_object_delete(request, work_object_id):
+    work_object = get_object_or_404(WorkObject, id=work_object_id)
+    work_object.delete()
+    messages.success(request, 'Объект успешно удален!')
+    return redirect(request.META.get('HTTP_REFERER'))

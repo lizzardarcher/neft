@@ -19,7 +19,6 @@
                             <th>Дата</th>
                             <th>Тип работы</th>
                             <th>Бригада</th>
-                            <th>Работники</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -28,11 +27,6 @@
                                 <td>{{ activity.date|date:'d.m.Y' }}</td>
                                 <td>{{ activity.get_work_type_display }}</td>
                                 <td>{{ activity.brigade }}</td>
-                                <td>
-                                    {% for worker in activity.workers.all %}
-                                        {{ worker.last_name }} {{ worker.first_name }} {% if not forloop.last %}, {% endif %}
-                                    {% endfor %}
-                                </td>
                             </tr>
                         {% endfor %}
                         </tbody>

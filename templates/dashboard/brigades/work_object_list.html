@@ -6,6 +6,7 @@
     <div class="bg-light p-4 m-4 rounded">
         <div class="container">
             <h3>Объекты</h3>
+            <a href="{% url 'work_object_create_main' %}" class="btn btn-outline-success mb-3"><i  class="fa fa-plus-square"></i> Добавить объект</a>
             {% include 'dashboard/brigades/components/_work_objects_table.html' %}
             <a class="btn btn-secondary" href="{% url 'dashboard' %}">На главную</a>
         </div>

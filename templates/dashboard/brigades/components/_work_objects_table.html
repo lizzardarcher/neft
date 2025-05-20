@@ -16,7 +16,7 @@
             <td><a class="link-dark link-underline-light" href="{% url 'work_object_detail' obj.id %}">{{ obj.name }}</a></td>
             <td><a class="link-dark link-underline-light" href="{% url 'work_object_detail' obj.id %}">{% if obj.is_active %}✅{% else %}❌{% endif %}</a></td>
             <td>
-                <a class="text-warning" href="{% url 'work_object_update' obj.id %}">
+                <a class="text-warning" href="{% url 'work_object_update' obj.id %}?from={{ request.path }}">
                     <i class="fa fa-edit"></i>
                 </a>
                 <a onclick="return confirm('Вы уверены, что хотите удалить объект {{ obj.name }} ({{ obj.short_name }})?');"
