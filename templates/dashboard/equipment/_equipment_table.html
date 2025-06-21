@@ -65,7 +65,7 @@
             <td>{{ equipment.category }}</td>
             <td>{{ equipment.name }}</td>
             <td><a class="link-success link-offset-2"
-                   href="{% url 'equipment_detail' equipment.id %}?search={{ request.GET.search }}&page={{ request.GET.page }}"><b>{{ equipment.serial }}</b></a></td>
+                   href="{% url 'equipment_detail' equipment.id %}?search={{ request.GET.search }}&page={{ request.GET.page }}&category={{ request.GET.category }}"><b>{{ equipment.serial }}</b></a></td>
 
             {% if not 'brigade' in request.path %}
                 <td>{% if equipment.brigade %}{{ equipment.brigade }}{% else %}---{% endif %}</td>{% endif %}

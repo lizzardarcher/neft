@@ -78,17 +78,17 @@
                     {% if user|has_perm_in_group:"Dashboard.change_equipment" %}
                         {% if 'brigade' in request.META.HTTP_REFERER %}
                             <a class="btn btn-outline-success"
-                               href="{% url 'equipment_update_by_brigade' equipment.id equipment.brigade.id %}?search={{ request.GET.search }}">Изменить</a>
+                               href="{% url 'equipment_update_by_brigade' equipment.id equipment.brigade.id %}?search={{ request.GET.search }}&category={{ request.GET.category }}">Изменить</a>
                         {% else %}
                             <a class="btn btn-outline-success"
-                               href="{% url 'equipment_update' equipment.id %}?search={{ request.GET.search }}">Изменить</a>
+                               href="{% url 'equipment_update' equipment.id %}?search={{ request.GET.search }}&category={{ request.GET.category }}">Изменить</a>
                         {% endif %}
                     {% endif %}
                 </ul>
             </div>
         </div>
         <a href="
-            {% if 'brigade' not in request.META.HTTP_REFERER %}{% url 'equipment_list' %}{% else %}{% url 'brigade_detail' equipment.brigade.id %}{% endif %}?search={{ request.GET.search }}&page={{ request.GET.page }}" class="btn btn-outline-secondary mt-3">
+            {% if 'brigade' not in request.META.HTTP_REFERER %}{% url 'equipment_list' %}{% else %}{% url 'brigade_detail' equipment.brigade.id %}{% endif %}?search={{ request.GET.search }}&page={{ request.GET.page }}&category={{ request.GET.category }}" class="btn btn-outline-secondary mt-3">
             <i class="bi bi-arrow-left"></i> Назад к списку оборудования
         </a>
     </div>

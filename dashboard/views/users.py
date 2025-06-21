@@ -1,12 +1,14 @@
+import time
 from datetime import datetime
-
+from datetime import date as dt
+import pandas as pd
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User, Group
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.messages.views import SuccessMessageMixin
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, OuterRef, Prefetch, Count
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy, reverse
 from django.views.decorators.csrf import csrf_exempt
@@ -187,11 +189,30 @@ def create_worker_activity(request):
         messages.error(request, 'Произошла ошибка при создании активности!')
         return redirect('brigade_staff', pk=request.GET.get('brigade_id'))
 
+def get_date_from_year_month_day(year, month, day):
+    try:
+        year = int(year)
+        month = int(month)
+        day = int(day)
 
+        return dt(year, month, day)
+    except ValueError as e:
+        ...
+
+
+def get_date_from_year_month(year, month):
+    try:
+        year = int(year)
+        month = int(month)
+
+        return dt(year, month, 1)
+    except ValueError as e:
+        ...
 class StaffTableTotalView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, TemplateView):
     template_name = 'dashboard/users/staff_table_total.html'
 
     def get_context_data(self, **kwargs):
+        start_time_1 = time.time()
         context = super().get_context_data(**kwargs)
         context['month'] = self.request.GET.get('month', datetime.now().strftime('%m'))
         context['year'] = self.request.GET.get('year', datetime.now().strftime('%Y'))
@@ -216,24 +237,69 @@ class StaffTableTotalView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixi
         context['prev_year'] = prev_year
         context['next_year'] = next_year
         context['users'] = User.objects.annotate(
-            has_wa=Exists(WorkerActivity.objects.filter(user=OuterRef('pk'), date__month=context['month'],
-                                                        date__year=context['year']))
-        ).filter(is_staff=True).order_by('-has_wa', 'first_name')
+            has_wa=Exists(WorkerActivity.objects.filter(user=OuterRef('pk'),
+                                                        date__month=context['month'],
+                                                        date__year=context['year']))).filter(is_staff=True).order_by('-has_wa', 'first_name')
 
-        employee_data = [
-            {
+        start_date = get_date_from_year_month(context['year'], context['month'])
+        end_date = get_date_from_year_month(context['next_year'], context['next_month'])
+
+        # 1. Получаем все WorkerActivity для всех пользователей и дат одним запросом.
+        all_worker_activities = WorkerActivity.objects.filter(
+            user__in=context['users'],
+            date__range=[start_date, end_date]
+        ).select_related('user')
+
+        print(f"Количество WorkerActivity: {all_worker_activities.count()}")  # Добавляем эту строку
+        if all_worker_activities.count() == 0:
+            print("Внимание: all_worker_activities пуст!")
+
+        # 2. Преобразуем QuerySet в DataFrame.
+        df = pd.DataFrame.from_records(all_worker_activities.values())
+
+        # 3. Преобразуем столбец 'date' в datetime, если это еще не сделано.
+        if not df.empty:
+            df['date'] = pd.to_datetime(df['date'])
+
+        print(f"Размер DataFrame: {len(df)}")  # Добавляем эту строку
+        print(f"Типы данных в DataFrame:\n{df.dtypes}")  # Добавляем эту строку
+
+        if df.empty:
+            print("Внимание: DataFrame пуст!")
+            return  # Преждевременный выход, чтобы избежать ошибок
+
+        employee_data = []
+        for user in context['users']:
+            user_id = user.id
+            user_activities = df[df['user_id'] == user_id]
+            print(f"{user_activities}")
+
+            print(f"Размер user_activities для пользователя {user.username}: {len(user_activities)}")
+
+            total_wa = len(user_activities)
+
+            wa = []
+            for day in context['days']:
+                day_date = get_date_from_year_month_day(context['year'], context['month'], day)
+                day_activity = user_activities[user_activities['date'] == pd.to_datetime(day_date)]
+
+                if not day_activity.empty:
+                    # Получаем последнюю запись за день.
+                    wa_record = day_activity.iloc[-1].to_dict()  # Получаем последнюю запись за день
+                    wa.append({'day': day, 'wa': wa_record})
+                else:
+                    wa.append({'day': day, 'wa': None})
+
+            employee_data.append({
                 'user': user,
-                'total_wa': WorkerActivity.objects.filter(user=user, date__month=context['month'],
-                                                          date__year=context['year']).count(),
-                'wa': [
-                    {'day': day, 'wa': WorkerActivity.objects.filter(user=user, date__month=context['month'],
-                                                                     date__year=context['year'], date__day=day).last()}
-                    for day in context['days']
-                ],
-            } for user in context['users']
-        ]
+                'total_wa': total_wa,
+                'wa': wa
+            })
+
         context['employee_data'] = employee_data
         context['form'] = WorkerActivityForm
+        end_time_1 = time.time()
+        context['load_time_1'] = float(end_time_1 - start_time_1)
         return context
 
 

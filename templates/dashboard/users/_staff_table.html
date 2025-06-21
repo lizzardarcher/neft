@@ -1,7 +1,7 @@
 {% load custom_filters %}
 {% block content %}
     <div class="p-5 bg-light-subtle">
-
+        <h6>Общее время выгрузки из БД : [{{ load_time_1 }} сек]</h6>
         <h2 class="text-center mt-5">
             <a href="?month={{ prev_month }}&year={{ prev_year }}"
                class="btn btn-outline-secondary"><<< {{ prev_month }}-{{ prev_year }}</a>
@@ -9,81 +9,6 @@
             <a href="?month={{ next_month }}&year={{ next_year }}"
                class="btn btn-outline-secondary">{{ next_month }}-{{ next_year }} >>></a>
         </h2>
-        {#        <table id="staff_actions_table" class="table table-bordered table-striped table-responsive">#}
-        {##}
-        {#            <thead>#}
-        {#            <tr>#}
-        {#                <th class="bg-dark-subtle">ФИО</th>#}
-        {#                <th class="bg-dark-subtle">Должность</th>#}
-        {#                <th class="bg-dark-subtle">Бригада</th>#}
-        {#                {% for day in days %}#}
-        {#                    <th class="bg-dark-subtle">{{ day }}</th>#}
-        {#                {% endfor %}#}
-        {#                <th class="bg-dark-subtle">Всего дней</th>#}
-        {#            </tr>#}
-        {#            </thead>#}
-        {#            <tbody>#}
-        {#            {% for data in employee_data %}#}
-        {#                <tr id="{{ data.user.id }}">#}
-        {#                    <td class="bg-light-subtle">{{ data.user.last_name }} {{ data.user.first_name }}</td>#}
-        {#                    <td class="bg-light-subtle">{{ data.user.profile.position }}</td>#}
-        {#                    <td class="bg-light-subtle">{% if data.user.profile.brigade %}<small><a href="{% url 'brigade_index' data.user.profile.brigade.id %}">{{ data.user.profile.brigade.name }}</a></small>{% endif %}</td>#}
-        {#                    {% for wa in data.wa %}#}
-        {#                        {% if wa.wa %}#}
-        {#                            {% if wa.wa.work_type == 'Y' %}#}
-        {#                                <td class="bg-warning">Я</td>#}
-        {#                            {% elif wa.wa.work_type == 'G' %}#}
-        {#                                <td class="bg-warning-subtle">Г</td>#}
-        {#                            {% elif wa.wa.work_type == 'O' %}#}
-        {#                                <td class="bg-info-subtle">О</td>#}
-        {#                            {% elif wa.wa.work_type == 'S' %}#}
-        {#                                <td class="bg-success-subtle">С</td>#}
-        {#                            {% elif wa.wa.work_type == 'T' %}#}
-        {#                                <td style="background-color: #d1dc99">Т</td>#}
-        {#                            {% elif wa.wa.work_type == 'D' %}#}
-        {#                                <td style="background-color: #bbcced">Д</td>#}
-        {#                            {% elif wa.wa.work_type == 'N' %}#}
-        {#                                <td style="background-color: #c99ee6">Н</td>#}
-        {#                            {% else %}#}
-        {#                                <td>-</td>#}
-        {#                            {% endif %}#}
-        {#                        {% else %}#}
-        {#                            <td class="bg-light-subtle">-</td>#}
-        {#                        {% endif %}#}
-        {#                    {% endfor %}#}
-        {#                    <td>#}
-        {#                        {{ data.total_wa }}#}
-        {#                        <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal"#}
-        {#                                data-target="#wa-modal{{ data.user }}">#}
-        {#                            <i class="fa fa-add"></i>#}
-        {#                        </button>#}
-        {#                        <div class="modal fade" id="wa-modal{{ data.user }}" tabindex="-1" role="dialog"#}
-        {#                             aria-labelledby="wa-modal{{ data.user }}-label" aria-hidden="true">#}
-        {#                            <div class="modal-dialog" role="document">#}
-        {#                                <div class="modal-content">#}
-        {#                                    <div class="modal-header">#}
-        {#                                        <h5 class="modal-title" id="wa-modal{{ data.user }}-label">Добавить тип работы#}
-        {#                                            для пользователя: <br> {{ data.user.get_full_name }} </h5>#}
-        {#                                    </div>#}
-        {#                                    <div class="modal-body">#}
-        {#                                        <form method="post"#}
-        {#                                              action="/dashboard/user/user_worker_activity_create/?&user_id={{ data.user.id }}&month={{ month }}&year={{ year }}/">#}
-        {#                                            {% csrf_token %}#}
-        {#                                            {{ form.as_p }}#}
-        {##}
-        {#                                            <button type="submit" class="mt-4 btn btn-primary">Добавить</button>#}
-        {#                                        </form>#}
-        {#                                    </div>#}
-        {#                                </div>#}
-        {#                            </div>#}
-        {#                        </div>#}
-        {##}
-        {#                    </td>#}
-        {#                </tr>#}
-        {#            {% endfor %}#}
-        {#            </tbody>#}
-        {#        </table>#}
-
         <table id="staff_actions_table" class="table table-bordered table-striped table-responsive">
             <thead>
             <tr>
