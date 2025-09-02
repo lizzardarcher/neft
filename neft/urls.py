@@ -25,7 +25,7 @@ urlpatterns = [
     path('', include('home.urls')),
     path('', include('authentication.urls')),
     path('dashboard/', include('dashboard.urls')),
-    path('admin/', admin.site.urls),
+    # path('admin/', admin.site.urls),
     path('1/', users.document_list, name='worker_document_list'),
     path('worker_document_create/', users.worker_document_create, name='worker_document_create'),
     path('worker_document_delete/<int:pk>', users.worker_document_delete, name='worker_document_delete'),
