@@ -5,6 +5,7 @@ from .models import *
 admin.site.site_header = "Админ Панель"
 admin.site.site_title = "rusgeolog.ru"
 admin.site.index_title = "rusgeolog.ru Админ Панель"
+admin.site.unregister(User)
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -71,3 +72,8 @@ class VehicleMovementAdmin(admin.ModelAdmin):
 @admin.register(VehicleMovementEquipment)
 class VehicleMovementEquipmentAdmin(admin.ModelAdmin):
     ...
+
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    search_fields = ('username', 'first_name', 'last_name', 'email')
+    list_display = ('id','username', 'first_name', 'last_name', 'email', 'is_staff', 'is_superuser')

@@ -189,6 +189,7 @@ def create_worker_activity(request):
         messages.error(request, 'Произошла ошибка при создании активности!')
         return redirect('brigade_staff', pk=request.GET.get('brigade_id'))
 
+
 def get_date_from_year_month_day(year, month, day):
     try:
         year = int(year)
@@ -208,6 +209,8 @@ def get_date_from_year_month(year, month):
         return dt(year, month, 1)
     except ValueError as e:
         ...
+
+
 class StaffTableTotalView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, TemplateView):
     template_name = 'dashboard/users/staff_table_total.html'
 
@@ -239,7 +242,8 @@ class StaffTableTotalView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixi
         context['users'] = User.objects.annotate(
             has_wa=Exists(WorkerActivity.objects.filter(user=OuterRef('pk'),
                                                         date__month=context['month'],
-                                                        date__year=context['year']))).filter(is_staff=True).order_by('-has_wa', 'first_name')
+                                                        date__year=context['year']))).filter(is_staff=True).order_by(
+            '-has_wa', 'first_name')
 
         start_date = get_date_from_year_month(context['year'], context['month'])
         end_date = get_date_from_year_month(context['next_year'], context['next_month'])
@@ -250,10 +254,6 @@ class StaffTableTotalView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixi
             date__range=[start_date, end_date]
         ).select_related('user')
 
-        print(f"Количество WorkerActivity: {all_worker_activities.count()}")  # Добавляем эту строку
-        if all_worker_activities.count() == 0:
-            print("Внимание: all_worker_activities пуст!")
-
         # 2. Преобразуем QuerySet в DataFrame.
         df = pd.DataFrame.from_records(all_worker_activities.values())
 
@@ -261,40 +261,45 @@ class StaffTableTotalView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixi
         if not df.empty:
             df['date'] = pd.to_datetime(df['date'])
 
-        print(f"Размер DataFrame: {len(df)}")  # Добавляем эту строку
-        print(f"Типы данных в DataFrame:\n{df.dtypes}")  # Добавляем эту строку
+        employee_data = []
 
         if df.empty:
-            print("Внимание: DataFrame пуст!")
-            return  # Преждевременный выход, чтобы избежать ошибок
+            context['users'] = User.objects.all().exclude(username__contains='1').order_by('first_name')
+            for user in context['users']:
+                user_activities = context['days']
+                total_wa = len(user_activities)
 
-        employee_data = []
-        for user in context['users']:
-            user_id = user.id
-            user_activities = df[df['user_id'] == user_id]
-            print(f"{user_activities}")
-
-            print(f"Размер user_activities для пользователя {user.username}: {len(user_activities)}")
-
-            total_wa = len(user_activities)
-
-            wa = []
-            for day in context['days']:
-                day_date = get_date_from_year_month_day(context['year'], context['month'], day)
-                day_activity = user_activities[user_activities['date'] == pd.to_datetime(day_date)]
-
-                if not day_activity.empty:
-                    # Получаем последнюю запись за день.
-                    wa_record = day_activity.iloc[-1].to_dict()  # Получаем последнюю запись за день
-                    wa.append({'day': day, 'wa': wa_record})
-                else:
+                wa = []
+                for day in context['days']:
                     wa.append({'day': day, 'wa': None})
+                employee_data.append({
+                    'user': user,
+                    'total_wa': total_wa,
+                    'wa': wa
+                })
+        else:
+            for user in context['users']:
+                user_id = user.id
+                user_activities = df[df['user_id'] == user_id]
 
-            employee_data.append({
-                'user': user,
-                'total_wa': total_wa,
-                'wa': wa
-            })
+                total_wa = len(user_activities)
+
+                wa = []
+                for day in context['days']:
+                    day_date = get_date_from_year_month_day(context['year'], context['month'], day)
+                    day_activity = user_activities[user_activities['date'] == pd.to_datetime(day_date)]
+
+                    if not day_activity.empty:
+                        wa_record = day_activity.iloc[-1].to_dict()
+                        wa.append({'day': day, 'wa': wa_record})
+                    else:
+                        wa.append({'day': day, 'wa': None})
+
+                employee_data.append({
+                    'user': user,
+                    'total_wa': total_wa,
+                    'wa': wa
+                })
 
         context['employee_data'] = employee_data
         context['form'] = WorkerActivityForm

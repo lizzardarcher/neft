@@ -1,7 +1,6 @@
 {% load custom_filters %}
 {% block content %}
     <div class="p-5 bg-light-subtle">
-        <h6>Общее время выгрузки из БД : [{{ load_time_1 }} сек]</h6>
         <h2 class="text-center mt-5">
             <a href="?month={{ prev_month }}&year={{ prev_year }}"
                class="btn btn-outline-secondary"><<< {{ prev_month }}-{{ prev_year }}</a>
@@ -27,8 +26,12 @@
                     <tr id="{{ data.user.id }}">
                         <td class="bg-light-subtle">{{ data.user.last_name }} {{ data.user.first_name }}</td>
                         <td class="bg-light-subtle">{{ data.user.profile.position }}</td>
-                        <td class="bg-light-subtle">{% if data.user.profile.brigade %}<small><a
-                                href="{% url 'brigade_index' data.user.profile.brigade.id %}">{{ data.user.profile.brigade.name }}</a></small>{% endif %}
+                        <td class="bg-light-subtle">
+                            {% if data.user.profile.brigade %}
+                                <small>
+                                    <a href="{% url 'brigade_index' data.user.profile.brigade.id %}">{{ data.user.profile.brigade.name }}</a>
+                                </small>
+                            {% endif %}
                         </td>
                         {% for wa in data.wa %}
                             {% if wa.wa %}
@@ -143,6 +146,16 @@
                         </td>
                     </tr>
                 {% endif %}
+            {% empty %}
+                <tr>
+                    <td>---</td>
+                    <td>---</td>
+                    <td>---</td>
+                    {% for d in days %}
+                        <td>---</td>
+                    {% endfor %}
+                    <td>---</td>
+                </tr>
             {% endfor %}
             </tbody>
         </table>
@@ -203,7 +216,15 @@
                 </tr>
             {% empty %}
                 <tr>
-                    <td colspan="9">Нет данных о пользователях.</td>
+                    <td>---</td>
+                    <td>---</td>
+                    <td>---</td>
+                    <td>---</td>
+                    <td>---</td>
+                    <td>---</td>
+                    <td>---</td>
+                    <td>---</td>
+                    <td>---</td>
                 </tr>
             {% endfor %}
 
@@ -235,11 +256,13 @@
     </script>
 
     <script>
+
+
         let table1 = new DataTable('#user_table', {
             sorting: false,
             searching: true,
             columnDefs: [
-                {"orderable": false, "targets": [9]}
+                {"orderable": false, "targets": [9], "defaultContent": "-"}
             ],
             language: {
                 info: ' Показано _PAGE_ из _PAGES_ страниц',
@@ -261,6 +284,8 @@
         const month_len = urlParams.get('month');
         const year_len = urlParams.get('year')
 
+        let targets = []
+
         if (month_len === '02' && parseInt(year_len) % 4 === 0) {
             targets = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]
         } else if (month_len === '03' || month_len === '05' || month_len === '07' || month_len === '08' || month_len === '10' || month_len === '12') {
@@ -272,26 +297,27 @@
         }
 
         let table2 = new DataTable('#staff_actions_table', {
-            sorting: false,
-            searching: true,
-            columnDefs: [
-                {"orderable": false, "targets": targets}
-            ],
-            lengthMenu: [
-                [60, 120, 180, -1],
-                [60, 120, 180, 'все записи']
-            ],
-            paging: false,
-            language: {
-                info: ' ',
-                infoEmpty: 'Нет записей',
-                infoFiltered: '(filtered from _MAX_ total records)',
-                lengthMenu: 'Показать _MENU_ на странице',
-                zeroRecords: 'Nothing found - sorry',
-                search: 'Поиск'
-            },
-            stateSave: true,
+                sorting: false,
+                searching: true,
+                columnDefs: [
+                    {"orderable": false, "targets": targets, "defaultContent": "-"}
+                ],
+                lengthMenu: [
+                    [60, 120, 180, -1],
+                    [60, 120, 180, 'все записи']
+                ],
+                paging: false,
+                language: {
+                    info: ' ',
+                    infoEmpty: 'Нет записей',
+                    infoFiltered: '(отфильтровано из _MAX_ всех записей)',
+                    lengthMenu: 'Показать _MENU_ на странице',
+                    zeroRecords: 'Нет записей',
+                    search: 'Поиск'
+                },
+                stateSave: true,
 
-        });
+            }
+        );
     </script>
 {% endblock extrascript %}
