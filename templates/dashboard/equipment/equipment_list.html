@@ -3,7 +3,9 @@
 {% block title %}Оборудование{% endblock title %}
 {% block content %}
     <div class="bg-light p-4 m-4 rounded">
-        <h2>Список Оборудования</h2>
+        <h1>Список Оборудования</h1>
+        {% if request.GET.category %}<h4>Категория: <span class=" text-success fw-bold fs-4 ">{{ request.GET.category }}</span></h4>
+        <a class="btn btn-sm btn-outline-dark mb-3" href="{% url 'category_list' %}">Назад к списку категорий</a>{% endif %}
         {% include 'includes/search.html' %}
         <div class="d-flex justify-content-between mt-4 mb-4">
              {% if user|has_perm_in_group:"Dashboard.add_equipment" %}
@@ -36,7 +38,11 @@
             columnDefs: [
                 {"orderable": false, "targets": [5]}
             ],
-            paging: false,
+            paging: true,
+            lengthMenu: [
+                [100, 200, 500, -1],
+                [100, 200, 500, 'все записи']
+            ],
             language: {
                 info: ' ',
                 infoEmpty: 'Нет записей',

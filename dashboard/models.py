@@ -65,7 +65,7 @@ class Manufacturer(models.Model):
 class Equipment(models.Model):
     CONDITION = (('work', 'Рабочее'), ('faulty', 'Неисправное'), ('repair', 'В ремонте'))
 
-    serial = models.CharField(max_length=200, unique=True, null=False, blank=False, verbose_name='Серийный номер')
+    serial = models.CharField(max_length=200, null=False, blank=False, verbose_name='Серийный номер')
     name = models.CharField(max_length=200, null=True, blank=True, verbose_name='Название')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=False, verbose_name='Категория')
     brigade = models.ForeignKey(Brigade, on_delete=models.SET_NULL, null=True, blank=False, verbose_name='Бригада')
@@ -85,6 +85,11 @@ class Equipment(models.Model):
     def __str__(self):
         return f"{self.name} ({self.category})"
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['name']),
+        ]
+        unique_together = ['serial', 'category']
 
 @receiver(pre_save, sender=Equipment)
 def equipment_pre_save(sender, instance, **kwargs):

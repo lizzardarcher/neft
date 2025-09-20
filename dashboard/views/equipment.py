@@ -3,6 +3,7 @@ from datetime import date
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -27,22 +28,28 @@ class EquipmentListView(LoginRequiredMixin,  StaffOnlyMixin,SuccessMessageMixin,
 
     def get_queryset(self):
         queryset = super().get_queryset()
+
         search_request = self.request.GET.get("search", None)
         category = self.request.GET.get("category", None)
-        sort_by = self.request.GET.get('sort_by', 'id')  # по умолчанию сортируем по id
-        order = self.request.GET.get('order', 'asc')  # по умолчанию прямой порядок
+        sort_by = self.request.GET.get('sort_by', 'id')
+        order = self.request.GET.get('order', 'asc')
+
+        # Фильтрация по поиску одним запросом с Q
         if search_request:
-            equipment_by_name = Equipment.objects.filter(name__icontains=search_request)
-            equipment_by_serial = Equipment.objects.filter(serial__icontains=search_request)
-            queryset = (equipment_by_name | equipment_by_serial)
+            queryset = queryset.filter(
+                Q(name__icontains=search_request) | Q(serial__icontains=search_request)
+            )
+
+        # Фильтрация по категории
+        if category:
+            queryset = queryset.filter(category__name=category)
+
+        # Сортировка
         if sort_by:
             if order == 'desc':
-                sort_by = f"-{sort_by}"  # ставим минус, если обратный порядок
-                queryset = queryset.order_by(sort_by)
-            else:
-                queryset = queryset.order_by(sort_by)
-        if category:
-            queryset = queryset.filter(category__name=category).order_by(f'name')
+                sort_by = f"-{sort_by}"
+            queryset = queryset.order_by(sort_by)
+
         return queryset
 
 
