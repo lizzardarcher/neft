@@ -3,13 +3,13 @@
         {% if page_obj.has_previous %}
             <li class="page-item">
                 <a class="page-link"
-                   href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
+                   href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}"
                    aria-label="First">
                     <span aria-hidden="true">&laquo;</span>
                 </a>
             </li>
             <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}"
                    aria-label="Previous">
                     <span aria-hidden="true">&lsaquo;</span>
                 </a>
@@ -22,7 +22,7 @@
                     <li class="page-item active"><span class="page-link">{{ page }}</span></li>
                 {% else %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ page }}</a>
+                        <a class="page-link" href="?page={{ page }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">{{ page }}</a>
                     </li>
                 {% endif %}
             {% endfor %}
@@ -33,7 +33,7 @@
                         <li class="page-item active"><span class="page-link">{{ page }}</span></li>
                     {% else %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ page }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ page }}</a>
+                            <a class="page-link" href="?page={{ page }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">{{ page }}</a>
                         </li>
                     {% endif %}
                 {% elif page == 3 or page == page_obj.paginator.num_pages|add:'-3' %}
@@ -44,13 +44,13 @@
 
         {% if page_obj.has_next %}
             <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}"
                    aria-label="Next">
                     <span aria-hidden="true">&rsaquo;</span>
                 </a>
             </li>
             <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}"
                    aria-label="Last">
                     <span aria-hidden="true">&raquo;</span>
                 </a>

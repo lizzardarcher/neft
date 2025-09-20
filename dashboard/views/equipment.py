@@ -17,7 +17,7 @@ class EquipmentListView(LoginRequiredMixin,  StaffOnlyMixin,SuccessMessageMixin,
     model = Equipment
     context_object_name = 'equipments'
     template_name = 'dashboard/equipment/equipment_list.html'
-    paginate_by = 100
+    paginate_by = None
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -27,8 +27,8 @@ class EquipmentListView(LoginRequiredMixin,  StaffOnlyMixin,SuccessMessageMixin,
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        search_request = self.request.GET.get("search")
-        category = self.request.GET.get("category")
+        search_request = self.request.GET.get("search", None)
+        category = self.request.GET.get("category", None)
         sort_by = self.request.GET.get('sort_by', 'id')  # по умолчанию сортируем по id
         order = self.request.GET.get('order', 'asc')  # по умолчанию прямой порядок
         if search_request:

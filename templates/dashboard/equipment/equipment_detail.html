@@ -29,7 +29,7 @@
                             <strong>Документы:</strong>
                             {% if user|has_perm_in_group:"Dashboard.add_document" %}
                                 <a class="btn btn-outline-success"
-                                   href="{% url 'equipment_add_document' equipment.id equipment.brigade.id %}">Добавить
+                                   href="{% url 'equipment_add_document' equipment.id equipment.brigade.id %}?search={{ request.GET.search }}&page={{ request.GET.page }}&category={{ request.GET.category }}">Добавить
                                     +</a>
                             {% endif %}
 
@@ -71,7 +71,7 @@
                         <li class="list-group-item">
                             <strong>Документы:</strong>
                             <a class="btn btn-outline-success"
-                               href="{% url 'equipment_add_document' equipment.id equipment.brigade.id %}">Добавить
+                               href="{% url 'equipment_add_document' equipment.id equipment.brigade.id %}?search={{ request.GET.search }}&page={{ request.GET.page }}&category={{ request.GET.category }}">Добавить
                                 +</a>
                         </li>
                     {% endif %}

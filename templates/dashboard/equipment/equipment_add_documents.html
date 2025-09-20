@@ -13,7 +13,7 @@
                         {{ document_form.as_p }}
                         <hr>
                         <button class="btn btn-outline-success" type="submit">Добавить новый</button>
-                        <a href="{% url 'equipment_detail' equipment.id %}" class="btn btn-secondary">Назад</a>
+                        <a href="{% url 'equipment_detail' equipment.id %}?search={{ request.GET.search }}&page={{ request.GET.page }}&category={{ request.GET.category }}" class="btn btn-secondary">Назад</a>
                     </form>
                 </div>
             </div>
