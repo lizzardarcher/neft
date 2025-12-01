@@ -139,7 +139,10 @@ class EquipmentAddDocumentsView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessa
     def form_valid(self, form):
         equipment_id = self.kwargs.get('equipment_id')
         brigade_id = self.kwargs.get('brigade_id')
-        return redirect(reverse('equipment_add_document', args=[equipment_id, brigade_id]))
+        search_request = self.request.GET.get("search", None)
+        category = self.request.GET.get("category", None)
+        page = self.request.GET.get("page", 1)
+        return redirect(reverse('equipment_add_document', args=[equipment_id, brigade_id])+f'?search={search_request}&page={page}&category={category}')
 
 
 class EquipmentUpdateView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, UpdateView):

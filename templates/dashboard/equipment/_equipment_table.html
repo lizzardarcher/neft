@@ -77,7 +77,7 @@
 
                     {% if equipment.documents.count %}
                         {{ equipment.documents.count }}
-                        <a href="{% url 'equipment_add_document' equipment.id equipment.brigade.id %}"
+                        <a href="{% url 'equipment_add_document' equipment.id equipment.brigade.id %}?search={{ request.GET.search }}&page={{ request.GET.page }}&category={{ request.GET.category }}"
                            class="link-underline-opacity-100-hover link-success"><i class="fa fa-circle-info"></i></a>
                     {% else %}
                         ---

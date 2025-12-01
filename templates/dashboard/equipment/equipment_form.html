@@ -5,7 +5,9 @@
             <div class="alert alert-danger mt-2">
                 {% for error in form.errors %}
                     {% if "serial" in error %}
-                         Ошибка добавления {{ form.serial.error }} Оборудование с таким серийным номером уже существует
+                        Ошибка добавления {{ form.serial.error }} Оборудование с таким серийным номером уже существует
+                    {% else %}
+                        {{ error }}
                     {% endif %}
                 {% endfor %}
             </div>

@@ -70,17 +70,12 @@ class Equipment(models.Model):
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=False, verbose_name='Категория')
     brigade = models.ForeignKey(Brigade, on_delete=models.SET_NULL, null=True, blank=False, verbose_name='Бригада')
     documents = models.ManyToManyField(Document, blank=True, verbose_name='Документы для оборудования')
-    date_release = models.DateField(auto_now_add=False, auto_now=False, null=True, blank=True,
-                                    verbose_name='Дата выпуска')
-    date_exploitation = models.DateField(auto_now_add=False, auto_now=False, null=True, blank=True,
-                                         verbose_name='Дата ввода в эксплуатацию')
-    condition = models.CharField(max_length=100, null=False, blank=False, default='work', choices=CONDITION,
-                                 verbose_name='Состояние оборудования')
+    date_release = models.DateField(auto_now_add=False, auto_now=False, null=True, blank=True, verbose_name='Дата выпуска')
+    date_exploitation = models.DateField(auto_now_add=False, auto_now=False, null=True, blank=True, verbose_name='Дата ввода в эксплуатацию')
+    condition = models.CharField(max_length=100, null=False, blank=False, default='work', choices=CONDITION, verbose_name='Состояние оборудования')
     manufacturer = models.CharField(max_length=200, null=True, blank=True, default='', verbose_name='Изготовитель')
-    certificate_start = models.DateField(auto_now_add=False, auto_now=False, null=True, blank=True, default=None,
-                                         verbose_name='Дата начала сертификата')
-    certificate_end = models.DateField(auto_now_add=False, auto_now=False, null=True, blank=True, default=None,
-                                       verbose_name='Дата окончания сертификата')
+    certificate_start = models.DateField(auto_now_add=False, auto_now=False, null=True, blank=True, default=None, verbose_name='Дата начала сертификата')
+    certificate_end = models.DateField(auto_now_add=False, auto_now=False, null=True, blank=True, default=None, verbose_name='Дата окончания сертификата')
 
     def __str__(self):
         return f"{self.name} ({self.category})"
@@ -89,7 +84,7 @@ class Equipment(models.Model):
         indexes = [
             models.Index(fields=['name']),
         ]
-        unique_together = ['serial', 'category']
+        unique_together = ['serial', 'manufacturer', 'category']
 
 @receiver(pre_save, sender=Equipment)
 def equipment_pre_save(sender, instance, **kwargs):
