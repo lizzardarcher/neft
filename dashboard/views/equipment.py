@@ -159,7 +159,8 @@ class EquipmentUpdateView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixi
     def get_success_url(self):
         search_request = self.request.GET.get("search")
         category = self.request.GET.get("category")
-        return reverse('equipment_list') + f'?search={search_request}&category={category}'
+        page = self.request.GET.get("page", 1)
+        return reverse('equipment_list') + f'?search={search_request}&category={category}&page={page}'
 
     def form_valid(self, form):
         manufacturer_id = self.request.POST.get('id_manufacturer')
