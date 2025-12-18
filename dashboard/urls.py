@@ -43,6 +43,7 @@ urlpatterns = [
          name='equipment_update_by_brigade'),
     path('equipment/<int:equipment_id>/delete/', equipment.equipment_delete, name='equipment_delete'),
     path('equipment/<int:pk>/', equipment.EquipmentDetailView.as_view(), name='equipment_detail'),
+    path('equipment/<int:equipment_id>/download_documents/', equipment.download_all_equipment_documents, name='download_equipment_documents'),
 
     path('manufacturer_delete/<int:manufacturer_id>/', equipment.manufacturer_delete, name='manufacturer_delete'),
 

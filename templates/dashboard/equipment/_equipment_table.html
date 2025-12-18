@@ -72,25 +72,39 @@
                 <td>{% if equipment.brigade %}{{ equipment.brigade }}{% else %}---{% endif %}</td>{% endif %}
             <td>{% if equipment.manufacturer %}{{ equipment.manufacturer }}{% else %}---{% endif %}</td>
 
-            <td>
-                {% if equipment.brigade %}
-
-                    {% if equipment.documents.count %}
-                        {{ equipment.documents.count }}
-                        <a href="{% url 'equipment_add_document' equipment.id equipment.brigade.id %}?search={{ request.GET.search }}&page={{ request.GET.page }}&category={{ request.GET.category }}"
-                           class="link-underline-opacity-100-hover link-success"><i class="fa fa-circle-info"></i></a>
-                    {% else %}
-                        ---
-
-                    {% endif %}
-
-                {% else %}
-
-                    <a href="{% url 'equipment_update' equipment.id %}"
-                       class="link-underline-opacity-100-hover link-warning">Нет Бригады</a>
-
-                {% endif %}
-            </td>
+<td>
+    {% if equipment.brigade %}
+        {% if equipment.documents.count %}
+            <span class="fw-bold">{{ equipment.documents.count }}</span>
+            {# Иконка для просмотра/добавления документов #}
+            <a href="{% url 'equipment_add_document' equipment.id equipment.brigade.id %}?search={{ request.GET.search }}&page={{ request.GET.page }}&category={{ request.GET.category }}"
+               class="link-underline-opacity-0 link-success ms-1"
+               title="Просмотреть/Добавить документы">
+                <i class="fa fa-file-lines"></i> {# Или fa-folder-open, fa-folder #}
+            </a>
+            {# Иконка для скачивания всех документов #}
+            <a href="{% url 'download_equipment_documents' equipment.id %}"
+               class="link-underline-opacity-0 link-primary ms-1"
+               title="Скачать все документы (.zip)">
+                <i class="fa fa-download"></i>
+            </a>
+        {% else %}
+            <span class="text-muted">Нет документов</span>
+            {# Иконка для добавления первого документа, когда документов нет #}
+            <a href="{% url 'equipment_add_document' equipment.id equipment.brigade.id %}?search={{ request.GET.search }}&page={{ request.GET.page }}&category={{ request.GET.category }}"
+               class="link-underline-opacity-0 link-info ms-1"
+               title="Добавить документ">
+                <i class="fa fa-plus-circle"></i> {# Или fa-folder-plus #}
+            </a>
+        {% endif %}
+    {% else %}
+        <a href="{% url 'equipment_update' equipment.id %}"
+           class="link-underline-opacity-100-hover link-warning"
+           title="Назначить бригаду">
+            Нет Бригады <i class="fa fa-exclamation-triangle"></i>
+        </a>
+    {% endif %}
+</td>
 
             <td><small>{{ equipment.date_release|date:"d-m-Y" }}</small></td>
             <td><small>{{ equipment.date_exploitation|date:"d-m-Y" }}</small></td>

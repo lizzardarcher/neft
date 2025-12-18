@@ -1,12 +1,16 @@
+import io
+import os
+import zipfile
 from datetime import date
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.encoding import escape_uri_path
 from django.views.generic import ListView, CreateView, UpdateView, DetailView
 
 from dashboard.forms import EquipmentCreateByBrigadeForm, EquipmentAddDocumentsForm, DocumentForm, EquipmentCreateForm
@@ -298,3 +302,41 @@ def manufacturer_delete(request, manufacturer_id):
         return HttpResponseRedirect(referer_url)
     else:
         return redirect('equipment_list')
+
+
+def download_all_equipment_documents(request, equipment_id):
+    """
+    Скачивает все документы, связанные с указанным оборудованием, в виде ZIP-архива.
+    """
+    equipment = get_object_or_404(Equipment, pk=equipment_id)
+    documents = equipment.documents.all()
+
+    if not documents.exists():
+        return HttpResponse("Для данного оборудования нет связанных документов.", status=404)
+
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for doc in documents:
+            if doc.file:
+                try:
+                    with doc.file.open('rb') as f:
+                        file_content = f.read()
+                        zipf.writestr(os.path.basename(doc.file.name), file_content)
+                except FileNotFoundError:
+                    messages.error(request,f"Предупреждение: Файл '{doc.file.name}' не найден на диске для документа '{doc.title}'.")
+                except Exception as e:
+                    messages.error(request,f"Ошибка при обработке файла '{doc.file.name}': {e}.")
+            else:
+                messages.error(request,f"Предупреждение: Документ '{doc.title}' не имеет связанного файла.")
+
+    zip_buffer.seek(0)
+
+    file_base_name = f"Документы_{equipment.name}_{equipment.serial}".strip()
+    zip_filename = f"{file_base_name}.zip"
+
+    response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+
+    content_disposition = f"attachment; filename*=utf-8''{escape_uri_path(zip_filename)}"
+    response['Content-Disposition'] = content_disposition
+
+    return response

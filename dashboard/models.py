@@ -86,6 +86,7 @@ class Equipment(models.Model):
         ]
         unique_together = ['serial', 'manufacturer', 'category']
 
+
 @receiver(pre_save, sender=Equipment)
 def equipment_pre_save(sender, instance, **kwargs):
     """
