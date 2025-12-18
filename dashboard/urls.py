@@ -44,6 +44,7 @@ urlpatterns = [
     path('equipment/<int:equipment_id>/delete/', equipment.equipment_delete, name='equipment_delete'),
     path('equipment/<int:pk>/', equipment.EquipmentDetailView.as_view(), name='equipment_detail'),
     path('equipment/<int:equipment_id>/download_documents/', equipment.download_all_equipment_documents, name='download_equipment_documents'),
+    path('brigade/<int:brigade_id>/download_documents/', equipment.download_all_brigade_documents, name='download_brigade_documents'),
 
     path('manufacturer_delete/<int:manufacturer_id>/', equipment.manufacturer_delete, name='manufacturer_delete'),
 

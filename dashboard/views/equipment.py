@@ -340,3 +340,57 @@ def download_all_equipment_documents(request, equipment_id):
     response['Content-Disposition'] = content_disposition
 
     return response
+
+
+def download_all_brigade_documents(request, brigade_id):
+    """
+    Скачивает все уникальные документы, связанные со всеми единицами оборудования
+    указанной бригады, в виде ZIP-архива.
+    """
+    brigade = get_object_or_404(Brigade, pk=brigade_id)
+
+    unique_documents = {}
+
+    equipment_in_brigade = Equipment.objects.filter(brigade=brigade)
+
+    if not equipment_in_brigade.exists():
+        return HttpResponse(f"Для бригады '{brigade.name}' нет привязанного оборудования.", status=404)
+
+    for equipment in equipment_in_brigade:
+        for doc in equipment.documents.all():
+            unique_documents[doc.pk] = doc
+
+    documents_to_zip = list(unique_documents.values())
+
+    if not documents_to_zip:
+        return HttpResponse(f"Для бригады '{brigade.name}' нет связанных документов.", status=404)
+
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for doc in documents_to_zip:
+            if doc.file:
+                try:
+                    with doc.file.open('rb') as f:
+                        file_content = f.read()
+
+                        file_extension = os.path.splitext(doc.file.name)[1]
+                        internal_zip_filename = f"{doc.title}_{doc.pk}{file_extension}"
+                        internal_zip_filename = "".join(x for x in internal_zip_filename if x.isalnum() or x in "._- ")
+
+                        zipf.writestr(internal_zip_filename, file_content)
+                except FileNotFoundError:
+                    messages.error(request, f"Предупреждение: Файл '{doc.file.name}' не найден на диске для документа '{doc.title}' (ID: {doc.pk}). Пропускаем.")
+                except Exception as e:
+                    messages.error(request, f"Ошибка при обработке файла '{doc.file.name}' (ID: {doc.pk}): {e}. Пропускаем.")
+            else:
+                messages.error(request, f"Предупреждение: Документ '{doc.title}' (ID: {doc.pk}) не имеет связанного файла. Пропускаем.")
+
+    zip_buffer.seek(0)
+
+    brigade_name_clean = brigade.name.replace('/', '_').replace('\\', '_').strip()
+    zip_filename = f"Документы_Бригада_{brigade_name_clean}.zip"
+
+    response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+    response['Content-Disposition'] = f"attachment; filename*=utf-8''{escape_uri_path(zip_filename)}"
+
+    return response
