@@ -35,11 +35,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'fontawesomefree',
+    'widget_tweaks',
     'authentication',
     'dashboard',
     'home',
-    'widget_tweaks',
-    # 'django-widget-tweaks',
 ]
 
 MIDDLEWARE = [
