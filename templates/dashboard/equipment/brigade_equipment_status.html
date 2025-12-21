@@ -1,0 +1,173 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h2 class="mb-4">
+            Статус оснащения бригады «{{ brigade.name }}»
+        </h2>
+
+        <p class="text-muted mb-3">
+            Отчет показывает сравнение требуемого (ПЛАН) и фактического (ФАКТ) количества оборудования по категориям.
+        </p>
+
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Статус оборудования по категориям</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped align-middle">
+                        <thead>
+                        <tr>
+                            <th>Категория</th>
+                            <th class="text-end">Требуется (ПЛАН)</th>
+                            <th class="text-end">В наличии (ФАКТ)</th>
+                            <th class="text-center">Статус</th>
+                            <th class="text-end">Не хватает</th>
+                            <th class="text-end">Лишнее</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for item in report %}
+                            <tr>
+                                <td><a href="{% url 'brigade_detail' brigade.id %}?category={{ item.category }}">{{ item.category }}</a></td>
+                                <td class="text-end fw-bold">{{ item.required }}</td>
+                                <td class="text-end fw-bold">{{ item.actual }}</td>
+
+                                <!-- Статус со столбиками -->
+                                <td class="text-center">
+                                    <div class="status-bars" title="
+                                        {% if item.actual == item.required %}
+                                            Количество соответствует плану
+                                        {% elif item.actual < item.required %}
+                                            Недостаточное количество (не хватает {{ item.shortage }})
+                                        {% else %}
+                                            Избыток оборудования (лишних {{ item.surplus }})
+                                        {% endif %}
+                                    " style="display: flex; gap: 3px; justify-content: center;">
+                                        {% if item.actual == item.required %}
+                                            <!-- 3 зеленых столбика = соответствует -->
+                                            <span class="bar bar-success"></span>
+                                            <span class="bar bar-success"></span>
+                                            <span class="bar bar-success"></span>
+                                        {% elif item.actual < item.required %}
+                                            <!-- 3 красных столбика = нехватка -->
+                                            <span class="bar bar-danger"></span>
+                                            <span class="bar bar-danger"></span>
+                                            <span class="bar bar-danger"></span>
+                                        {% else %}
+                                            <!-- 3 синих столбика = избыток -->
+                                            <span class="bar bar-info"></span>
+                                            <span class="bar bar-info"></span>
+                                            <span class="bar bar-info"></span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+
+                                <td class="text-end">
+                                    {% if item.shortage > 0 %}
+                                        <span class="badge bg-danger">−{{ item.shortage }}</span>
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    {% if item.surplus > 0 %}
+                                        <span class="badge bg-success">+{{ item.surplus }}</span>
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-3">
+                                    Нет данных по категориям
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Легенда статусов -->
+        <div class="mt-4">
+            <h6 class="mb-3">Легенда статусов:</h6>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="display: flex; gap: 3px;">
+                            <span class="bar bar-success"></span>
+                            <span class="bar bar-success"></span>
+                            <span class="bar bar-success"></span>
+                        </div>
+                        <span>Количество соответствует плану</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="display: flex; gap: 3px;">
+                            <span class="bar bar-danger"></span>
+                            <span class="bar bar-danger"></span>
+                            <span class="bar bar-danger"></span>
+                        </div>
+                        <span>Недостаточное количество</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="display: flex; gap: 3px;">
+                            <span class="bar bar-info"></span>
+                            <span class="bar bar-info"></span>
+                            <span class="bar bar-info"></span>
+                        </div>
+                        <span>Избыток оборудования</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Кнопки -->
+        <div class="d-flex justify-content-between mt-4 mb-4">
+            <a class="btn btn-primary btn-lg" href="{% url 'update_brigade_requirements' brigade.id %}">
+                <i class="bi bi-pencil-square me-2"></i>Изменить план требований
+            </a>
+            <a class="btn btn-secondary btn-lg" href="{% url 'brigade_list' %}">
+                <i class="bi bi-arrow-left me-2"></i>Вернуться к списку бригад
+            </a>
+        </div>
+    </div>
+
+    <style>
+        .bar {
+            display: inline-block;
+            width: 8px;
+            height: 20px;
+            border-radius: 2px;
+        }
+
+        .bar-success {
+            background-color: #28a745;
+        }
+
+        .bar-danger {
+            background-color: #dc3545;
+        }
+
+        .bar-info {
+            background-color: #17a2b8;
+        }
+
+        .status-bars {
+            cursor: pointer;
+        }
+
+        .table tbody tr:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+    </style>
+{% endblock %}

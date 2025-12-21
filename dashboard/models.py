@@ -87,6 +87,20 @@ class Equipment(models.Model):
         unique_together = ['serial', 'manufacturer', 'category']
 
 
+class BrigadeEquipmentRequirement(models.Model):
+    brigade = models.ForeignKey(Brigade, on_delete=models.CASCADE, related_name='brigade_requirement')
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='brigade_category')
+    quantity = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        unique_together = ('brigade', 'category')
+        verbose_name = "Требование оборудования бригады"
+        verbose_name_plural = "Требования оборудования бригад"
+
+    def __str__(self):
+        return f"{self.brigade.name} требует {self.quantity} ед. из категории '{self.category.name}'"
+
+
 @receiver(pre_save, sender=Equipment)
 def equipment_pre_save(sender, instance, **kwargs):
     """

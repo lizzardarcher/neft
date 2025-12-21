@@ -5,7 +5,7 @@ from django.forms import inlineformset_factory
 
 from dashboard.models import Brigade, Equipment, Document, Category, UserProfile, Manufacturer, WorkerActivity, \
     BrigadeActivity, WorkObject, Vehicle, VehicleMovement, OtherEquipment, OtherCategory, VehicleMovementEquipment, \
-    WorkerDocument
+    WorkerDocument, BrigadeEquipmentRequirement
 
 DATE_STYLE = {'style': 'width: 15rem;'}
 
@@ -595,3 +595,38 @@ class WorkerDocumentForm(forms.ModelForm):
             'title': forms.TextInput(attrs={'class': 'form-control'}),
             'file': forms.FileInput(attrs={'class': 'form-control'}),
         }
+
+
+class BrigadeRequirementForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        self.brigade = kwargs.pop('brigade', None)
+        super().__init__(*args, **kwargs)
+
+        # Для каждой категории создаем поле в форме
+        for cat in Category.objects.all():
+            initial_val = 0
+            if self.brigade:
+                req = BrigadeEquipmentRequirement.objects.filter(brigade=self.brigade, category=cat).first()
+                if req:
+                    initial_val = req.quantity
+
+            self.fields[f'cat_{cat.id}'] = forms.IntegerField(
+                label=cat.name,
+                min_value=0,
+                initial=initial_val,
+                required=False,
+                widget=forms.NumberInput(attrs={'class': 'form-control'})
+            )
+
+    def save(self):
+        for field_name, quantity in self.cleaned_data.items():
+            if field_name.startswith('cat_'):
+                cat_id = field_name.split('_')[1]
+                category = Category.objects.get(id=cat_id)
+
+                # Обновляем или создаем запись требования
+                BrigadeEquipmentRequirement.objects.update_or_create(
+                    brigade=self.brigade,
+                    category=category,
+                    defaults={'quantity': quantity or 0}
+                )

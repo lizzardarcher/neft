@@ -12,7 +12,8 @@
                     class="fa fa-plus-square"></i> Добавить оборудование</a>
         {% endif %}
         {% include 'dashboard/equipment/_equipment_table.html' %}
-        <a href="{% url 'brigade_index' brigade.id %}" class="btn btn-sm btn-outline-dark mt-2 mb-2">НАЗАД</a>
+        <a href="{% url 'brigade_index' brigade.id %}" class="btn btn-sm btn-outline-dark mt-2 mb-2">Вернуться к бригаде</a>
+        <a href="{% url 'brigade_requirement_status' brigade.id %}" class="btn btn-sm btn-outline-dark mt-2 mb-2">К вернуться к обеспечению</a>
     </div>
 {% endblock content %}
 {% block extrascript %}

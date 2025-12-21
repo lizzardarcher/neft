@@ -3,9 +3,21 @@
 <table id="equipment_table" class="table table-bordered table-striped">
     <thead class="thead-dark">
     <tr>
+        <th colspan="{% if not 'brigade' in request.path %}6{% else %}5{% endif %}" class="text-center">
+            Общая информация
+        </th>
+
+        <th colspan="4" class="text-center">
+            Сроки
+        </th>
+
+        <th rowspan="2">Состояние</th>
+        <th rowspan="2">Действия</th>
+    </tr>
+    <tr>
         <th>Категория</th>
         <th>Название</th>
-        <th>Серийный номер</th>
+        <th>С/Н</th>
 
         {% if not 'brigade' in request.path %}
             <th>Бригада</th>
@@ -49,6 +61,7 @@
                 </div>
             </div>
         </th>
+
         <th>
             Документы {% if 'brigade' in request.path %}
                 <a href="{% url 'download_brigade_documents' brigade.id %}"
@@ -58,15 +71,16 @@
                 </a>
             {% endif %}
         </th>
-        <th>выпуска оборудования</th>
-        <th>ввода в эксплуатацию</th>
-        <th>от</th>
-        <th>до</th>
-        <th>Состояние</th>
-        <th>Действия</th>
+
+        <th>Выпуск</th>
+        <th>Ввод в экспл.</th>
+        <th>Начало кал./пов.</th>
+        <th>Конец кал./пов.</th>
+
     </tr>
     </thead>
     <tbody>
+
     {% for equipment in equipments %}
         <tr>
 

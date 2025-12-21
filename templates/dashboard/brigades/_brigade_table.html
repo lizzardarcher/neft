@@ -25,6 +25,7 @@
             <th>Персонал</th>
             <th>Заказчик</th>
             <th>Примечания</th>
+            <th>Обеспечение</th>
             <th>Действия</th>
         </tr>
         </thead>
@@ -40,12 +41,46 @@
                        class="link-offset-2 text-bg-{% if brigade.equipment_set.count > 0 %}success{% else %}secondary{% endif %} p-1 rounded"
                        style="text-decoration: none;">{{ brigade.equipment_set.count }}</a>
                 </td>
-                <td><a href="{% if brigade.userprofile_set.count %}{% url 'brigade_staff' brigade.id %}{% else %}{% endif %}"
-                    class="link-offset-2 text-bg-{% if brigade.userprofile_set.count > 0 %}success{% else %}secondary{% endif %} p-1 rounded"
+                <td><a href="
+                        {% if brigade.userprofile_set.count %}{% url 'brigade_staff' brigade.id %}{% else %}{% endif %}"
+                       class="link-offset-2 text-bg-{% if brigade.userprofile_set.count > 0 %}success{% else %}secondary{% endif %} p-1 rounded"
                        style="text-decoration: none;">{{ brigade.userprofile_set.count }}</a>
-                    </td>
+                </td>
                 <td>{% if brigade.customer %}{{ brigade.customer }}{% else %}---{% endif %}</td>
                 <td>{% if brigade.notes %}{{ brigade.notes }}{% else %}---{% endif %}</td>
+                <td>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+
+                        <!-- НОВАЯ: Просмотр статуса -->
+                        <a href="{% url 'brigade_requirement_status' brigade.id %}"
+                           class="btn btn-sm btn-outline-info"
+                           title="Просмотреть статус оборудования">
+                            <i class="fa fa-eye"></i>
+                        </a>
+
+                        <!-- НОВАЯ: Редактирование требований -->
+                        <a href="{% url 'update_brigade_requirements' brigade.id %}"
+                           class="btn btn-sm btn-outline-warning"
+                           title="Отредактировать требования оборудования">
+                            <i class="fa fa-code-fork"></i>
+                        </a>
+                        {% if brigade.equipment_info.shortage_total > 0 %}
+                            <span style="color: #dc3545; font-weight: bold;">
+                                    -{{ brigade.equipment_info.shortage_total }}
+                                </span>
+                        {% endif %}
+                        {% if brigade.equipment_info.surplus_total > 0 %}
+                            <span style="color: #289ca7; font-weight: bold;">
+                                    +{{ brigade.equipment_info.surplus_total }}
+                                </span>
+                        {% endif %}
+                        {% if brigade.equipment_info.shortage_total == 0 and brigade.equipment_info.surplus_total == 0 %}
+                            <span style="color: #28a745;">OK</span>
+                        {% endif %}
+
+                    </div>
+                </td>
+
                 <td>
                     {% if user|has_perm_in_group:"Dashboard.delete_brigade" %}
                         <a href="{% url 'brigade_update' brigade.id %}" class="btn btn-sm btn-outline-warning"><i

@@ -19,6 +19,28 @@ from dashboard.mixins import StaffOnlyMixin
 from dashboard.models import Brigade, Equipment, Manufacturer, WorkerActivity, BrigadeActivity, WorkObject, UserProfile
 from dashboard.utils.utils import get_days_in_month
 
+# class BrigadeListView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, ListView):
+#     model = Brigade
+#     context_object_name = 'brigades'
+#     template_name = 'dashboard/brigades/brigade_list.html'
+#     ordering = 'name'
+#
+#     def get_queryset(self):
+#         """Поиск по имени и описанию бригады"""
+#         queryset = super().get_queryset()
+#         search_request = self.request.GET.get("search")
+#         if search_request:
+#             brigade_by_name = Brigade.objects.filter(name__icontains=search_request)
+#             brigade_by_description = Brigade.objects.filter(description__icontains=search_request)
+#             queryset = brigade_by_description | brigade_by_name
+#         return queryset
+#
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context['page_size'] = self.request.GET.get('page_size', self.paginate_by)
+#         return context
+
+
 class BrigadeListView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, ListView):
     model = Brigade
     context_object_name = 'brigades'
@@ -38,8 +60,52 @@ class BrigadeListView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, L
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['page_size'] = self.request.GET.get('page_size', self.paginate_by)
+
+        # Добавляем информацию об оборудовании для каждой бригады
+        brigades_with_equipment = []
+        for brigade in context['brigades']:
+            brigade.equipment_info = self._get_equipment_status(brigade)
+            brigades_with_equipment.append(brigade)
+
+        context['brigades'] = brigades_with_equipment
         return context
 
+    def _get_equipment_status(self, brigade):
+        """
+        Подсчитывает недостающее и лишнее оборудование для бригады
+        Возвращает словарь с ключами: shortage_total, surplus_total
+        """
+        from dashboard.models import BrigadeEquipmentRequirement, Equipment, Category
+
+        shortage_total = 0
+        surplus_total = 0
+
+        categories = Category.objects.all()
+        for cat in categories:
+            # План (требуемое количество)
+            req = BrigadeEquipmentRequirement.objects.filter(
+                brigade=brigade,
+                category=cat
+            ).first()
+            required_qty = req.quantity if req else 0
+
+            # Факт (текущее количество)
+            actual_qty = Equipment.objects.filter(
+                brigade=brigade,
+                category=cat
+            ).count()
+
+            diff = actual_qty - required_qty
+
+            if diff < 0:
+                shortage_total += abs(diff)
+            else:
+                surplus_total += diff
+
+        return {
+            'shortage_total': shortage_total,
+            'surplus_total': surplus_total
+        }
 
 class BrigadeDetailView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, DetailView):
     model = Brigade
@@ -52,7 +118,6 @@ class BrigadeDetailView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin,
         category = self.request.GET.get("category")
         sort_by = self.request.GET.get('sort_by', 'id')  # по умолчанию сортируем по id
         order = self.request.GET.get('order', 'asc')  # по умолчанию прямой порядок
-
         if search_request:
             equipment_by_name = Equipment.objects.filter(brigade=self.get_object(), name__icontains=search_request)
             equipment_by_serial = Equipment.objects.filter(brigade=self.get_object(), serial__icontains=search_request)
@@ -72,12 +137,12 @@ class BrigadeDetailView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin,
         paginator = Paginator(equipments, 30)
         page_number = self.request.GET.get('page')
         page_obj = paginator.get_page(page_number)
-
         context = super().get_context_data(**kwargs)
         context['equipments'] = page_obj
         context['page_obj'] = page_obj
         context['now_date'] = date.today()
         context['manufacturers'] = Manufacturer.objects.all().order_by('name')
+
         return context
 
 

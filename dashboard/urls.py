@@ -24,6 +24,7 @@ urlpatterns = [
     path('brigades/<int:pk>/work_object_detail', brigades.WorkObjectDetailView.as_view(), name='work_object_detail'),
     path('brigades/work_object_list', brigades.WorkObjectListView.as_view(), name='work_object_list'),
 
+
     path('categories/', categories.CategoryListView.as_view(), name='category_list'),
     path('categories/create/', categories.CategoryCreateView.as_view(), name='category_create'),
     path('categories/<int:pk>/update/', categories.CategoryUpdateView.as_view(), name='category_update'),
@@ -33,20 +34,19 @@ urlpatterns = [
     path('document/', equipment.DocumentListView.as_view(), name='document_list'),
 
     path('equipment/create/', equipment.EquipmentCreateView.as_view(), name='equipment_create'),
-    path('equipment/<int:brigade_id>/create/', equipment.EquipmentCreateByBrigadeIdView.as_view(),
-         name='equipment_create_by_brigade'),
-    path('equipment/<int:equipment_id>/<int:brigade_id>/add_document/', equipment.EquipmentAddDocumentsView.as_view(),
-         name='equipment_add_document'),
+    path('equipment/<int:brigade_id>/create/', equipment.EquipmentCreateByBrigadeIdView.as_view(), name='equipment_create_by_brigade'),
+    path('equipment/<int:equipment_id>/<int:brigade_id>/add_document/', equipment.EquipmentAddDocumentsView.as_view(), name='equipment_add_document'),
     path('document/<int:document_id>/delete/', equipment.document_delete, name='document_delete'),
     path('equipment/<int:pk>/update/', equipment.EquipmentUpdateView.as_view(), name='equipment_update'),
-    path('equipment/<int:pk>/<int:brigade_id>/update_by_brigade/', equipment.EquipmentUpdateByBrigadeView.as_view(),
-         name='equipment_update_by_brigade'),
+    path('equipment/<int:pk>/<int:brigade_id>/update_by_brigade/', equipment.EquipmentUpdateByBrigadeView.as_view(), name='equipment_update_by_brigade'),
     path('equipment/<int:equipment_id>/delete/', equipment.equipment_delete, name='equipment_delete'),
     path('equipment/<int:pk>/', equipment.EquipmentDetailView.as_view(), name='equipment_detail'),
     path('equipment/<int:equipment_id>/download_documents/', equipment.download_all_equipment_documents, name='download_equipment_documents'),
     path('brigade/<int:brigade_id>/download_documents/', equipment.download_all_brigade_documents, name='download_brigade_documents'),
 
     path('manufacturer_delete/<int:manufacturer_id>/', equipment.manufacturer_delete, name='manufacturer_delete'),
+    path('equipment/<int:brigade_id>/edit/', equipment.update_brigade_requirements, name='update_brigade_requirements'),
+    path('equipment/<int:brigade_id>/status/', equipment.brigade_equipment_status, name='brigade_requirement_status'),
 
     path('transfers/history/', transfers.TransferHistoryView.as_view(), name='transfer_history'),
 

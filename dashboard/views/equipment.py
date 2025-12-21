@@ -13,9 +13,10 @@ from django.urls import reverse
 from django.utils.encoding import escape_uri_path
 from django.views.generic import ListView, CreateView, UpdateView, DetailView
 
-from dashboard.forms import EquipmentCreateByBrigadeForm, EquipmentAddDocumentsForm, DocumentForm, EquipmentCreateForm
+from dashboard.forms import EquipmentCreateByBrigadeForm, EquipmentAddDocumentsForm, DocumentForm, EquipmentCreateForm, \
+    BrigadeRequirementForm
 from dashboard.mixins import StaffOnlyMixin
-from dashboard.models import Equipment, Brigade, Document, Manufacturer
+from dashboard.models import Equipment, Brigade, Document, Manufacturer, Category, BrigadeEquipmentRequirement
 
 
 class EquipmentListView(LoginRequiredMixin,  StaffOnlyMixin,SuccessMessageMixin, ListView):
@@ -394,3 +395,47 @@ def download_all_brigade_documents(request, brigade_id):
     response['Content-Disposition'] = f"attachment; filename*=utf-8''{escape_uri_path(zip_filename)}"
 
     return response
+
+
+def update_brigade_requirements(request, brigade_id):
+    brigade = get_object_or_404(Brigade, id=brigade_id)
+    if request.method == 'POST':
+        form = BrigadeRequirementForm(request.POST, brigade=brigade)
+        if form.is_valid():
+            form.save()
+            return redirect('brigade_requirement_status', brigade_id=brigade.id)
+    else:
+        form = BrigadeRequirementForm(brigade=brigade)
+
+    return render(request, 'dashboard/equipment/update_equipment_requirements.html', {'form': form, 'brigade': brigade})
+
+
+# 2. Страница отображения статуса (Расчет нехватки и лишнего)
+def brigade_equipment_status(request, brigade_id):
+    brigade = get_object_or_404(Brigade, id=brigade_id)
+    categories = Category.objects.all()
+
+    report = []
+    for cat in categories:
+        # План (из нашей связующей модели)
+        req = BrigadeEquipmentRequirement.objects.filter(brigade=brigade, category=cat).first()
+        required_qty = req.quantity if req else 0
+
+        # Факт (сколько оборудования этой категории сейчас числится за бригадой)
+        actual_qty = Equipment.objects.filter(brigade=brigade, category=cat).count()
+
+        diff = actual_qty - required_qty
+
+        report.append({
+            'category': cat.name,
+            'required': required_qty,
+            'actual': actual_qty,
+            'shortage': abs(diff) if diff < 0 else 0,  # Нехватка
+            'surplus': diff if diff > 0 else 0  # Лишнее
+        })
+
+    return render(request, 'dashboard/equipment/brigade_equipment_status.html', {
+        'brigade': brigade,
+        'report': report,
+        'page_title': brigade.name,
+    })
