@@ -1,6 +1,6 @@
 {% extends "layouts/base.html" %}
 {% load static %}
-
+{% load custom_filters %}
 {% block title %}{{ page_title }}{% endblock %}
 {% block page_title %}{{ page_title }}{% endblock %}
 
@@ -13,8 +13,14 @@
         <p class="text-muted mb-3">
             Отчет показывает сравнение требуемого (ПЛАН) и фактического (ФАКТ) количества оборудования по категориям.
         </p>
-
-
+        <div class="mb-2 mt-1">
+        <a href="{% url 'export_brigade_equipment_status_excel' brigade.id %}" class="btn btn-success">
+            <i class="fas fa-file-excel"></i> Выгрузить в Excel
+        </a>
+        <a class="btn btn-primary btn-md" href="{% url 'update_brigade_requirements' brigade.id %}">
+            <i class="bi bi-pencil-square me-2"></i>Изменить план требований
+        </a>
+        </div>
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title mb-3">Статус оборудования по категориям</h5>
@@ -33,7 +39,9 @@
                         <tbody>
                         {% for item in report %}
                             <tr>
-                                <td><a href="{% url 'brigade_detail' brigade.id %}?category={{ item.category }}">{{ item.category }}</a></td>
+                                <td>
+                                    <a href="{% url 'brigade_detail' brigade.id %}?category={{ item.category }}">{{ item.category }}</a>
+                                </td>
                                 <td class="text-end fw-bold">{{ item.required }}</td>
                                 <td class="text-end fw-bold">{{ item.actual }}</td>
 
@@ -90,6 +98,19 @@
                             </tr>
                         {% endfor %}
                         </tbody>
+                        {# Секция для общих итогов #}
+                        <tfoot>
+                            <tr class="table-info">
+                                <th scope="row">ИТОГО по бригаде</th>
+                                <th class="text-end">{{ total_required_all }}</th>
+                                <th class="text-end">{{ total_actual_all }}</th>
+                                <th class="text-center">
+                                    -
+                                </th>
+                                <th class="text-end text-danger">{{ total_shortage_all }}</th>
+                                <th class="text-end text-success">{{ total_surplus_all }}</th>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -133,9 +154,6 @@
         </div>
         <!-- Кнопки -->
         <div class="d-flex justify-content-between mt-4 mb-4">
-            <a class="btn btn-primary btn-md" href="{% url 'update_brigade_requirements' brigade.id %}">
-                <i class="bi bi-pencil-square me-2"></i>Изменить план требований
-            </a>
             <a class="btn btn-secondary btn-md" href="{% url 'brigade_list' %}">
                 <i class="bi bi-arrow-left me-2"></i>Вернуться к списку бригад
             </a>

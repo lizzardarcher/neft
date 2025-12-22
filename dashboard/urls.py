@@ -25,7 +25,6 @@ urlpatterns = [
     path('brigades/work_object_list', brigades.WorkObjectListView.as_view(), name='work_object_list'),
     path('brigades/<int:brigade_id>/edit/', brigades.update_brigade_requirements, name='update_brigade_requirements'),
     path('brigades/<int:brigade_id>/status/', brigades.brigade_equipment_status, name='brigade_requirement_status'),
-
     path('categories/', categories.CategoryListView.as_view(), name='category_list'),
     path('categories/create/', categories.CategoryCreateView.as_view(), name='category_create'),
     path('categories/<int:pk>/update/', categories.CategoryUpdateView.as_view(), name='category_update'),
@@ -112,4 +111,9 @@ urlpatterns = [
     path('equipment/export/excel/', index.EquipmentExcelExportView.as_view(), name='equipment_export_excel'),
 
     path('equipment/transfer/export/excel/', index.VehicleMovementExcelExportView.as_view(), name='vehicle_movement_export_excel'),
+    path('brigades/<int:brigade_id>/status/export/', index.export_brigade_equipment_status_excel, name='export_brigade_equipment_status_excel'),
+    path('categories/export/', index.export_category_equipment_status_excel, name='export_category_equipment_status_excel'),
+    path('brigades/export-org/', index.export_organization_equipment_status_excel, name='export_organization_equipment_status_excel'),
+    path('reports/excel', reports.ReportsView.as_view(), name='reports_list'),
+
 ]

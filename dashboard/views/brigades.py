@@ -6,8 +6,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.paginator import Paginator
-from django.db.models import Q, Count, When
+from django.db.models import Q, Count, When, Sum, OuterRef, Subquery, ExpressionWrapper, F
 from django.db.models import Value, IntegerField, Case
+from django.db.models.functions import Coalesce
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView, CreateView, UpdateView, DetailView, TemplateView
@@ -51,61 +52,89 @@ class BrigadeListView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, L
     def get_queryset(self):
         """Поиск по имени и описанию бригады"""
         queryset = super().get_queryset()
+
+        required_qty_subquery = BrigadeEquipmentRequirement.objects.filter(
+            brigade=OuterRef('pk'),
+            category=OuterRef('category')
+        ).values('brigade').annotate(
+            total_sum_qty=Sum('quantity')
+        ).values('total_sum_qty')[:1]
+
+        queryset = queryset.annotate(
+        )
+
         search_request = self.request.GET.get("search")
         if search_request:
-            brigade_by_name = Brigade.objects.filter(name__icontains=search_request)
-            brigade_by_description = Brigade.objects.filter(description__icontains=search_request)
-            queryset = brigade_by_description | brigade_by_name
+            queryset = queryset.filter(
+                Q(name__icontains=search_request) |
+                Q(description__icontains=search_request)
+            )
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['page_size'] = self.request.GET.get('page_size', self.paginate_by)
 
-        # Добавляем информацию об оборудовании для каждой бригады
+        total_shortage_all_brigades = 0
+        total_surplus_all_brigades = 0
+
         brigades_with_equipment = []
-        for brigade in context['brigades']:
-            brigade.equipment_info = self._get_equipment_status(brigade)
+        for brigade in context['brigades']:  # context['brigades'] уже пагинирован
+            equipment_status = self._get_equipment_status(brigade)
+            brigade.equipment_info = equipment_status
             brigades_with_equipment.append(brigade)
 
+            total_shortage_all_brigades += equipment_status['shortage_total']
+            total_surplus_all_brigades += equipment_status['surplus_total']
+
         context['brigades'] = brigades_with_equipment
+        context['total_shortage_all_brigades'] = total_shortage_all_brigades
+        context['total_surplus_all_brigades'] = total_surplus_all_brigades
+
         return context
 
     def _get_equipment_status(self, brigade):
         """
-        Подсчитывает недостающее и лишнее оборудование для бригады
+        Подсчитывает недостающее и лишнее оборудование для бригады.
+        Оптимизированная версия с использованием агрегаций Django ORM.
         Возвращает словарь с ключами: shortage_total, surplus_total
         """
-        from dashboard.models import BrigadeEquipmentRequirement, Equipment, Category
+        required_subquery = BrigadeEquipmentRequirement.objects.filter(
+            brigade=brigade,
+            category=OuterRef('pk')
+        ).values('category').annotate(
+            total_required_for_category=Sum('quantity')
+        ).values('total_required_for_category')[:1]
 
-        shortage_total = 0
-        surplus_total = 0
+        category_stats = Category.objects.annotate(
+            required_qty=Coalesce(Subquery(required_subquery, output_field=IntegerField()), Value(0)),
+            actual_qty=Count(
+                'equipment',
+                filter=Q(equipment__brigade=brigade),  # Фильтруем оборудование, относящееся к данной бригаде
+                distinct=True
+            )
+        ).annotate(
+            difference=F('actual_qty') - F('required_qty'),
+            shortage_cat=Case(
+                When(difference__lt=0, then=ExpressionWrapper(F('difference') * -1, output_field=IntegerField())),
+                default=Value(0),
+                output_field=IntegerField()
+            ),
+            surplus_cat=Case(
+                When(difference__gt=0, then=F('difference')),
+                default=Value(0),
+                output_field=IntegerField()
+            )
+        ).values('shortage_cat', 'surplus_cat')
 
-        categories = Category.objects.all()
-        for cat in categories:
-            # План (требуемое количество)
-            req = BrigadeEquipmentRequirement.objects.filter(
-                brigade=brigade,
-                category=cat
-            ).first()
-            required_qty = req.quantity if req else 0
-
-            # Факт (текущее количество)
-            actual_qty = Equipment.objects.filter(
-                brigade=brigade,
-                category=cat
-            ).count()
-
-            diff = actual_qty - required_qty
-
-            if diff < 0:
-                shortage_total += abs(diff)
-            else:
-                surplus_total += diff
+        total_summary = category_stats.aggregate(
+            shortage_total=Sum('shortage_cat', default=0),
+            surplus_total=Sum('surplus_cat', default=0)
+        )
 
         return {
-            'shortage_total': shortage_total,
-            'surplus_total': surplus_total
+            'shortage_total': total_summary['shortage_total'],
+            'surplus_total': total_summary['surplus_total']
         }
 
 class BrigadeDetailView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, DetailView):
@@ -598,26 +627,50 @@ def brigade_equipment_status(request, brigade_id):
     categories = Category.objects.all().order_by('name')
 
     report = []
+
+    # Инициализация переменных для общих итогов
+    total_required_all = 0
+    total_actual_all = 0
+    total_shortage_all = 0
+    total_surplus_all = 0
+
     for cat in categories:
         # План (из нашей связующей модели)
         req = BrigadeEquipmentRequirement.objects.filter(brigade=brigade, category=cat).first()
         required_qty = req.quantity if req else 0
 
         # Факт (сколько оборудования этой категории сейчас числится за бригадой)
-        actual_qty = Equipment.objects.filter(brigade=brigade, category=cat).count()
+        # Учитываем состояние оборудования
+        actual_qty = Equipment.objects.filter(brigade=brigade, category=cat, condition='work').count()
 
         diff = actual_qty - required_qty
+
+        shortage = abs(diff) if diff < 0 else 0
+        surplus = diff if diff > 0 else 0
 
         report.append({
             'category': cat.name,
             'required': required_qty,
             'actual': actual_qty,
-            'shortage': abs(diff) if diff < 0 else 0,  # Нехватка
-            'surplus': diff if diff > 0 else 0  # Лишнее
+            'shortage': shortage,
+            'surplus': surplus
         })
+
+        # Обновляем общие итоги
+        total_required_all += required_qty
+        total_actual_all += actual_qty
+        total_shortage_all += shortage
+        total_surplus_all += surplus
 
     return render(request, 'dashboard/brigades/brigade_equipment_status.html', {
         'brigade': brigade,
         'report': report,
-        'page_title': brigade.name,
+        'page_title': f"Статус оснащения бригады «{brigade.name}»",
+        # Передаем общие итоги в контекст
+        'total_required_all': total_required_all,
+        'total_actual_all': total_actual_all,
+        'total_shortage_all': total_shortage_all,
+        'total_surplus_all': total_surplus_all,
     })
+
+

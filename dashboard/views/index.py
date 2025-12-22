@@ -7,19 +7,21 @@ import csv
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.contrib.messages.views import SuccessMessageMixin
-from django.db.models import Count
+from django.db.models import Count, Sum
 from django.db.models.functions import TruncMonth
+from django.shortcuts import get_object_or_404
 from django.views.generic import TemplateView
 from django.http import HttpResponse
 from django.views import View
 import openpyxl
-from openpyxl.styles import Font, PatternFill, Border, Side
+from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
 from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
 
 from dashboard.forms import VehicleMovementFilterForm
 from dashboard.mixins import StaffOnlyMixin
 from dashboard.models import Brigade, Category, Equipment, UserActionLog, Transfer, Document, BrigadeActivity, \
-    WorkerActivity, WorkObject, VehicleMovement
+    WorkerActivity, WorkObject, VehicleMovement, BrigadeEquipmentRequirement
 from dashboard.utils.utils import get_days_in_month
 
 
@@ -540,4 +542,301 @@ class VehicleMovementExcelExportView(LoginRequiredMixin, StaffOnlyMixin, View):
         return response
 
 
-from openpyxl.utils import get_column_letter
+def export_brigade_equipment_status_excel(request, brigade_id):
+    brigade = get_object_or_404(Brigade, id=brigade_id)
+    categories = Category.objects.all().order_by('name')
+
+    report_data = []
+    total_required = 0
+    total_actual = 0
+
+    for cat in categories:
+        req = BrigadeEquipmentRequirement.objects.filter(brigade=brigade, category=cat).first()
+        required_qty = req.quantity if req else 0
+
+        actual_qty = Equipment.objects.filter(brigade=brigade, category=cat).count()
+
+        diff = actual_qty - required_qty
+
+        # Расчет процента оснащенности
+        percentage = (actual_qty / required_qty * 100) if required_qty > 0 else 0
+
+        report_data.append({
+            'category': cat.name,
+            'required': required_qty,
+            'actual': actual_qty,
+            'shortage': abs(diff) if diff < 0 else 0,
+            'surplus': diff if diff > 0 else 0,
+            'percentage': percentage,
+        })
+
+        total_required += required_qty
+        total_actual += actual_qty
+
+    # Создание Excel-файла
+    wb = Workbook()
+    ws = wb.active
+    ws.title = f"Отчет по {brigade.name}"
+
+    # Заголовок отчета
+    ws.append([f"Отчет по оснащенности бригады: {brigade.name}"])
+    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=7)
+    ws['A1'].font = Font(bold=True, size=14)
+    ws['A1'].alignment = Alignment(horizontal='center')
+    ws.append([])  # Пустая строка для отступа
+
+    # Заголовки таблицы
+    headers = ["Категория", "План", "Факт", "Нехватка", "Излишек", "Процент оснащенности"]
+    ws.append(headers)
+
+    # Применение стиля к заголовкам
+    for cell in ws[3]:  # Третья строка содержит заголовки
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal='center', vertical='center')
+
+    # Заполнение данными
+    for item in report_data:
+        ws.append([
+            item['category'],
+            item['required'],
+            item['actual'],
+            item['shortage'],
+            item['surplus'],
+            f"{item['percentage']:.2f}%" if item['required'] > 0 else "0.00%",  # Форматируем процент
+        ])
+
+    # Добавление итоговой строки
+    ws.append([])  # Пустая строка
+    total_percentage = (total_actual / total_required * 100) if total_required > 0 else 0
+    ws.append(["ИТОГО:", total_required, total_actual, "", "", f"{total_percentage:.2f}%"])
+
+    # Стиль для итоговой строки
+    for cell in ws[ws.max_row]:
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal='center')
+    ws.cell(row=ws.max_row, column=1).alignment = Alignment(horizontal='left')  # "ИТОГО:" можно оставить слева
+
+    # Автоматическое определение ширины столбцов
+    for col in range(1, ws.max_column + 1):
+        max_length = 0
+        column_letter = get_column_letter(col)
+        for cell in ws[column_letter]:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+        adjusted_width = (max_length + 2) * 1.2  # Дополнительный запас
+        ws.column_dimensions[column_letter].width = adjusted_width
+
+    # Подготовка HTTP-ответа
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)  # Переместить указатель в начало потока
+
+    filename = f"Отчет_по_оснащенности_бригады_{brigade.name.replace(' ', '_')}.xlsx"
+    response = HttpResponse(
+        output.read(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+
+def export_category_equipment_status_excel(request):
+    categories = Category.objects.annotate(
+        total_required=Sum('brigade_category__quantity'),
+        total_actual=Count('equipment', distinct=True)
+    ).order_by('name')
+
+    # Подготовка данных для отчета
+    report_data = []
+    total_org_required = 0
+    total_org_actual = 0
+
+    for cat in categories:
+        required_qty = cat.total_required if cat.total_required is not None else 0
+        actual_qty = cat.total_actual if cat.total_actual is not None else 0
+
+        percentage = (actual_qty / required_qty * 100) if required_qty > 0 else 0
+        diff = actual_qty - required_qty
+
+        report_data.append({
+            'name': cat.name,
+            'required': required_qty,
+            'actual': actual_qty,
+            'shortage': abs(diff) if diff < 0 else 0,
+            'surplus': diff if diff > 0 else 0,
+            'percentage': percentage,
+        })
+        total_org_required += required_qty
+        total_org_actual += actual_qty
+
+    # Создание Excel-файла
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Отчет по категориям"
+
+    # Заголовок отчета
+    ws.append(["Сводный отчет по оснащенности категорий"])
+    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=6)
+    ws['A1'].font = Font(bold=True, size=14)
+    ws['A1'].alignment = Alignment(horizontal='center')
+    ws.append([])  # Пустая строка
+
+    # Заголовки таблицы
+    headers = ["Категория", "План (Орг.)", "Факт (Орг.)", "Нехватка", "Излишек", "Процент оснащенности"]
+    ws.append(headers)
+
+    # Применение стиля к заголовкам
+    for cell in ws[3]:  # Третья строка содержит заголовки
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal='center', vertical='center')
+
+    # Заполнение данными
+    for item in report_data:
+        ws.append([
+            item['name'],
+            item['required'],
+            item['actual'],
+            item['shortage'],
+            item['surplus'],
+            f"{item['percentage']:.2f}%" if item['required'] > 0 else "0.00%",
+        ])
+
+    # Добавление итоговой строки
+    ws.append([])  # Пустая строка
+    total_org_percentage = (total_org_actual / total_org_required * 100) if total_org_required > 0 else 0
+    ws.append(["ИТОГО ПО ОРГАНИЗАЦИИ:", total_org_required, total_org_actual, "", "", f"{total_org_percentage:.2f}%"])
+
+    # Стиль для итоговой строки
+    for cell in ws[ws.max_row]:
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal='center')
+    ws.cell(row=ws.max_row, column=1).alignment = Alignment(horizontal='left')
+
+    # Автоматическое определение ширины столбцов
+    for col in range(1, ws.max_column + 1):
+        max_length = 0
+        column_letter = get_column_letter(col)
+        for cell in ws[column_letter]:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+        adjusted_width = (max_length + 2) * 1.2
+        ws.column_dimensions[column_letter].width = adjusted_width
+
+    # Подготовка HTTP-ответа
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    filename = "Отчет_по_оснащенности_категорий.xlsx"
+    response = HttpResponse(
+        output.read(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+
+def export_organization_equipment_status_excel(request):
+    # --- Сводная аналитика по всей организации ---
+    total_org_required = BrigadeEquipmentRequirement.objects.aggregate(
+        total_qty=Sum('quantity')
+    )['total_qty'] or 0
+    total_org_actual = Equipment.objects.count()
+    total_org_percentage = (total_org_actual / total_org_required * 100) if total_org_required > 0 else 0
+
+    # --- Аналитика по каждой бригаде ---
+    brigades = Brigade.objects.all().order_by('name')
+    brigade_export_data = []
+    for brigade in brigades:
+        brigade_required = BrigadeEquipmentRequirement.objects.filter(brigade=brigade).aggregate(
+            total_qty=Sum('quantity')
+        )['total_qty'] or 0
+
+        brigade_actual = Equipment.objects.filter(brigade=brigade).count()
+
+        brigade_percentage = (brigade_actual / brigade_required * 100) if brigade_required > 0 else 0
+
+        diff = brigade_actual - brigade_required
+        shortage = abs(diff) if diff < 0 else 0
+        surplus = diff if diff > 0 else 0
+
+        brigade_export_data.append({
+            'brigade_name': brigade.name,
+            'required': brigade_required,
+            'actual': brigade_actual,
+            'shortage': shortage,
+            'surplus': surplus,
+            'percentage': brigade_percentage,
+        })
+
+    # --- Создание Excel-файла ---
+    wb = Workbook()
+    ws_org = wb.active
+    ws_org.title = "Сводка по организации"
+
+    # Заголовок сводки
+    ws_org.append(["Сводный отчет по оснащенности организации"])
+    ws_org.merge_cells(start_row=1, start_column=1, end_row=1, end_column=6)
+    ws_org['A1'].font = Font(bold=True, size=14)
+    ws_org['A1'].alignment = Alignment(horizontal='center')
+    ws_org.append([])  # Пустая строка
+
+    # Данные сводки
+    ws_org.append(["Общий план:", total_org_required])
+    ws_org.append(["Общий факт:", total_org_actual])
+    ws_org.append(["Общий процент оснащенности:", f"{total_org_percentage:.2f}%"])
+    ws_org.append([])
+
+    # Заголовки таблицы бригад
+    ws_org.append(["Детализация по бригадам:"])
+    ws_org.append([])
+    headers = ["Бригада", "План", "Факт", "Нехватка", "Излишек", "Процент оснащенности"]
+    ws_org.append(headers)
+
+    # Применение стиля к заголовкам
+    for cell in ws_org[9]:  # 9-я строка содержит заголовки бригад
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal='center', vertical='center')
+
+    # Заполнение данными бригад
+    for item in brigade_export_data:
+        ws_org.append([
+            item['brigade_name'],
+            item['required'],
+            item['actual'],
+            item['shortage'],
+            item['surplus'],
+            f"{item['percentage']:.2f}%",
+        ])
+
+    # Автоматическое определение ширины столбцов
+    for col in range(1, ws_org.max_column + 1):
+        max_length = 0
+        column_letter = get_column_letter(col)
+        for cell in ws_org[column_letter]:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+        adjusted_width = (max_length + 2) * 1.2
+        ws_org.column_dimensions[column_letter].width = adjusted_width
+
+    # Подготовка HTTP-ответа
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    filename = "Отчет_по_оснащенности_организации.xlsx"
+    response = HttpResponse(
+        output.read(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response

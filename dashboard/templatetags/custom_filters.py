@@ -140,3 +140,17 @@ def get_month_name(month_number):
         '11': "Ноябрь",
         '12': "Декабрь"
     }[month_number]
+
+@register.filter
+def div(value, arg):
+    try:
+        return int(value) / int(arg)
+    except (ValueError, ZeroDivisionError):
+        return None
+
+@register.filter
+def mul(value, arg):
+    try:
+        return float(value) * float(arg)
+    except (ValueError, TypeError):
+        return None

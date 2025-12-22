@@ -1,5 +1,5 @@
 {% extends 'layouts/base.html' %}
-{% load custom_filters %}
+{% load custom_filters %} {# Убедитесь, что custom_filters содержит has_perm_in_group #}
 
 {% block title %}
     Список категорий
@@ -11,55 +11,114 @@
         <h1>Список категорий</h1>
         {% if user|has_perm_in_group:"Dashboard.add_category" %}
             <a class="btn btn-outline-success mb-2 mt-2" href="{% url 'category_create' %}">Добавить категорию</a>
+            <a href="{% url 'export_category_equipment_status_excel' %}" class="btn btn-success"
+               title="Статистика по оснащению организации">
+                <i class="fas fa-file-excel"></i> Выгрузить в Excel
+            </a>
         {% endif %}
-        <ul class="list-group">
-            {% for category in categories %}
-                <li class="list-group-item">
-                    <div class="row">
-                        <div class="col-lg-11 col-sm-10">
-                            <a class="link-offset-3"
-                               href="{% url 'equipment_list' %}?category={{ category.name }}">{{ category.name }} <span
-                                    class="badge text-success">[{{ category.equipment_count }}]</span></a>
-                        </div>
-                        <div class="col-lg-1 col-sm-2">
-                            {% if user|has_perm_in_group:"Dashboard.change_category" %}
 
-                                <a href="{% url 'category_update' category.id %}"
-                                   class="btn btn-sm btn-outline-warning"><i
-                                        class="fa fa-edit"></i> </a>
-                                <button type="button" class="btn btn-sm btn-outline-danger" data-toggle="modal"
-                                        data-target="#deleteModal{{ category.id }}"><i class="fa fa-trash-can"></i>
-                                </button>
-                            {% else %}
+        <form method="GET" class="my-3">
+            <div class="input-group">
+                <input type="text" name="search" class="form-control"
+                       placeholder="Поиск по названию, родителю или описанию" value="{{ request.GET.search }}">
+                <div class="input-group-append">
+                    <button class="btn btn-outline-secondary" type="submit">Поиск</button>
+                    {% if request.GET.search %}
+                        <a href="{% url 'category_list' %}" class="btn btn-outline-danger">Сбросить</a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
 
-                                <a class="btn btn-sm btn-outline-secondary" disabled><i class="fa fa-edit"></i></a>
-                                <a class="btn btn-sm btn-outline-secondary" disabled><i
-                                        class="fa fa-trash-can"></i></a>
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div class="modal fade" id="deleteModal{{ category.id }}" tabindex="-1" role="dialog"
-                         aria-labelledby="deleteModalLabel" aria-hidden="true">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="deleteModalLabel">Подтверждение удаления</h5>
+        {% if categories %}
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered table-hover">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Категория</th>
+                        <th scope="col" class="text-center">Факт (Наличие)</th>
+                        <th scope="col" class="text-center">План Общий (Требуется)</th>
+                        <th scope="col" class="text-center">Нехватка</th>
+                        <th scope="col" class="text-center">Излишек</th>
+                        <th scope="col" class="text-center">Действия</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for category in categories %}
+                        <tr>
+                            <td>
+                                <a class="link-offset-3"
+                                   href="{% url 'equipment_list' %}?category={{ category.name }}">
+                                    {{ category.name }}
+                                </a>
+                            </td>
+                            <td class="text-center">{{ category.total_actual }}</td>
+                            <td class="text-center">{{ category.total_required }}</td>
+                            <td class="text-center text-danger">{{ category.shortage }}</td>
+                            <td class="text-center text-success">{{ category.surplus }}</td>
+                            <td class="text-center">
+                                {% if user|has_perm_in_group:"Dashboard.change_category" %}
+                                    <a href="{% url 'category_update' category.id %}"
+                                       class="btn btn-sm btn-outline-warning" title="Редактировать"><i
+                                            class="fa fa-edit"></i></a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                            data-toggle="modal" data-target="#deleteModal{{ category.id }}"
+                                            title="Удалить"><i
+                                            class="fa fa-trash-can"></i></button>
+                                {% else %}
+                                    <a class="btn btn-sm btn-outline-secondary" disabled
+                                       title="Нет прав на редактирование"><i class="fa fa-edit"></i></a>
+                                    <a class="btn btn-sm btn-outline-secondary" disabled title="Нет прав на удаление"><i
+                                            class="fa fa-trash-can"></i></a>
+                                {% endif %}
+
+                                {# Модальное окно удаления #}
+                                <div class="modal fade" id="deleteModal{{ category.id }}" tabindex="-1" role="dialog"
+                                     aria-labelledby="deleteModalLabel{{ category.id }}" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="deleteModalLabel{{ category.id }}">
+                                                    Подтверждение удаления</h5>
+                                                <button type="button" class="close" data-dismiss="modal"
+                                                        aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                Вы уверены, что хотите удалить категорию "{{ category.name }}"?
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                                    Отмена
+                                                </button>
+                                                <a href="{% url 'category_delete' category.id %}"
+                                                   class="btn btn-danger">Удалить</a>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="modal-body">
-                                    Вы уверены, что хотите удалить категорию "{{ category.name }}"?
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена
-                                    </button>
-                                    <a href="{% url 'category_delete' category.id %}"
-                                       class="btn btn-danger">Удалить</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </li>
-            {% endfor %}
-        </ul>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                    <tfoot>
+                    <tr class="table-info">
+                        <th scope="row">ИТОГО по организации</th>
+                        <th class="text-center">{{ org_fact }}</th>
+                        <th class="text-center">{{ org_plan }}</th>
+                        <th class="text-center text-danger">{{ org_shortage }}</th>
+                        <th class="text-center text-success">{{ org_surplus }}</th>
+                        <th class="text-center"></th>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+        {% else %}
+            <p class="alert alert-info">Категорий пока нет.</p>
+        {% endif %}
+
         <a href="{% url 'dashboard' %}" class="btn btn-sm btn-outline-dark mt-2 mb-2">НАЗАД</a>
     </div>
 
