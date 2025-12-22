@@ -595,7 +595,7 @@ def update_brigade_requirements(request, brigade_id):
 # 2. Страница отображения статуса (Расчет нехватки и лишнего)
 def brigade_equipment_status(request, brigade_id):
     brigade = get_object_or_404(Brigade, id=brigade_id)
-    categories = Category.objects.all()
+    categories = Category.objects.all().order_by('name')
 
     report = []
     for cat in categories:
