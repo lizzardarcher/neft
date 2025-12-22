@@ -23,7 +23,8 @@ urlpatterns = [
     path('brigades/<int:work_object_id>/work_object_delete', brigades.work_object_delete, name='work_object_delete'),
     path('brigades/<int:pk>/work_object_detail', brigades.WorkObjectDetailView.as_view(), name='work_object_detail'),
     path('brigades/work_object_list', brigades.WorkObjectListView.as_view(), name='work_object_list'),
-
+    path('brigades/<int:brigade_id>/edit/', brigades.update_brigade_requirements, name='update_brigade_requirements'),
+    path('brigades/<int:brigade_id>/status/', brigades.brigade_equipment_status, name='brigade_requirement_status'),
 
     path('categories/', categories.CategoryListView.as_view(), name='category_list'),
     path('categories/create/', categories.CategoryCreateView.as_view(), name='category_create'),
@@ -45,8 +46,7 @@ urlpatterns = [
     path('brigade/<int:brigade_id>/download_documents/', equipment.download_all_brigade_documents, name='download_brigade_documents'),
 
     path('manufacturer_delete/<int:manufacturer_id>/', equipment.manufacturer_delete, name='manufacturer_delete'),
-    path('equipment/<int:brigade_id>/edit/', equipment.update_brigade_requirements, name='update_brigade_requirements'),
-    path('equipment/<int:brigade_id>/status/', equipment.brigade_equipment_status, name='brigade_requirement_status'),
+
 
     path('transfers/history/', transfers.TransferHistoryView.as_view(), name='transfer_history'),
 

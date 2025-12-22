@@ -603,7 +603,7 @@ class BrigadeRequirementForm(forms.Form):
         super().__init__(*args, **kwargs)
 
         # Для каждой категории создаем поле в форме
-        for cat in Category.objects.all():
+        for cat in Category.objects.all().order_by('name'):
             initial_val = 0
             if self.brigade:
                 req = BrigadeEquipmentRequirement.objects.filter(brigade=self.brigade, category=cat).first()

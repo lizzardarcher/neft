@@ -59,8 +59,8 @@
 <div class="content-wrapper">
     {% include 'includes/messages.html' %}
     {% if debug_mode %}
-        <div class="d-flex align-content-center">
-            <div class="alert alert-heading alert-warning m-1">Внимание! Приложение работает в тестовом режиме ‼</div>
+        <div class="d-flex">
+            <div class="alert alert-heading align-content-center alert-warning m-1">Внимание! Приложение работает в отладочном режиме ‼</div>
         </div>
     {% endif %}
     {% block content %}{% endblock content %}

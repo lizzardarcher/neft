@@ -9,14 +9,15 @@ from django.core.paginator import Paginator
 from django.db.models import Q, Count, When
 from django.db.models import Value, IntegerField, Case
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView, CreateView, UpdateView, DetailView, TemplateView
 from django.urls import reverse, reverse_lazy
 from django.utils.timezone import datetime
 
-from dashboard.forms import BrigadeForm, BrigadeActivityForm, WorkObjectForm
+from dashboard.forms import BrigadeForm, BrigadeActivityForm, WorkObjectForm, BrigadeRequirementForm
 from dashboard.mixins import StaffOnlyMixin
-from dashboard.models import Brigade, Equipment, Manufacturer, WorkerActivity, BrigadeActivity, WorkObject, UserProfile
+from dashboard.models import Brigade, Equipment, Manufacturer, WorkerActivity, BrigadeActivity, WorkObject, UserProfile, \
+    Category, BrigadeEquipmentRequirement
 from dashboard.utils.utils import get_days_in_month
 
 # class BrigadeListView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, ListView):
@@ -576,3 +577,47 @@ def work_object_delete(request, work_object_id):
     work_object.delete()
     messages.success(request, 'Объект успешно удален!')
     return redirect(request.META.get('HTTP_REFERER'))
+
+
+def update_brigade_requirements(request, brigade_id):
+    brigade = get_object_or_404(Brigade, id=brigade_id)
+    if request.method == 'POST':
+        form = BrigadeRequirementForm(request.POST, brigade=brigade)
+        if form.is_valid():
+            form.save()
+            return redirect('brigade_requirement_status', brigade_id=brigade.id)
+    else:
+        form = BrigadeRequirementForm(brigade=brigade)
+
+    return render(request, 'dashboard/brigades/update_equipment_requirements.html', {'form': form, 'brigade': brigade})
+
+
+# 2. Страница отображения статуса (Расчет нехватки и лишнего)
+def brigade_equipment_status(request, brigade_id):
+    brigade = get_object_or_404(Brigade, id=brigade_id)
+    categories = Category.objects.all()
+
+    report = []
+    for cat in categories:
+        # План (из нашей связующей модели)
+        req = BrigadeEquipmentRequirement.objects.filter(brigade=brigade, category=cat).first()
+        required_qty = req.quantity if req else 0
+
+        # Факт (сколько оборудования этой категории сейчас числится за бригадой)
+        actual_qty = Equipment.objects.filter(brigade=brigade, category=cat).count()
+
+        diff = actual_qty - required_qty
+
+        report.append({
+            'category': cat.name,
+            'required': required_qty,
+            'actual': actual_qty,
+            'shortage': abs(diff) if diff < 0 else 0,  # Нехватка
+            'surplus': diff if diff > 0 else 0  # Лишнее
+        })
+
+    return render(request, 'dashboard/brigades/brigade_equipment_status.html', {
+        'brigade': brigade,
+        'report': report,
+        'page_title': brigade.name,
+    })
