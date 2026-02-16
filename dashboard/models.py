@@ -97,6 +97,11 @@ class Equipment(models.Model):
     class Meta:
         indexes = [
             models.Index(fields=['name']),
+            models.Index(fields=['serial']),
+            models.Index(fields=['brigade']),
+            models.Index(fields=['category']),
+            models.Index(fields=['condition']),
+            models.Index(fields=['brigade', 'category']),
         ]
         unique_together = ['serial', 'manufacturer', 'category']
 
@@ -110,6 +115,11 @@ class BrigadeEquipmentRequirement(models.Model):
         unique_together = ('brigade', 'category')
         verbose_name = "Требование оборудования бригады"
         verbose_name_plural = "Требования оборудования бригад"
+        indexes = [
+            models.Index(fields=['brigade']),
+            models.Index(fields=['category']),
+            models.Index(fields=['brigade', 'category']),
+        ]
 
     def __str__(self):
         return f"{self.brigade.name} требует {self.quantity} ед. из категории '{self.category.name}'"
@@ -141,6 +151,14 @@ class Transfer(models.Model):
 
     def __str__(self):
         return f"{self.equipment} from {self.from_brigade if self.from_brigade else 'Неизвестно'} to {self.to_brigade}"
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['transfer_date']),
+            models.Index(fields=['from_brigade']),
+            models.Index(fields=['to_brigade']),
+            models.Index(fields=['equipment']),
+        ]
 
 
 class UserActionLog(models.Model):
@@ -177,6 +195,12 @@ class UserProfile(models.Model):
     def __str__(self):
         return self.user.username
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['brigade']),
+            models.Index(fields=['is_driver']),
+        ]
+
 
 ### DEPRECATED / DO NOT USE
 class WorkTypes(models.Model):
@@ -212,6 +236,13 @@ class WorkerActivity(models.Model):
 
     class Meta:
         unique_together = ['user', 'date', 'brigade']
+        indexes = [
+            models.Index(fields=['date']),
+            models.Index(fields=['user']),
+            models.Index(fields=['brigade']),
+            models.Index(fields=['date', 'brigade']),
+            models.Index(fields=['date', 'user']),
+        ]
 
 
 class WorkObject(models.Model):
@@ -257,6 +288,13 @@ class BrigadeActivity(models.Model):
     def __str__(self):
         return self.brigade.name
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['date']),
+            models.Index(fields=['brigade']),
+            models.Index(fields=['date', 'brigade']),
+        ]
+
 
 class OtherCategory(models.Model):
     name = models.CharField(max_length=200, unique=True, null=False, blank=False, verbose_name='Название категории')
@@ -301,6 +339,15 @@ class VehicleMovement(models.Model):
 
     class Meta:
         ordering = ['date']
+        indexes = [
+            models.Index(fields=['date']),
+            models.Index(fields=['driver']),
+            models.Index(fields=['vehicle']),
+            models.Index(fields=['brigade_from']),
+            models.Index(fields=['brigade_to']),
+            models.Index(fields=['date', 'brigade_from']),
+            models.Index(fields=['date', 'brigade_to']),
+        ]
         # unique_together = ['driver', 'vehicle', 'date', 'brigade_from', 'brigade_to']
 
 class VehicleMovementEquipment(models.Model):

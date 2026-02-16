@@ -578,6 +578,7 @@ class VehicleMovementFilterForm(forms.Form):
     brigade_to = forms.ModelChoiceField(queryset=Brigade.objects.all(), required=False, label='В бригаду', widget=forms.Select(attrs={'class': 'form-control'}))
     driver = forms.ModelChoiceField(queryset=User.objects.filter(profile__is_driver=True), required=False, label='Водитель', widget=forms.Select(attrs={'class': 'form-control'}))
     vehicle = forms.ModelChoiceField(queryset=Vehicle.objects.all(), required=False, label='Автомобиль', widget=forms.Select(attrs={'class': 'form-control'}))
+    equipment = forms.ModelChoiceField(queryset=OtherEquipment.objects.all(), required=False, label='Оборудование', widget=forms.Select(attrs={'class': 'form-control'}))
     start_date = forms.DateField(required=False, label='Начальная дата', widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}))
     end_date = forms.DateField(required=False, label='Конечная дата', widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}))
 
@@ -585,6 +586,8 @@ class VehicleMovementFilterForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.fields['driver'].queryset = User.objects.order_by('last_name').filter(profile__is_driver=True)
         self.fields['driver'].label_from_instance = self.driver_label_from_instance
+        # Сортировка оборудования по имени
+        self.fields['equipment'].queryset = OtherEquipment.objects.order_by('name')
 
     def driver_label_from_instance(self, obj):
         return f"{obj.last_name} {obj.first_name}"

@@ -14,7 +14,8 @@ from django.views import View
 from dashboard.forms import VehicleForm, VehicleMovementForm, OtherEquipmentForm, OtherCategoryForm, \
     VehicleMovementEquipmentFormSet, VehicleMovementFilterForm
 from dashboard.mixins import StaffOnlyMixin
-from dashboard.models import Transfer, OtherEquipment, OtherCategory, Vehicle, VehicleMovement
+from dashboard.models import Transfer, OtherEquipment, OtherCategory, Vehicle, VehicleMovement, VehicleMovementEquipment
+from django.db.models import Sum
 
 
 class TransferHistoryView(LoginRequiredMixin, StaffOnlyMixin, ListView):
@@ -161,7 +162,7 @@ class VehicleMovementTotalListView(LoginRequiredMixin, StaffOnlyMixin, ListView)
     context_object_name = 'vehicle_movements'
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().select_related('driver', 'vehicle', 'brigade_from', 'brigade_to').prefetch_related('vehiclemovementequipment_set__equipment')
         form = VehicleMovementFilterForm(self.request.GET)
         if form.is_valid():
             month = form.cleaned_data.get('month')
@@ -171,6 +172,7 @@ class VehicleMovementTotalListView(LoginRequiredMixin, StaffOnlyMixin, ListView)
             brigade_to = form.cleaned_data.get('brigade_to')
             driver = form.cleaned_data.get('driver')
             vehicle = form.cleaned_data.get('vehicle')
+            equipment = form.cleaned_data.get('equipment')
             start_date = form.cleaned_data.get('start_date')
             end_date = form.cleaned_data.get('end_date')
 
@@ -187,6 +189,9 @@ class VehicleMovementTotalListView(LoginRequiredMixin, StaffOnlyMixin, ListView)
                 queryset = queryset.filter(driver=driver)
             if vehicle:
                 queryset = queryset.filter(vehicle=vehicle)
+            if equipment:
+                # Фильтрация по оборудованию через промежуточную модель
+                queryset = queryset.filter(vehiclemovementequipment__equipment=equipment).distinct()
             if start_date:
                 queryset = queryset.filter(date__gte=start_date)
             if end_date:
@@ -211,13 +216,14 @@ class VehicleMovementTotalListView(LoginRequiredMixin, StaffOnlyMixin, ListView)
                                                           'vehicle__number').annotate(count=Count('id')).order_by(
             '-count')
 
-        equipment_summary = {}
-        for movement in queryset:
-            for equipment_entry in movement.vehiclemovementequipment_set.all():
-                equipment_name = equipment_entry.equipment.name
-                if equipment_name not in equipment_summary:
-                    equipment_summary[equipment_name] = 0
-                equipment_summary[equipment_name] += equipment_entry.quantity
+        # Оптимизация: используем агрегацию вместо циклов для подсчета equipment_summary
+        equipment_summary_qs = VehicleMovementEquipment.objects.filter(
+            vehicle_movement__in=queryset
+        ).values('equipment__name').annotate(
+            total_quantity=Sum('quantity')
+        ).order_by('equipment__name')
+        
+        equipment_summary = {item['equipment__name']: item['total_quantity'] for item in equipment_summary_qs}
 
         context['equipment_summary'] = equipment_summary
         return context

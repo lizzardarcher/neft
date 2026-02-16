@@ -161,11 +161,11 @@ class EquipmentExcelExportView(LoginRequiredMixin, StaffOnlyMixin, View):
 
         search_request = request.GET.get("search")
         if search_request:
-            equipment_by_name = Equipment.objects.filter(name__icontains=search_request)
-            equipment_by_serial = Equipment.objects.filter(serial__icontains=search_request)
+            equipment_by_name = Equipment.objects.filter(name__icontains=search_request).select_related('category', 'brigade')
+            equipment_by_serial = Equipment.objects.filter(serial__icontains=search_request).select_related('category', 'brigade')
             queryset = (equipment_by_name | equipment_by_serial)
         else:
-            queryset = Equipment.objects.all()
+            queryset = Equipment.objects.all().select_related('category', 'brigade')
 
         data = []
         for obj in queryset:
@@ -327,7 +327,7 @@ class WorkerActivityExcelView(LoginRequiredMixin, StaffOnlyMixin, View):
 class VehicleMovementExcelExportView(LoginRequiredMixin, StaffOnlyMixin, View):
     def get(self, request, *args, **kwargs):
         form = VehicleMovementFilterForm(request.GET)
-        queryset = VehicleMovement.objects.all()
+        queryset = VehicleMovement.objects.all().select_related('driver', 'vehicle', 'brigade_from', 'brigade_to').prefetch_related('vehiclemovementequipment_set__equipment')
 
         if form.is_valid():
             month = form.cleaned_data.get('month')
@@ -336,6 +336,7 @@ class VehicleMovementExcelExportView(LoginRequiredMixin, StaffOnlyMixin, View):
             brigade_to = form.cleaned_data.get('brigade_to')
             driver = form.cleaned_data.get('driver')
             vehicle = form.cleaned_data.get('vehicle')
+            equipment = form.cleaned_data.get('equipment')
             start_date = form.cleaned_data.get('start_date')
             end_date = form.cleaned_data.get('end_date')
 
@@ -351,6 +352,9 @@ class VehicleMovementExcelExportView(LoginRequiredMixin, StaffOnlyMixin, View):
                 queryset = queryset.filter(driver=driver)
             if vehicle:
                 queryset = queryset.filter(vehicle=vehicle)
+            if equipment:
+                # Фильтрация по оборудованию через промежуточную модель
+                queryset = queryset.filter(vehiclemovementequipment__equipment=equipment).distinct()
             if start_date:
                 queryset = queryset.filter(date__gte=start_date)
             if end_date:

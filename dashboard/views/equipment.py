@@ -32,7 +32,7 @@ class EquipmentListView(LoginRequiredMixin,  StaffOnlyMixin,SuccessMessageMixin,
         return context
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().select_related('category', 'brigade').prefetch_related('documents')
 
         search_request = self.request.GET.get("search", None)
         category = self.request.GET.get("category", None)
@@ -352,7 +352,8 @@ def download_all_brigade_documents(request, brigade_id):
 
     unique_documents = {}
 
-    equipment_in_brigade = Equipment.objects.filter(brigade=brigade)
+    # Оптимизация: используем prefetch_related для загрузки всех документов одним запросом
+    equipment_in_brigade = Equipment.objects.filter(brigade=brigade).prefetch_related('documents')
 
     if not equipment_in_brigade.exists():
         return HttpResponse(f"Для бригады '{brigade.name}' нет привязанного оборудования.", status=404)

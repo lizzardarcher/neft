@@ -34,9 +34,10 @@ class UserAdmin(BaseUserAdmin):
     date_hierarchy = 'date_joined'
     ordering = ('-date_joined',)
 
-    fieldsets = BaseUserAdmin.fieldsets + (
-        ('Дополнительная информация', {'fields': ('date_joined', 'last_login')}),
-    )
+    # Убираем дублирующий fieldset, так как date_joined и last_login уже есть в BaseUserAdmin.fieldsets
+    # fieldsets = BaseUserAdmin.fieldsets + (
+    #     ('Дополнительная информация', {'fields': ('date_joined', 'last_login')}),
+    # )
 
     def profile_link(self, obj):
         if hasattr(obj, 'profile'):
