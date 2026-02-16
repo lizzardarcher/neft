@@ -1,7 +1,70 @@
 from django.contrib.contenttypes.models import ContentType
 from django.urls import resolve
+from django.shortcuts import redirect
+from django.http import HttpResponseForbidden
 
 from .models import UserActionLog, Equipment, Category
+
+
+class RestrictedUserAccessMiddleware:
+    """Мидлвер для ограничения доступа пользователей с username='1' и '2'"""
+    
+    def __init__(self, get_response):
+        self.get_response = get_response
+    
+    def __call__(self, request):
+        # Проверяем, является ли пользователь пользователем с ограниченным доступом
+        if request.user.is_authenticated:
+            # Пользователь "1" - перенаправление на /1/
+            if request.user.username == '1':
+                # Разрешенные пути для пользователя "1"
+                allowed_paths = [
+                    '/1',
+                    '/login',
+                    '/logout',
+                ]
+                
+                # Проверяем, начинается ли путь с разрешенных
+                path_allowed = any(request.path.startswith(path) for path in allowed_paths)
+                
+                # Также разрешаем статические файлы и медиа
+                if request.path.startswith('/static/') or request.path.startswith('/media/'):
+                    path_allowed = True
+                
+                # Разрешаем корневой путь (может быть редирект)
+                if request.path == '/':
+                    path_allowed = True
+                
+                if not path_allowed:
+                    # Перенаправляем на разрешенный ресурс
+                    return redirect('/1/')
+            
+            # Пользователь "2" - перенаправление на /2/
+            elif request.user.username == '2':
+                # Разрешенные пути для пользователя "2"
+                allowed_paths = [
+                    '/2',
+                    '/login',
+                    '/logout',
+                ]
+                
+                # Проверяем, начинается ли путь с разрешенных
+                path_allowed = any(request.path.startswith(path) for path in allowed_paths)
+                
+                # Также разрешаем статические файлы и медиа
+                if request.path.startswith('/static/') or request.path.startswith('/media/'):
+                    path_allowed = True
+                
+                # Разрешаем корневой путь (может быть редирект)
+                if request.path == '/':
+                    path_allowed = True
+                
+                if not path_allowed:
+                    # Перенаправляем на разрешенный ресурс
+                    return redirect('/2/')
+        
+        response = self.get_response(request)
+        return response
 
 
 class UserActionLoggerMiddleware:

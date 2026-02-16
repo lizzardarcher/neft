@@ -40,6 +40,13 @@ class Document(models.Model):
     def __str__(self):
         return f"{self.file.url} ({self.upload_date.strftime('%Y-%m-%d %H:%M')})"
 
+    def delete(self, *args, **kwargs):
+        # удаляем файл из хранилища при удалении записи
+        storage = self.file.storage
+        name = self.file.name
+        super().delete(*args, **kwargs)
+        if name and storage.exists(name):
+            storage.delete(name)
 
 class WorkerDocument(models.Model):
     title = models.CharField(max_length=200, verbose_name="Название документа", null=False, blank=False)
@@ -54,6 +61,13 @@ class WorkerDocument(models.Model):
         verbose_name_plural = "Документы работников"
         ordering = ['title']
 
+    def delete(self, *args, **kwargs):
+        # удаляем файл из хранилища при удалении записи
+        storage = self.file.storage
+        name = self.file.name
+        super().delete(*args, **kwargs)
+        if name and storage.exists(name):
+            storage.delete(name)
 
 class Manufacturer(models.Model):
     name = models.CharField(max_length=200, unique=True, null=False, blank=False, verbose_name='Название производителя')
@@ -299,3 +313,95 @@ class VehicleMovementEquipment(models.Model):
         ordering = ['equipment']
     def __str__(self):
         return f'{self.equipment.name} ({self.quantity})'
+
+
+class BrigadeDataFolder(models.Model):
+    """Папка для хранения баз данных бригад по датам"""
+    folder_name = models.CharField(
+        max_length=50,
+        verbose_name="Название папки (дата)",
+        unique=True,
+        help_text="Формат: ДД.ММ.ГГ, например: 02.02.26"
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name="Создал"
+    )
+
+    class Meta:
+        verbose_name = "Папка баз данных"
+        verbose_name_plural = "Папки баз данных"
+        ordering = ['folder_name']
+
+    def __str__(self):
+        return self.folder_name
+
+    def delete(self, *args, **kwargs):
+        """Удаление папки со всеми файлами"""
+        # Удаляем все файлы в папке перед удалением самой папки
+        for file_obj in self.files.all():
+            # Вызываем метод delete() модели BrigadeDataFile, который удалит физический файл
+            file_obj.delete()
+        # Удаляем саму папку
+        super().delete(*args, **kwargs)
+
+
+class BrigadeDataFile(models.Model):
+    """Файл базы данных, загруженный бригадой"""
+    folder = models.ForeignKey(
+        BrigadeDataFolder,
+        on_delete=models.CASCADE,
+        related_name='files',
+        verbose_name="Папка"
+    )
+    title = models.CharField(
+        max_length=200,
+        verbose_name="Название файла",
+        null=False,
+        blank=False
+    )
+    file = models.FileField(
+        upload_to='brigade_data/%Y/%m/',
+        verbose_name="Файл",
+        null=False,
+        blank=False
+    )
+    uploaded_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Дата загрузки"
+    )
+    uploaded_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name="Загрузил"
+    )
+    brigade = models.ForeignKey(
+        Brigade,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Бригада"
+    )
+
+    class Meta:
+        verbose_name = "Файл базы данных"
+        verbose_name_plural = "Файлы баз данных"
+        ordering = ['-uploaded_at']
+
+    def __str__(self):
+        return f"{self.folder.folder_name} - {self.title}"
+
+    def delete(self, *args, **kwargs):
+        """Удаление файла с физическим удалением с сервера"""
+        storage = self.file.storage
+        name = self.file.name
+        # Сохраняем имя файла перед удалением записи
+        if name and storage.exists(name):
+            # Удаляем физический файл
+            storage.delete(name)
+        # Удаляем запись из БД
+        super().delete(*args, **kwargs)

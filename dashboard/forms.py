@@ -1,11 +1,13 @@
+import os
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group, Permission
+from django.core.exceptions import ValidationError
 from django.forms import inlineformset_factory
 
 from dashboard.models import Brigade, Equipment, Document, Category, UserProfile, Manufacturer, WorkerActivity, \
     BrigadeActivity, WorkObject, Vehicle, VehicleMovement, OtherEquipment, OtherCategory, VehicleMovementEquipment, \
-    WorkerDocument, BrigadeEquipmentRequirement
+    WorkerDocument, BrigadeEquipmentRequirement, BrigadeDataFolder, BrigadeDataFile
 
 DATE_STYLE = {'style': 'width: 15rem;'}
 
@@ -630,3 +632,83 @@ class BrigadeRequirementForm(forms.Form):
                     category=category,
                     defaults={'quantity': quantity or 0}
                 )
+
+
+class BrigadeDataFileForm(forms.ModelForm):
+    class Meta:
+        model = BrigadeDataFile
+        fields = ['title', 'file', 'folder', 'brigade']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'file': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.rar,.zip'
+            }),
+            'folder': forms.Select(attrs={'class': 'form-control'}),
+            'brigade': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        # Для обычных пользователей показываем выбор бригады
+        if user and user.username == '2':
+            # Устанавливаем начальное значение из профиля, если есть
+            if hasattr(user, 'profile') and user.profile.brigade:
+                self.fields['brigade'].initial = user.profile.brigade
+            # Показываем только активные папки
+            self.fields['folder'].queryset = BrigadeDataFolder.objects.all().order_by('-folder_name')
+
+    def clean_file(self):
+        file = self.cleaned_data.get('file')
+        if file:
+            # Проверка расширения
+            ext = os.path.splitext(file.name)[1].lower()
+            if ext not in ['.rar', '.zip']:
+                raise ValidationError(
+                    'Разрешены только файлы формата .rar или .zip'
+                )
+
+            # Проверка размера (200 МБ = 200 * 1024 * 1024 байт)
+            max_size = 200 * 1024 * 1024
+            if file.size > max_size:
+                raise ValidationError(
+                    f'Размер файла не должен превышать 200 МБ. '
+                    f'Текущий размер: {file.size / (1024*1024):.2f} МБ'
+                )
+        return file
+
+
+class BrigadeDataFolderForm(forms.ModelForm):
+    class Meta:
+        model = BrigadeDataFolder
+        fields = ['folder_name']
+        widgets = {
+            'folder_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'ДД.ММ.ГГ, например: 02.02.26'
+            }),
+        }
+
+    def clean_folder_name(self):
+        folder_name = self.cleaned_data.get('folder_name')
+        # Валидация формата даты
+        if folder_name:
+            parts = folder_name.split('.')
+            if len(parts) != 3:
+                raise ValidationError(
+                    'Формат должен быть: ДД.ММ.ГГ (например: 02.02.26)'
+                )
+            try:
+                day = int(parts[0])
+                month = int(parts[1])
+                year = int(parts[2])
+                if not (1 <= day <= 31 and 1 <= month <= 12 and 0 <= year <= 99):
+                    raise ValidationError(
+                        'Неверный формат даты. День: 1-31, Месяц: 1-12, Год: 0-99'
+                    )
+            except ValueError:
+                raise ValidationError(
+                    'Дата должна содержать только цифры в формате ДД.ММ.ГГ'
+                )
+        return folder_name

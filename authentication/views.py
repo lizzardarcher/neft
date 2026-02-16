@@ -29,7 +29,9 @@ class LoginView(TemplateView):
             if user is not None:
                 login(request, user)
                 if username == '1':
-                    return redirect('worker_document_list')
+                    return redirect('/1/')
+                elif username == '2':
+                    return redirect('/2/')
                 else:
                     return redirect('dashboard')
             else:
