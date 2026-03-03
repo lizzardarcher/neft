@@ -1,8 +1,12 @@
+import mimetypes
+
 from django import forms
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.encoding import escape_uri_path
 from django.views.generic import ListView
 from django.http import HttpResponseForbidden, FileResponse
 import os
@@ -33,26 +37,27 @@ def brigade_data_list(request):
     """
     from datetime import datetime
     
-    folders = BrigadeDataFolder.objects.all().prefetch_related('files')
-    
     # Получаем текущий год в формате ГГ (например, 26 для 2026)
     current_year = datetime.now().strftime('%y')
     
     # Фильтрация по месяцу/году (формат: ММ.ГГ, например 02.26)
     month_filter = request.GET.get('month', None)
     
-    # Если фильтр не указан, показываем папки за текущий год
+    # Получаем все папки с prefetch_related для оптимизации, затем сортируем по дате
+    all_folders_qs = BrigadeDataFolder.objects.all().prefetch_related('files')
+    all_folders_sorted = all_folders_qs.order_by_date(reverse=True)
+    
+    # Применяем фильтр после сортировки
     if not month_filter:
         # Фильтруем папки, которые заканчиваются на текущий год
-        folders = folders.filter(folder_name__endswith=current_year)
+        folders = [f for f in all_folders_sorted if f.folder_name.endswith(current_year)]
     else:
         # Фильтруем папки по указанному месяцу/году
-        folders = folders.filter(folder_name__endswith=month_filter)
+        folders = [f for f in all_folders_sorted if f.folder_name.endswith(month_filter)]
     
     # Получаем список уникальных месяцев/лет для фильтра
-    all_folders = BrigadeDataFolder.objects.all()
     months_years = set()
-    for folder in all_folders:
+    for folder in all_folders_sorted:
         # Извлекаем месяц и год из формата ДД.ММ.ГГ
         parts = folder.folder_name.split('.')
         if len(parts) == 3:
@@ -96,11 +101,16 @@ def brigade_data_upload(request):
         form = BrigadeDataFileForm(user=request.user)
         # Для обычных работников показываем только активные папки
         if is_regular_worker(request.user) and not is_manager_or_admin(request.user):
-            form.fields['folder'].queryset = BrigadeDataFolder.objects.all().order_by('-folder_name')
+            # Используем кастомную сортировку по дате (от новой к старой)
+            folders_list = BrigadeDataFolder.objects.order_by_date(reverse=True)
+            form.fields['folder'].queryset = BrigadeDataFolder.objects.filter(
+                id__in=[f.id for f in folders_list]
+            )
     
     context = {
         'form': form,
         'is_manager': is_manager_or_admin(request.user),
+        'max_file_size': settings.DATA_UPLOAD_MAX_MEMORY_SIZE/(1024*1024),
     }
     return render(request, 'dashboard/brigade_data/data_upload.html', context)
 
@@ -113,22 +123,28 @@ def brigade_data_download(request, file_id):
     """
     if not is_manager_or_admin(request.user):
         return HttpResponseForbidden("У вас нет прав для скачивания файлов")
-    
+
     file_obj = get_object_or_404(BrigadeDataFile, id=file_id)
-    
+
     if file_obj.file:
         try:
             response = FileResponse(
                 file_obj.file.open('rb'),
-                content_type='application/octet-stream'
+                content_type='application/octet-stream',
             )
-            filename = os.path.basename(file_obj.file.name)
-            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+            real_name = os.path.basename(file_obj.file.name)
+            base_name = file_obj.title or real_name
+            _, ext = os.path.splitext(real_name)
+            filename = f"{base_name}{ext or ''}"
+
+            encoded = escape_uri_path(filename)
+            response['Content-Disposition'] = f"attachment; filename*=utf-8''{encoded}"
             return response
         except Exception as e:
             messages.error(request, f'Ошибка при скачивании файла: {e}')
             return redirect('brigade_data_list')
-    
+
     messages.error(request, 'Файл не найден')
     return redirect('brigade_data_list')
 

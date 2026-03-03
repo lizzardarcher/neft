@@ -6,6 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.template.defaultfilters import default
+from datetime import datetime
 
 
 class Brigade(models.Model):
@@ -362,6 +363,50 @@ class VehicleMovementEquipment(models.Model):
         return f'{self.equipment.name} ({self.quantity})'
 
 
+class BrigadeDataFolderQuerySet(models.QuerySet):
+    """Кастомный QuerySet для сортировки папок по датам"""
+    
+    def order_by_date(self, reverse=True):
+        """
+        Сортирует папки по дате, извлеченной из folder_name (формат ДД.ММ.ГГ)
+        reverse=True: от новой к старой (по умолчанию)
+        reverse=False: от старой к новой
+        """
+        def parse_folder_name_to_date(folder_name):
+            """Парсит строку ДД.ММ.ГГ в объект datetime"""
+            try:
+                parts = folder_name.split('.')
+                if len(parts) == 3:
+                    day = int(parts[0])
+                    month = int(parts[1])
+                    year = int(parts[2])
+                    # Преобразуем ГГ в ГГГГ (26 -> 2026, 99 -> 1999, 00 -> 2000)
+                    if year < 50:
+                        year += 2000
+                    else:
+                        year += 1900
+                    return datetime(year, month, day)
+            except (ValueError, IndexError):
+                # Если не удалось распарсить, возвращаем минимальную дату
+                return datetime.min
+            return datetime.min
+        
+        # Получаем все объекты и сортируем в Python
+        folders = list(self.all())
+        folders.sort(key=lambda x: parse_folder_name_to_date(x.folder_name), reverse=reverse)
+        return folders
+
+
+class BrigadeDataFolderManager(models.Manager):
+    """Кастомный менеджер для BrigadeDataFolder"""
+    
+    def get_queryset(self):
+        return BrigadeDataFolderQuerySet(self.model, using=self._db)
+    
+    def order_by_date(self, reverse=True):
+        return self.get_queryset().order_by_date(reverse=reverse)
+
+
 class BrigadeDataFolder(models.Model):
     """Папка для хранения баз данных бригад по датам"""
     folder_name = models.CharField(
@@ -377,11 +422,15 @@ class BrigadeDataFolder(models.Model):
         null=True,
         verbose_name="Создал"
     )
+    
+    # Используем кастомный менеджер
+    objects = BrigadeDataFolderManager()
 
     class Meta:
         verbose_name = "Папка баз данных"
         verbose_name_plural = "Папки баз данных"
-        ordering = ['folder_name']
+        # Убираем ordering из Meta, так как будем использовать кастомную сортировку
+        ordering = []
 
     def __str__(self):
         return self.folder_name

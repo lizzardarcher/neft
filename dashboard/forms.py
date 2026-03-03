@@ -1,9 +1,11 @@
 import os
 from django import forms
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group, Permission
 from django.core.exceptions import ValidationError
 from django.forms import inlineformset_factory
+from django.db.models import Q
 
 from dashboard.models import Brigade, Equipment, Document, Category, UserProfile, Manufacturer, WorkerActivity, \
     BrigadeActivity, WorkObject, Vehicle, VehicleMovement, OtherEquipment, OtherCategory, VehicleMovementEquipment, \
@@ -654,13 +656,27 @@ class BrigadeDataFileForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
+        
+        used_brigades = Brigade.objects.filter(
+            Q(name__icontains='партия')
+        ).distinct()
+
+        # Если есть использованные бригады, показываем только их, иначе все
+        if used_brigades.exists():
+            self.fields['brigade'].queryset = used_brigades.order_by('name')
+        else:
+            # Fallback: если нет использованных, показываем все (на случай если база пустая)
+            self.fields['brigade'].queryset = Brigade.objects.all().order_by('name')
+
         # Для обычных пользователей показываем выбор бригады
         if user and user.username == '2':
-            # Устанавливаем начальное значение из профиля, если есть
             if hasattr(user, 'profile') and user.profile.brigade:
                 self.fields['brigade'].initial = user.profile.brigade
-            # Показываем только активные папки
-            self.fields['folder'].queryset = BrigadeDataFolder.objects.all().order_by('-folder_name')
+            # Сортировка по дате (от новой к старой)
+            folders_list = BrigadeDataFolder.objects.order_by_date(reverse=True)
+            self.fields['folder'].queryset = BrigadeDataFolder.objects.filter(
+                id__in=[f.id for f in folders_list]
+            )
 
     def clean_file(self):
         file = self.cleaned_data.get('file')
@@ -672,11 +688,11 @@ class BrigadeDataFileForm(forms.ModelForm):
                     'Разрешены только файлы формата .rar или .zip'
                 )
 
-            # Проверка размера (200 МБ = 200 * 1024 * 1024 байт)
-            max_size = 200 * 1024 * 1024
+            # Проверка размера
+            max_size = settings.DATA_UPLOAD_MAX_MEMORY_SIZE
             if file.size > max_size:
                 raise ValidationError(
-                    f'Размер файла не должен превышать 200 МБ. '
+                    f'Размер файла не должен превышать 5Гб. '
                     f'Текущий размер: {file.size / (1024*1024):.2f} МБ'
                 )
         return file

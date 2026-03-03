@@ -1,0 +1,108 @@
+{% extends 'layouts/base.html' %}
+{% load custom_filters %}
+
+{% block title %}
+    Базы данных бригад
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Базы данных бригад</h1>
+    
+    <div class="mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            {% if is_manager %}
+                <a href="{% url 'brigade_data_folder_create' %}" class="btn btn-success">
+                    <i class="fa fa-folder-plus"></i> Создать папку
+                </a>
+            {% endif %}
+            
+            {% if is_worker or is_manager %}
+                <a href="{% url 'brigade_data_upload' %}" class="btn btn-primary">
+                    <i class="fa fa-upload"></i> Загрузить файл
+                </a>
+            {% endif %}
+        </div>
+        
+        {% if months_years %}
+            <div class="d-flex align-items-center gap-2">
+                <label for="month_filter" class="mb-0">Фильтр по месяцу:</label>
+                <select id="month_filter" class="form-select" style="width: auto;" onchange="window.location.href=this.value ? '?month=' + this.value : '{% url 'brigade_data_list' %}'">
+                    <option value="">Все месяцы</option>
+                    {% for month_year in months_years %}
+                        <option value="{{ month_year }}" {% if current_month == month_year %}selected{% endif %}>
+                            {{ month_year }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        {% endif %}
+    </div>
+    
+    {% for folder in folders %}
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fa fa-folder"></i> {{ folder.folder_name }}
+                </h5>
+                {% if is_manager %}
+                    <a href="{% url 'brigade_data_folder_delete' folder.id %}" 
+                       class="btn btn-sm btn-danger"
+                       onclick="return confirm('Удалить папку и все файлы?')">
+                        <i class="fa fa-trash"></i> Удалить папку
+                    </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if folder.files.all %}
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Название</th>
+                                <th>Бригада</th>
+                                <th>Загрузил</th>
+                                <th>Дата</th>
+                                <th>Размер</th>
+                                {% if is_manager %}
+                                    <th>Действия</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for file in folder.files.all %}
+                                <tr>
+                                    <td>{{ file.title }}</td>
+                                    <td>{{ file.brigade.name|default:"—" }}</td>
+                                    <td>{{ file.uploaded_by.get_full_name|default:file.uploaded_by.username }}</td>
+                                    <td>{{ file.uploaded_at|date:"d.m.Y H:i" }}</td>
+                                    <td>{{ file.file.size|filesizeformat }}</td>
+                                    {% if is_manager %}
+                                        <td>
+                                            <a href="{% url 'brigade_data_download' file.id %}" 
+                                               class="btn btn-sm btn-primary" title="Скачать">
+                                                <i class="fa fa-download"></i>
+                                            </a>
+                                            <a href="{% url 'brigade_data_delete' file.id %}" 
+                                               class="btn btn-sm btn-danger" title="Удалить"
+                                               onclick="return confirm('Удалить файл {{ file.title }}?')">
+                                                <i class="fa fa-trash"></i>
+                                            </a>
+                                        </td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="text-muted mb-0">Папка пуста</p>
+                {% endif %}
+            </div>
+        </div>
+    {% empty %}
+        <div class="alert alert-info">
+            <i class="fa fa-info-circle"></i> Папки не созданы. {% if is_manager %}Создайте первую папку.{% endif %}
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
+

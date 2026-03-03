@@ -1,0 +1,83 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}
+    Загрузка файла базы данных
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h3>Загрузка файла базы данных</h3>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                    <li>{{ field.label }}: {{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+                
+                <div class="mb-3">
+                    <label for="{{ form.title.id_for_label }}" class="form-label">
+                        {{ form.title.label }}
+                    </label>
+                    {{ form.title }}
+                    <small class="form-text text-muted">Введите название файла</small>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="{{ form.folder.id_for_label }}" class="form-label">
+                        {{ form.folder.label }}
+                    </label>
+                    {{ form.folder }}
+                    <small class="form-text text-muted">Выберите папку (дату) для загрузки</small>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="{{ form.brigade.id_for_label }}" class="form-label">
+                        {{ form.brigade.label }}
+                    </label>
+                    {{ form.brigade }}
+                    <small class="form-text text-muted">Выберите бригаду</small>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="{{ form.file.id_for_label }}" class="form-label">
+                        {{ form.file.label }}
+                    </label>
+                    {{ form.file }}
+                    <small class="form-text text-muted">
+                        Разрешены только файлы .rar или .zip. Максимальный размер: {{ max_file_size }} ГБ
+                    </small>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="fa fa-info-circle"></i> 
+                    <strong>Важно:</strong> Файл должен быть в формате .rar или .zip. 
+                    Размер файла не должен превышать {{ max_file_size }} ГБ.
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa fa-upload"></i> Загрузить файл
+                </button>
+                <a href="{% url 'brigade_data_list' %}" class="btn btn-secondary">
+                    <i class="fa fa-arrow-left"></i> Назад
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

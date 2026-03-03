@@ -130,6 +130,5 @@ LOGOUT_REDIRECT_URL = '/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Максимальный размер загружаемого файла для баз данных бригад (200 МБ)
-FILE_UPLOAD_MAX_MEMORY_SIZE = 200 * 1024 * 1024  # 200 МБ
-DATA_UPLOAD_MAX_MEMORY_SIZE = 200 * 1024 * 1024  # 200 МБ
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5000 * 1024 * 1024  # 5 ГБ
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5000 * 1024 * 1024  # 5 ГБ
