@@ -1,4 +1,4 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 from django.utils.html import format_html
@@ -20,6 +20,7 @@ admin.site.index_title = "Панель управления системой у�
 
 # Отменяем стандартную регистрацию User
 admin.site.unregister(User)
+
 
 # ==================== Пользователи ====================
 
@@ -92,6 +93,7 @@ class BrigadeAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+    actions = ('mark_as_own', 'mark_as_external', 'mark_as_unmarked')
 
     def equipment_count(self, obj):
         return obj.equipment_set.count()
@@ -109,6 +111,21 @@ class BrigadeAdmin(admin.ModelAdmin):
         return "—"
 
     description_short.short_description = 'Описание'
+
+    @admin.action(description='Отметить выбранные как "Своя"')
+    def mark_as_own(self, request, queryset):
+        updated = queryset.update(affiliation='own')
+        self.message_user(request, f'Обновлено бригад: {updated}', level=messages.SUCCESS)
+
+    @admin.action(description='Отметить выбранные как "Чужая"')
+    def mark_as_external(self, request, queryset):
+        updated = queryset.update(affiliation='external')
+        self.message_user(request, f'Обновлено бригад: {updated}', level=messages.SUCCESS)
+
+    @admin.action(description='Сбросить тип в "Неразмечена"')
+    def mark_as_unmarked(self, request, queryset):
+        updated = queryset.update(affiliation='unmarked')
+        self.message_user(request, f'Обновлено бригад: {updated}', level=messages.SUCCESS)
 
 
 # ==================== Категории ====================

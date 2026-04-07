@@ -1,6 +1,5 @@
 {% extends "layouts/base.html" %}
 
-
 {% block content %}
     <div class="container bg-light p-4 mt-4 rounded">
         <h3 class="mb-3">Расширенный анализ по организации</h3>
@@ -37,7 +36,9 @@
         <div class="mb-3">
             <b>Итого положительных дней:</b> {{ organization_positive_days }}<br>
             <b>Итого дней в периоде:</b> {{ organization_total_days }}<br>
-            <b>Загрузка по организации:</b> {{ organization_load_percent }}%
+            <b>Загрузка по организации:</b> {{ organization_load_percent }}%<br>
+            <b>Свои бригады:</b> {{ own_positive_days }} / {{ own_total_days }} ({{ own_load_percent }}%)<br>
+            <b>Чужие бригады:</b> {{ external_positive_days }} / {{ external_total_days }} ({{ external_load_percent }}%)
         </div>
 
         <a href="{% url 'organization_load_export_excel' %}?mode={{ mode }}&month={{ month_input }}&year={{ year_input }}&start_date={{ start_date_input }}&end_date={{ end_date_input }}"
@@ -50,6 +51,7 @@
                 <thead>
                 <tr>
                     <th>Бригада</th>
+                    <th>Тип</th>
                     <th>Положительных дней</th>
                     <th>Дней в периоде</th>
                     <th>Загрузка, %</th>
@@ -60,6 +62,7 @@
                 {% for row in rows %}
                     <tr>
                         <td>{{ row.brigade.name }}</td>
+                        <td>{{ row.brigade.get_affiliation_display }}</td>
                         <td>{{ row.positive_days }}</td>
                         <td>{{ row.days_total }}</td>
                         <td>{{ row.load_percent }}</td>
@@ -71,7 +74,7 @@
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="5" class="text-center">Нет данных для анализа.</td>
+                        <td colspan="6" class="text-center">Нет данных для анализа.</td>
                     </tr>
                 {% endfor %}
                 </tbody>
@@ -87,6 +90,7 @@
     <script>
         const labels = {{ chart_labels|safe }};
         const values = {{ chart_data|safe }};
+        const colors = {{ chart_colors|safe }};
         const ctx = document.getElementById('orgLoadChart');
         if (ctx) {
             new Chart(ctx, {
@@ -96,6 +100,7 @@
                     datasets: [{
                         label: 'Загрузка, %',
                         data: values,
+                        backgroundColor: colors,
                         borderWidth: 1
                     }]
                 },

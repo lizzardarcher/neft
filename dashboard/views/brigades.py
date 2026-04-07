@@ -70,6 +70,7 @@ def _resolve_period(request):
     return 'month', start_date, end_date
 
 
+
 def _get_marked_brigades_queryset(base_queryset=None):
     queryset = base_queryset if base_queryset is not None else Brigade.objects.all()
     if hasattr(Brigade, 'affiliation'):
@@ -564,6 +565,14 @@ class OrganizationLoadAnalysisView(LoginRequiredMixin, StaffOnlyMixin, TemplateV
         total_positive_days = sum(row['positive_days'] for row in rows)
         total_days = sum(row['days_total'] for row in rows)
         org_percent = round((total_positive_days / total_days) * 100, 2) if total_days else 0
+        own_rows = [row for row in rows if getattr(row['brigade'], 'affiliation', '') == 'own']
+        external_rows = [row for row in rows if getattr(row['brigade'], 'affiliation', '') == 'external']
+        own_positive_days = sum(row['positive_days'] for row in own_rows)
+        own_total_days = sum(row['days_total'] for row in own_rows)
+        own_percent = round((own_positive_days / own_total_days) * 100, 2) if own_total_days else 0
+        external_positive_days = sum(row['positive_days'] for row in external_rows)
+        external_total_days = sum(row['days_total'] for row in external_rows)
+        external_percent = round((external_positive_days / external_total_days) * 100, 2) if external_total_days else 0
 
         context.update({
             'rows': rows,
@@ -575,8 +584,18 @@ class OrganizationLoadAnalysisView(LoginRequiredMixin, StaffOnlyMixin, TemplateV
             'organization_positive_days': total_positive_days,
             'organization_total_days': total_days,
             'organization_load_percent': org_percent,
+            'own_positive_days': own_positive_days,
+            'own_total_days': own_total_days,
+            'own_load_percent': own_percent,
+            'external_positive_days': external_positive_days,
+            'external_total_days': external_total_days,
+            'external_load_percent': external_percent,
             'chart_labels': [row['brigade'].name for row in rows],
             'chart_data': [row['load_percent'] for row in rows],
+            'chart_colors': [
+                '#198754' if getattr(row['brigade'], 'affiliation', '') == 'own' else '#fd7e14'
+                for row in rows
+            ],
         })
         return context
 
@@ -614,15 +633,27 @@ def export_organization_load_excel(request):
     sheet = workbook.active
     sheet.title = "Организация"
     sheet.append(['Период', f"{start_date} - {end_date}"])
-    sheet.append(['Бригада', 'Положительных дней', 'Дней в периоде', 'Загрузка, %'])
+    sheet.append(['Бригада', 'Тип', 'Положительных дней', 'Дней в периоде', 'Загрузка, %'])
     for row in rows:
-        sheet.append([row['brigade'].name, row['positive_days'], row['days_total'], row['load_percent']])
+        affiliation = getattr(row['brigade'], 'get_affiliation_display', None)
+        affiliation_display = affiliation() if callable(affiliation) else '—'
+        sheet.append([row['brigade'].name, affiliation_display, row['positive_days'], row['days_total'], row['load_percent']])
 
     total_positive_days = sum(row['positive_days'] for row in rows)
     total_days = sum(row['days_total'] for row in rows)
     total_percent = round((total_positive_days / total_days) * 100, 2) if total_days else 0
+    own_rows = [row for row in rows if getattr(row['brigade'], 'affiliation', '') == 'own']
+    external_rows = [row for row in rows if getattr(row['brigade'], 'affiliation', '') == 'external']
+    own_positive_days = sum(row['positive_days'] for row in own_rows)
+    own_total_days = sum(row['days_total'] for row in own_rows)
+    own_percent = round((own_positive_days / own_total_days) * 100, 2) if own_total_days else 0
+    external_positive_days = sum(row['positive_days'] for row in external_rows)
+    external_total_days = sum(row['days_total'] for row in external_rows)
+    external_percent = round((external_positive_days / external_total_days) * 100, 2) if external_total_days else 0
     sheet.append([])
-    sheet.append(['ИТОГО', total_positive_days, total_days, total_percent])
+    sheet.append(['ИТОГО', '', total_positive_days, total_days, total_percent])
+    sheet.append(['ИТОГО СВОИ', '', own_positive_days, own_total_days, own_percent])
+    sheet.append(['ИТОГО ЧУЖИЕ', '', external_positive_days, external_total_days, external_percent])
 
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = 'attachment; filename=organization_load.xlsx'
