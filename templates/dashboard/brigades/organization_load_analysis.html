@@ -1,0 +1,110 @@
+{% extends "layouts/base.html" %}
+
+
+{% block content %}
+    <div class="container bg-light p-4 mt-4 rounded">
+        <h3 class="mb-3">Расширенный анализ по организации</h3>
+
+        <form method="get" class="row g-2 mb-3">
+            <div class="col-md-3">
+                <label class="form-label">Режим</label>
+                <select name="mode" class="form-control">
+                    <option value="month" {% if mode == 'month' %}selected{% endif %}>Месяц + год</option>
+                    <option value="range" {% if mode == 'range' %}selected{% endif %}>Период</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Месяц</label>
+                <input type="number" min="1" max="12" name="month" value="{{ month_input }}" class="form-control">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Год</label>
+                <input type="number" min="1900" max="2100" name="year" value="{{ year_input }}" class="form-control">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Дата с</label>
+                <input type="date" name="start_date" value="{{ start_date_input }}" class="form-control">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Дата по</label>
+                <input type="date" name="end_date" value="{{ end_date_input }}" class="form-control">
+            </div>
+            <div class="col-md-1 d-flex align-items-end">
+                <button class="btn btn-primary w-100" type="submit">OK</button>
+            </div>
+        </form>
+
+        <div class="mb-3">
+            <b>Итого положительных дней:</b> {{ organization_positive_days }}<br>
+            <b>Итого дней в периоде:</b> {{ organization_total_days }}<br>
+            <b>Загрузка по организации:</b> {{ organization_load_percent }}%
+        </div>
+
+        <a href="{% url 'organization_load_export_excel' %}?mode={{ mode }}&month={{ month_input }}&year={{ year_input }}&start_date={{ start_date_input }}&end_date={{ end_date_input }}"
+           class="btn btn-success mb-3">
+            <i class="fa fa-download"></i> Выгрузить Excel
+        </a>
+
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th>Бригада</th>
+                    <th>Положительных дней</th>
+                    <th>Дней в периоде</th>
+                    <th>Загрузка, %</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for row in rows %}
+                    <tr>
+                        <td>{{ row.brigade.name }}</td>
+                        <td>{{ row.positive_days }}</td>
+                        <td>{{ row.days_total }}</td>
+                        <td>{{ row.load_percent }}</td>
+                        <td>
+                            <a class="btn btn-sm btn-outline-info" href="{% url 'brigade_load_analysis' row.brigade.id %}">
+                                Открыть бригаду
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">Нет данных для анализа.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <canvas id="orgLoadChart" height="100"></canvas>
+        <a class="btn btn-outline-secondary mt-3" href="{% url 'brigade_list' %}">Назад</a>
+    </div>
+{% endblock %}
+
+{% block extrascript %}
+    <script>
+        const labels = {{ chart_labels|safe }};
+        const values = {{ chart_data|safe }};
+        const ctx = document.getElementById('orgLoadChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Загрузка, %',
+                        data: values,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {beginAtZero: true, max: 100}
+                    }
+                }
+            });
+        }
+    </script>
+{% endblock %}

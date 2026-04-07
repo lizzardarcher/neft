@@ -2,6 +2,7 @@
 {% load custom_filters %}
 {% load static %}
 
+
 {% block content %}
     <div class="container-fluid">
         <div class="row">
@@ -50,6 +51,17 @@
                                    class="m-1 btn btn-outline-info">Просмотреть</a>
                             </div>
                         </div>
+                        {% if user.username == 'testadmin' %}
+                            <div class="col-md-4 mb-3">
+                                <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
+                                    <div class="card-header"><i class="fa fa-chart-column"></i> <b>Загрузка бригады</b></div>
+                                    <div class="card-body">
+                                        <h5 class="card-title">Анализ</h5>
+                                    </div>
+                                    <a href="{% url 'brigade_load_analysis' brigade.id %}" class="m-1 btn btn-outline-primary">Открыть</a>
+                                </div>
+                            </div>
+                        {% endif %}
                     </div>
                     <a class="btn btn-outline-secondary" href="{% url 'brigade_list' %}">Назад</a>
                 </div>

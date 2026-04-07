@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 import calendar
 
 from django.contrib import messages
@@ -6,10 +6,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.paginator import Paginator
-from django.db.models import Q, Count, When, Sum, OuterRef, Subquery, ExpressionWrapper, F
+from django.db.models import Q, Count, When, Sum, OuterRef, Subquery, ExpressionWrapper, F, Max
 from django.db.models import Value, IntegerField, Case
 from django.db.models.functions import Coalesce
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView, CreateView, UpdateView, DetailView, TemplateView
 from django.urls import reverse, reverse_lazy
@@ -20,6 +20,107 @@ from dashboard.mixins import StaffOnlyMixin
 from dashboard.models import Brigade, Equipment, Manufacturer, WorkerActivity, BrigadeActivity, WorkObject, UserProfile, \
     Category, BrigadeEquipmentRequirement
 from dashboard.utils.utils import get_days_in_month
+from openpyxl import Workbook
+
+NEGATIVE_BRIGADE_ACTIVITY_TYPES = {'Переезд', 'Простой', 'Авария', 'Движка', '-'}
+BRIGADE_MARKED_VALUES = {'own', 'external'}
+
+
+def _clip_period_to_today(start_date, end_date):
+    today = date.today()
+    effective_end = min(end_date, today)
+    if effective_end < start_date:
+        return start_date, start_date - timedelta(days=1), 0
+    return start_date, effective_end, (effective_end - start_date).days + 1
+
+
+def _resolve_period(request):
+    mode = request.GET.get('mode', 'month')
+    today = date.today()
+
+    if mode == 'range':
+        start_raw = request.GET.get('start_date')
+        end_raw = request.GET.get('end_date')
+        try:
+            start_date = datetime.strptime(start_raw, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_raw, '%Y-%m-%d').date()
+        except (TypeError, ValueError):
+            mode = 'month'
+        else:
+            if end_date < start_date:
+                start_date, end_date = end_date, start_date
+            return mode, start_date, end_date
+
+    month = request.GET.get('month', today.month)
+    year = request.GET.get('year', today.year)
+    try:
+        month = int(month)
+        year = int(year)
+    except (TypeError, ValueError):
+        month = today.month
+        year = today.year
+
+    if not 1 <= month <= 12:
+        month = today.month
+    if not 1900 <= year <= today.year + 10:
+        year = today.year
+
+    start_date = date(year, month, 1)
+    end_date = date(year, month, calendar.monthrange(year, month)[1])
+    return 'month', start_date, end_date
+
+
+def _get_marked_brigades_queryset(base_queryset=None):
+    queryset = base_queryset if base_queryset is not None else Brigade.objects.all()
+    if hasattr(Brigade, 'affiliation'):
+        return queryset.filter(affiliation__in=BRIGADE_MARKED_VALUES)
+    return queryset
+
+
+def _build_brigade_load_stats(brigade, start_date, end_date):
+    period_start, period_end, days_total = _clip_period_to_today(start_date, end_date)
+
+    if days_total == 0:
+        return {
+            'brigade': brigade,
+            'period_start': period_start,
+            'period_end': period_end,
+            'days_total': 0,
+            'positive_days': 0,
+            'load_percent': 0,
+            'by_work_type': [],
+        }
+
+    latest_ids_per_day = BrigadeActivity.objects.filter(
+        brigade=brigade,
+        brigade__isnull=False,
+        date__range=(period_start, period_end),
+    ).values('date').annotate(last_id=Max('id')).values('last_id')
+
+    effective_activities = BrigadeActivity.objects.filter(id__in=Subquery(latest_ids_per_day))
+    total_effective_days = effective_activities.count()
+    positive_activities = effective_activities.exclude(work_type__in=NEGATIVE_BRIGADE_ACTIVITY_TYPES)
+    positive_days = positive_activities.count()
+    load_percent = round((positive_days / days_total) * 100, 2) if days_total else 0
+
+    by_work_type = list(
+        effective_activities.values('work_type')
+        .annotate(total=Count('id'))
+        .order_by('-total', 'work_type')
+    )
+    for row in by_work_type:
+        row['is_positive'] = row['work_type'] not in NEGATIVE_BRIGADE_ACTIVITY_TYPES
+
+    return {
+        'brigade': brigade,
+        'period_start': period_start,
+        'period_end': period_end,
+        'days_total': days_total,
+        'days_with_any_activity': total_effective_days,
+        'positive_days': positive_days,
+        'load_percent': load_percent,
+        'by_work_type': by_work_type,
+    }
 
 # class BrigadeListView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, ListView):
 #     model = Brigade
@@ -418,6 +519,115 @@ class BrigadeIndexView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, 
         context['staff_count'] = User.objects.filter(profile__brigade=context['brigade']).count()
         context['equipment_count'] = Equipment.objects.filter(brigade=context['brigade']).count()
         return context
+
+
+class BrigadeLoadAnalysisView(LoginRequiredMixin, StaffOnlyMixin, TemplateView):
+    template_name = 'dashboard/brigades/brigade_load_analysis.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        self.brigade = get_object_or_404(Brigade, pk=kwargs['pk'])
+        if hasattr(self.brigade, 'affiliation') and self.brigade.affiliation not in BRIGADE_MARKED_VALUES:
+            messages.warning(request, 'Проставьте тип бригады.')
+            return redirect('brigade_list')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        mode, start_date, end_date = _resolve_period(self.request)
+        stats = _build_brigade_load_stats(self.brigade, start_date, end_date)
+        chart_labels = [row['work_type'] for row in stats['by_work_type']]
+        chart_data = [row['total'] for row in stats['by_work_type']]
+
+        context.update({
+            'brigade': self.brigade,
+            'stats': stats,
+            'mode': mode,
+            'start_date_input': start_date.strftime('%Y-%m-%d'),
+            'end_date_input': end_date.strftime('%Y-%m-%d'),
+            'month_input': start_date.month,
+            'year_input': start_date.year,
+            'chart_labels': chart_labels,
+            'chart_data': chart_data,
+        })
+        return context
+
+
+class OrganizationLoadAnalysisView(LoginRequiredMixin, StaffOnlyMixin, TemplateView):
+    template_name = 'dashboard/brigades/organization_load_analysis.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        mode, start_date, end_date = _resolve_period(self.request)
+        brigades = _get_marked_brigades_queryset(Brigade.objects.all().order_by('name'))
+        rows = [_build_brigade_load_stats(brigade, start_date, end_date) for brigade in brigades]
+
+        total_positive_days = sum(row['positive_days'] for row in rows)
+        total_days = sum(row['days_total'] for row in rows)
+        org_percent = round((total_positive_days / total_days) * 100, 2) if total_days else 0
+
+        context.update({
+            'rows': rows,
+            'mode': mode,
+            'start_date_input': start_date.strftime('%Y-%m-%d'),
+            'end_date_input': end_date.strftime('%Y-%m-%d'),
+            'month_input': start_date.month,
+            'year_input': start_date.year,
+            'organization_positive_days': total_positive_days,
+            'organization_total_days': total_days,
+            'organization_load_percent': org_percent,
+            'chart_labels': [row['brigade'].name for row in rows],
+            'chart_data': [row['load_percent'] for row in rows],
+        })
+        return context
+
+
+def export_brigade_load_excel(request, pk):
+    brigade = get_object_or_404(Brigade, pk=pk)
+    mode, start_date, end_date = _resolve_period(request)
+    stats = _build_brigade_load_stats(brigade, start_date, end_date)
+
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = f"Загрузка {brigade.name[:20]}"
+    sheet.append(['Бригада', brigade.name])
+    sheet.append(['Период', f"{stats['period_start']} - {stats['period_end']}"])
+    sheet.append(['Положительных дней', stats['positive_days']])
+    sheet.append(['Дней в периоде', stats['days_total']])
+    sheet.append(['Загрузка, %', stats['load_percent']])
+    sheet.append([])
+    sheet.append(['Тип активности', 'Количество', 'Положительная'])
+    for row in stats['by_work_type']:
+        sheet.append([row['work_type'], row['total'], 'Да' if row['is_positive'] else 'Нет'])
+
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename=brigade_load_{brigade.id}.xlsx'
+    workbook.save(response)
+    return response
+
+
+def export_organization_load_excel(request):
+    mode, start_date, end_date = _resolve_period(request)
+    brigades = _get_marked_brigades_queryset(Brigade.objects.all().order_by('name'))
+    rows = [_build_brigade_load_stats(brigade, start_date, end_date) for brigade in brigades]
+
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "Организация"
+    sheet.append(['Период', f"{start_date} - {end_date}"])
+    sheet.append(['Бригада', 'Положительных дней', 'Дней в периоде', 'Загрузка, %'])
+    for row in rows:
+        sheet.append([row['brigade'].name, row['positive_days'], row['days_total'], row['load_percent']])
+
+    total_positive_days = sum(row['positive_days'] for row in rows)
+    total_days = sum(row['days_total'] for row in rows)
+    total_percent = round((total_positive_days / total_days) * 100, 2) if total_days else 0
+    sheet.append([])
+    sheet.append(['ИТОГО', total_positive_days, total_days, total_percent])
+
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=organization_load.xlsx'
+    workbook.save(response)
+    return response
 
 
 class BrigadeCreateView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, CreateView):

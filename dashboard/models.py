@@ -10,10 +10,22 @@ from datetime import datetime
 
 
 class Brigade(models.Model):
+    BRIGADE_AFFILIATION_CHOICES = [
+        ('unmarked', 'Неразмечена'),
+        ('own', 'Своя'),
+        ('external', 'Чужая'),
+    ]
+
     name = models.CharField(max_length=200, unique=True, null=False, blank=False, verbose_name='Название бригады')
     description = models.TextField(max_length=4000, blank=True, null=True, verbose_name='Описание')
     customer = models.CharField(max_length=200, blank=True, null=True, verbose_name='Заказчик')
     notes = models.TextField(max_length=4000, blank=True, null=True, verbose_name='Дополнительные примечания')
+    affiliation = models.CharField(
+        max_length=20,
+        choices=BRIGADE_AFFILIATION_CHOICES,
+        default='unmarked',
+        verbose_name='Тип бригады',
+    )
 
     def __str__(self):
         return self.name

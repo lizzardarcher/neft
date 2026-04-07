@@ -16,12 +16,13 @@ DATE_STYLE = {'style': 'width: 15rem;'}
 class BrigadeForm(forms.ModelForm):
     class Meta:
         model = Brigade
-        fields = ['name', 'description', 'customer', 'notes']
+        fields = ['name', 'description', 'customer', 'notes', 'affiliation']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.TextInput(attrs={'class': 'form-control'}),
             'customer': forms.TextInput(attrs={'class': 'form-control'}),
             'notes': forms.TextInput(attrs={'class': 'form-control'}),
+            'affiliation': forms.Select(attrs={'class': 'form-control'}),
         }
 
 
@@ -602,7 +603,6 @@ class WorkerDocumentForm(forms.ModelForm):
             'title': forms.TextInput(attrs={'class': 'form-control'}),
             'file': forms.FileInput(attrs={'class': 'form-control'}),
         }
-
 
 class BrigadeRequirementForm(forms.Form):
     def __init__(self, *args, **kwargs):
