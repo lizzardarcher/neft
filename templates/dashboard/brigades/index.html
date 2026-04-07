@@ -51,7 +51,7 @@
                                    class="m-1 btn btn-outline-info">Просмотреть</a>
                             </div>
                         </div>
-                        {% if user.username == 'testadmin' %}
+                        {% if user.username == 'testadmin' and brigade.affiliation != 'unmarked' %}
                             <div class="col-md-4 mb-3">
                                 <div class="card text-dark-emphasis bg-light-subtle bg-gradient bg-opacity-50 mb-3 h-100">
                                     <div class="card-header"><i class="fa fa-chart-column"></i> <b>Загрузка бригады</b></div>

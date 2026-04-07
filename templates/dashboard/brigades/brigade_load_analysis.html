@@ -1,41 +1,62 @@
 {% extends "layouts/base.html" %}
 
+{% block extrastyle %}
+    <style>
+        .brigade-load-chart-wrap {
+            max-width: 720px;
+            margin: 0 auto;
+        }
+    </style>
+{% endblock %}
 
 {% block content %}
     <div class="container bg-light p-4 mt-4 rounded">
         <h3 class="mb-3">Загрузка бригады: {{ brigade.name }}</h3>
 
-        <form method="get" class="row g-2 mb-3">
-            <div class="col-md-3">
-                <label class="form-label">Режим</label>
-                <select name="mode" class="form-control">
-                    <option value="month" {% if mode == 'month' %}selected{% endif %}>Месяц + год</option>
-                    <option value="range" {% if mode == 'range' %}selected{% endif %}>Период</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">Месяц</label>
-                <input type="number" min="1" max="12" name="month" value="{{ month_input }}" class="form-control">
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">Год</label>
-                <input type="number" min="1900" max="2100" name="year" value="{{ year_input }}" class="form-control">
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">Дата с</label>
-                <input type="date" name="start_date" value="{{ start_date_input }}" class="form-control">
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">Дата по</label>
-                <input type="date" name="end_date" value="{{ end_date_input }}" class="form-control">
-            </div>
-            <div class="col-md-1 d-flex align-items-end">
-                <button class="btn btn-primary w-100" type="submit">OK</button>
+        <form method="get" class="mb-3" id="brigade-load-period-form" novalidate>
+            <div class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label" for="brigade-load-mode">Режим</label>
+                    <select name="mode" id="brigade-load-mode" class="form-control">
+                        <option value="month" {% if mode == 'month' %}selected{% endif %}>Месяц + год</option>
+                        <option value="range" {% if mode == 'range' %}selected{% endif %}>Произвольный период</option>
+                    </select>
+                </div>
+                <div class="col-md-8 row g-2" id="brigade-load-fields-month">
+                    <div class="col-md-5">
+                        <label class="form-label" for="brigade-load-month">Месяц</label>
+                        <select name="month" id="brigade-load-month" class="form-control">
+                            {% for num, title in month_choices %}
+                                <option value="{{ num }}" {% if month_input == num %}selected{% endif %}>{{ title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="brigade-load-year">Год</label>
+                        <input type="number" name="year" id="brigade-load-year" value="{{ year_input }}"
+                               min="1900" max="2100" class="form-control">
+                    </div>
+                </div>
+                <div class="col-md-8 row g-2 d-none" id="brigade-load-fields-range">
+                    <div class="col-md-5">
+                        <label class="form-label" for="brigade-load-start">Дата с</label>
+                        <input type="date" name="start_date" id="brigade-load-start" value="{{ start_date_input }}"
+                               class="form-control">
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label" for="brigade-load-end">Дата по</label>
+                        <input type="date" name="end_date" id="brigade-load-end" value="{{ end_date_input }}"
+                               class="form-control">
+                    </div>
+                </div>
+                <div class="col-md-1">
+                    <button class="btn btn-primary w-100" type="submit">OK</button>
+                </div>
             </div>
         </form>
 
         <div class="mb-3">
-            <b>Период:</b> {{ stats.period_start }} - {{ stats.period_end }}<br>
+            <b>Период:</b> {{ stats.period_start }} — {{ stats.period_end }}<br>
             <b>Положительных дней:</b> {{ stats.positive_days }} из {{ stats.days_total }}<br>
             <b>Загрузка:</b> {{ stats.load_percent }}%
         </div>
@@ -70,34 +91,78 @@
             </table>
         </div>
 
-        <canvas id="brigadeLoadChart" height="100"></canvas>
+        <div class="brigade-load-chart-wrap">
+            <canvas id="brigadeLoadChart" height="120"></canvas>
+        </div>
 
-        <a class="btn btn-outline-secondary mt-3" href="{% url 'brigade_index' brigade.id %}">Назад</a>
+        <div class="mt-3 d-flex flex-wrap gap-2">
+            <a class="btn btn-outline-secondary" href="{% url 'brigade_list' %}">Назад к списку бригад</a>
+            <a class="btn btn-outline-secondary" href="{% url 'brigade_index' brigade.id %}">Назад</a>
+        </div>
     </div>
 {% endblock %}
 
 {% block extrascript %}
     <script>
-        const labels = {{ chart_labels|safe }};
-        const values = {{ chart_data|safe }};
-        const ctx = document.getElementById('brigadeLoadChart');
-        if (ctx) {
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Количество дней',
-                        data: values,
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {beginAtZero: true}
-                    }
+        (function () {
+            const modeSel = document.getElementById('brigade-load-mode');
+            const monthBlock = document.getElementById('brigade-load-fields-month');
+            const rangeBlock = document.getElementById('brigade-load-fields-range');
+
+            function syncPeriodFields() {
+                if (!modeSel || !monthBlock || !rangeBlock) return;
+                if (modeSel.value === 'month') {
+                    monthBlock.classList.remove('d-none');
+                    rangeBlock.classList.add('d-none');
+                } else {
+                    monthBlock.classList.add('d-none');
+                    rangeBlock.classList.remove('d-none');
                 }
-            });
-        }
+            }
+
+            const form = document.getElementById('brigade-load-period-form');
+            if (modeSel) {
+                modeSel.addEventListener('change', syncPeriodFields);
+                syncPeriodFields();
+            }
+            if (form && modeSel) {
+                form.addEventListener('submit', function () {
+                    const monthInputs = monthBlock.querySelectorAll('select, input');
+                    const rangeInputs = rangeBlock.querySelectorAll('input');
+                    if (modeSel.value === 'month') {
+                        rangeInputs.forEach(function (el) { el.disabled = true; });
+                        monthInputs.forEach(function (el) { el.disabled = false; });
+                    } else {
+                        monthInputs.forEach(function (el) { el.disabled = true; });
+                        rangeInputs.forEach(function (el) { el.disabled = false; });
+                    }
+                });
+            }
+
+            const labels = {{ chart_labels_json|safe }};
+            const values = {{ chart_data_json|safe }};
+            const ctx = document.getElementById('brigadeLoadChart');
+            if (ctx && labels.length) {
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Количество дней',
+                            data: values,
+                            borderWidth: 1,
+                            maxBarThickness: 56
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        scales: {
+                            y: {beginAtZero: true}
+                        }
+                    }
+                });
+            }
+        })();
     </script>
 {% endblock %}

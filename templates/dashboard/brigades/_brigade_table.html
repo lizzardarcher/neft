@@ -20,14 +20,15 @@
            title="Сводный отчет по оснащению бригад">
             <i class="fas fa-file-excel"></i> Выгрузить сводный отчет
         </a>
-        {% if user.username == 'testadmin' %}
+
             <a href="{% url 'organization_load_analysis' %}" class="btn btn-outline-primary m-1"
                title="Тест: расширенный анализ загрузки">
                 Анализ загрузки (организация)
             </a>
-        {% endif %}
+
     </div>
 </div>
+
 <div class="table-responsive">
     <table class="table table-bordered table-striped">
         <thead class="thead-dark">
@@ -38,9 +39,7 @@
             <th class="text-center">Персонал</th>
             <th>Заказчик</th>
             <th>Примечания</th>
-            {% if user.username == 'testadmin' %}
                 <th class="text-center">Загрузка</th>
-            {% endif %}
             <th class="text-center">Обеспечение</th>
             <th class="text-center">Действия</th>
         </tr>
@@ -66,18 +65,17 @@
                 </td>
                 <td>{% if brigade.customer %}{{ brigade.customer }}{% else %}---{% endif %}</td>
                 <td>{% if brigade.notes %}{{ brigade.notes }}{% else %}---{% endif %}</td>
-                {% if user.username == 'testadmin' %}
                     <td class="text-center">
                         {% if brigade.affiliation == 'unmarked' %}
-                            <span class="btn btn-sm btn-outline-secondary disabled"
-                                  title="Проставьте тип бригады">Анализ</span>
+                            <span class="d-inline-block" title="Проставьте тип бригады" style="cursor: not-allowed;">
+                                <span class="btn btn-sm btn-outline-secondary disabled mb-0" style="pointer-events: none;">Анализ</span>
+                            </span>
                         {% else %}
                             <a href="{% url 'brigade_load_analysis' brigade.id %}"
                                class="btn btn-sm btn-outline-primary"
                                title="Тест: анализ загрузки бригады">Анализ</a>
                         {% endif %}
                     </td>
-                {% endif %}
                 <td class="text-center">
                     <div style="display: flex; gap: 8px; align-items: center; justify-content: center;">
 
@@ -149,14 +147,14 @@
             </tr>
         {% empty %}
             <tr>
-                <td colspan="{% if user.username == 'testadmin' %}9{% else %}8{% endif %}" class="text-center">Нет данных о бригадах.</td>
+                <td colspan="9" class="text-center">Нет данных о бригадах.</td>
             </tr>
         {% endfor %}
         </tbody>
         {# Добавляем секцию для общих итогов #}
         <tfoot>
         <tr class="table-info">
-            <th colspan="{% if user.username == 'testadmin' %}7{% else %}6{% endif %}" class="text-start">ИТОГО по обеспечению бригад:</th>
+            <th colspan="7" class="text-start">ИТОГО по обеспечению бригад:</th>
             {# Объединяем ячейки #}
             <th class="text-center">
                 <div style="display: flex; gap: 4px; justify-content: center;">

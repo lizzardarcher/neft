@@ -1,44 +1,115 @@
 {% extends "layouts/base.html" %}
 
+{% block extrastyle %}
+    <style>
+        .org-load-chart-wrap {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
     <div class="container bg-light p-4 mt-4 rounded">
         <h3 class="mb-3">Расширенный анализ по организации</h3>
 
-        <form method="get" class="row g-2 mb-3">
-            <div class="col-md-3">
-                <label class="form-label">Режим</label>
-                <select name="mode" class="form-control">
-                    <option value="month" {% if mode == 'month' %}selected{% endif %}>Месяц + год</option>
-                    <option value="range" {% if mode == 'range' %}selected{% endif %}>Период</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">Месяц</label>
-                <input type="number" min="1" max="12" name="month" value="{{ month_input }}" class="form-control">
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">Год</label>
-                <input type="number" min="1900" max="2100" name="year" value="{{ year_input }}" class="form-control">
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">Дата с</label>
-                <input type="date" name="start_date" value="{{ start_date_input }}" class="form-control">
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">Дата по</label>
-                <input type="date" name="end_date" value="{{ end_date_input }}" class="form-control">
-            </div>
-            <div class="col-md-1 d-flex align-items-end">
-                <button class="btn btn-primary w-100" type="submit">OK</button>
+        <form method="get" class="mb-3" id="org-load-period-form" novalidate>
+            <div class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label" for="org-load-mode">Режим</label>
+                    <select name="mode" id="org-load-mode" class="form-control">
+                        <option value="month" {% if mode == 'month' %}selected{% endif %}>Месяц + год</option>
+                        <option value="range" {% if mode == 'range' %}selected{% endif %}>Произвольный период</option>
+                    </select>
+                </div>
+                <div class="col-md-8 row g-2" id="org-load-fields-month">
+                    <div class="col-md-5">
+                        <label class="form-label" for="org-load-month">Месяц</label>
+                        <select name="month" id="org-load-month" class="form-control">
+                            {% for num, title in month_choices %}
+                                <option value="{{ num }}" {% if month_input == num %}selected{% endif %}>{{ title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="org-load-year">Год</label>
+                        <input type="number" name="year" id="org-load-year" value="{{ year_input }}"
+                               min="1900" max="2100" class="form-control">
+                    </div>
+                </div>
+                <div class="col-md-8 row g-2 d-none" id="org-load-fields-range">
+                    <div class="col-md-5">
+                        <label class="form-label" for="org-load-start">Дата с</label>
+                        <input type="date" name="start_date" id="org-load-start" value="{{ start_date_input }}"
+                               class="form-control">
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label" for="org-load-end">Дата по</label>
+                        <input type="date" name="end_date" id="org-load-end" value="{{ end_date_input }}"
+                               class="form-control">
+                    </div>
+                </div>
+                <div class="col-md-1">
+                    <button class="btn btn-primary w-100" type="submit">OK</button>
+                </div>
             </div>
         </form>
 
+        <div class="mb-3 small text-muted">
+            Один календарный день периода учитывается отдельно по каждой бригаде; для организации "ёмкость" периода =
+            число бригад × число календарных дней (D).
+        </div>
+
         <div class="mb-3">
-            <b>Итого положительных дней:</b> {{ organization_positive_days }}<br>
-            <b>Итого дней в периоде:</b> {{ organization_total_days }}<br>
-            <b>Загрузка по организации:</b> {{ organization_load_percent }}%<br>
-            <b>Свои бригады:</b> {{ own_positive_days }} / {{ own_total_days }} ({{ own_load_percent }}%)<br>
-            <b>Чужие бригады:</b> {{ external_positive_days }} / {{ external_total_days }} ({{ external_load_percent }}%)
+            <b>Итого положительных дней (по всем бригадам):</b> {{ organization_positive_days }}<br>
+            <b>Календарных дней в периоде (D):</b> {{ organization_calendar_days }}<br>
+            <b>Бригад в отчёте:</b> {{ organization_brigades_count }}<br>
+        </div>
+
+        <div class="table-responsive mb-3">
+            <table class="table table-sm table-bordered align-middle">
+                <thead>
+                <tr>
+                    <th>Срез</th>
+                    <th class="text-center">Положительных дней</th>
+                    <th class="text-center">База (дней)</th>
+                    <th class="text-center">Загрузка, %</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Организация</td>
+                    <td class="text-center">{{ organization_positive_days }}</td>
+                    <td class="text-center">{{ organization_capacity_days }}</td>
+                    <td class="text-center fw-bold {% if organization_load_percent < 65 %}text-danger{% elif organization_load_percent < 80 %}text-warning{% else %}text-success{% endif %}">
+                        {{ organization_load_percent }}%
+                    </td>
+                </tr>
+                <tr>
+                    <td>Свои бригады ({{ own_brigades_count }})</td>
+                    <td class="text-center">{{ own_positive_days }}</td>
+                    <td class="text-center">{{ own_capacity_days }}</td>
+                    <td class="text-center fw-bold {% if own_load_percent < 65 %}text-danger{% elif own_load_percent < 80 %}text-warning{% else %}text-success{% endif %}">
+                        {{ own_load_percent }}%
+                    </td>
+                </tr>
+                <tr>
+                    <td>Чужие бригады ({{ external_brigades_count }})</td>
+                    <td class="text-center">{{ external_positive_days }}</td>
+                    <td class="text-center">{{ external_capacity_days }}</td>
+                    <td class="text-center fw-bold {% if external_load_percent < 65 %}text-danger{% elif external_load_percent < 80 %}text-warning{% else %}text-success{% endif %}">
+                        {{ external_load_percent }}%
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mb-2">
+            <span class="me-3"><span class="d-inline-block rounded"
+                                    style="width:14px;height:14px;background:#198754;"></span> Своя</span>
+            <span><span class="d-inline-block rounded"
+                          style="width:14px;height:14px;background:#fd7e14;"></span> Чужая</span>
         </div>
 
         <a href="{% url 'organization_load_export_excel' %}?mode={{ mode }}&month={{ month_input }}&year={{ year_input }}&start_date={{ start_date_input }}&end_date={{ end_date_input }}"
@@ -53,7 +124,7 @@
                     <th>Бригада</th>
                     <th>Тип</th>
                     <th>Положительных дней</th>
-                    <th>Дней в периоде</th>
+                    <th>Дней в периоде (D)</th>
                     <th>Загрузка, %</th>
                     <th></th>
                 </tr>
@@ -67,8 +138,8 @@
                         <td>{{ row.days_total }}</td>
                         <td>{{ row.load_percent }}</td>
                         <td>
-                            <a class="btn btn-sm btn-outline-info" href="{% url 'brigade_load_analysis' row.brigade.id %}">
-                                Открыть бригаду
+                            <a class="btn btn-sm btn-outline-info" href="{% url 'brigade_load_analysis' row.brigade.id %}?mode={{ mode }}&month={{ month_input }}&year={{ year_input }}&start_date={{ start_date_input }}&end_date={{ end_date_input }}">
+                                Анализ бригады
                             </a>
                         </td>
                     </tr>
@@ -81,35 +152,76 @@
             </table>
         </div>
 
-        <canvas id="orgLoadChart" height="100"></canvas>
+        <div class="org-load-chart-wrap">
+            <canvas id="orgLoadChart" height="120"></canvas>
+        </div>
         <a class="btn btn-outline-secondary mt-3" href="{% url 'brigade_list' %}">Назад</a>
     </div>
 {% endblock %}
 
 {% block extrascript %}
     <script>
-        const labels = {{ chart_labels|safe }};
-        const values = {{ chart_data|safe }};
-        const colors = {{ chart_colors|safe }};
-        const ctx = document.getElementById('orgLoadChart');
-        if (ctx) {
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Загрузка, %',
-                        data: values,
-                        backgroundColor: colors,
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {beginAtZero: true, max: 100}
-                    }
+        (function () {
+            const modeSel = document.getElementById('org-load-mode');
+            const monthBlock = document.getElementById('org-load-fields-month');
+            const rangeBlock = document.getElementById('org-load-fields-range');
+
+            function syncPeriodFields() {
+                if (!modeSel || !monthBlock || !rangeBlock) return;
+                if (modeSel.value === 'month') {
+                    monthBlock.classList.remove('d-none');
+                    rangeBlock.classList.add('d-none');
+                } else {
+                    monthBlock.classList.add('d-none');
+                    rangeBlock.classList.remove('d-none');
                 }
-            });
-        }
+            }
+
+            const form = document.getElementById('org-load-period-form');
+            if (modeSel) {
+                modeSel.addEventListener('change', syncPeriodFields);
+                syncPeriodFields();
+            }
+            if (form && modeSel) {
+                form.addEventListener('submit', function () {
+                    const monthInputs = monthBlock.querySelectorAll('select, input');
+                    const rangeInputs = rangeBlock.querySelectorAll('input');
+                    if (modeSel.value === 'month') {
+                        rangeInputs.forEach(function (el) { el.disabled = true; });
+                        monthInputs.forEach(function (el) { el.disabled = false; });
+                    } else {
+                        monthInputs.forEach(function (el) { el.disabled = true; });
+                        rangeInputs.forEach(function (el) { el.disabled = false; });
+                    }
+                });
+            }
+
+            const labels = {{ chart_labels_json|safe }};
+            const values = {{ chart_data_json|safe }};
+            const colors = {{ chart_colors_json|safe }};
+            const ctx = document.getElementById('orgLoadChart');
+            if (ctx && labels.length) {
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Загрузка, %',
+                            data: values,
+                            backgroundColor: colors,
+                            borderWidth: 1,
+                            maxBarThickness: 48
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        scales: {
+                            y: {beginAtZero: true, max: 100}
+                        }
+                    }
+                });
+            }
+        })();
     </script>
 {% endblock %}

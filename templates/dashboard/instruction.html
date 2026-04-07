@@ -1,266 +1,361 @@
 {% extends 'layouts/base.html' %}
+{% load custom_filters %}
 
 {% block title %}Инструкция{% endblock %}
 
 {% block content %}
-    <div class="container mt-4 bg-light rounded">
-        <h1 class="mb-4">Инструкция пользователя</h1>
+    <div class="container mt-4 mb-5 bg-light rounded p-4">
+        <h1 class="mb-3">Справка по системе учёта RusGeolog</h1>
 
-        <div class="accordion" id="instructionsAccordion">
+        {% if user.is_superuser or user|has_group:"Администратор" %}
+            <p class="text-muted small">Вы вошли как <strong>администратор</strong> (суперпользователь или группа «Администратор»).
+                Ниже доступны все три раздела справки.</p>
+            <div class="alert alert-info">
+                <strong>Как устроен доступ.</strong>
+                Основной кабинет - <code>/dashboard/</code>. Меню «Управление», «Помощь», «Личный кабинет» доступны при признаке
+                <strong>сотрудник (is_staff)</strong>. Конкретные разделы зависят от <strong>группы</strong> и <strong>разрешений</strong>.
+                В коде используются группы <strong>«Администратор»</strong> и <strong>«Руководитель»</strong>;
+                в справке <strong>«Управляющий»</strong> = группа <strong>«Руководитель»</strong>.
+                <strong>«Оператор»</strong> - доступ через разрешения без групп руководителя/администратора.
+            </div>
+        {% elif user|has_group:"Руководитель" %}
+            <p class="text-muted small">Вы вошли как <strong>руководитель</strong> (группа «Руководитель»). Открыты разделы
+                «Управляющий» и «Оператор» - для себя и для сотрудников с ограниченным доступом.</p>
+            <div class="alert alert-info">
+                <strong>Доступ руководителя.</strong> На главной (<code>/dashboard/</code>) у группы «Руководитель» обычно отображаются
+                карточки: пользователи, сводный табель, учёт бригад за месяц, месторождения, снабжение, журнал перемещений - плюс
+                карточки по разрешениям <code>Dashboard.view_*</code>. Раздел «Администратор» в справке скрыт; технические действия
+                суперпользователя и группами  описаны у администратора организации.
+            </div>
+        {% else %}
+            <p class="text-muted small">Для вашей учётной записи отображается только раздел <strong>«Оператор»</strong>.
+                Расширенная справка доступна руководителю и администратору.</p>
+            <div class="alert alert-info">
+                <strong>Доступ оператора.</strong> Состав карточек на <code>/dashboard/</code> задаётся разрешениями вашей группы
+                (<code>Dashboard.view_brigade</code>, <code>view_category</code>, <code>view_equipment</code>, <code>view_document</code> и др.).
+                Блоки «Пользователи», сводный табель, учёт бригад, месторождения, снабжение и журнал перемещений в шаблоне главной
+                показываются только группам «Руководитель» или «Администратор».
+            </div>
+        {% endif %}
+
+
+        <div class="alert alert-secondary small">
+            <strong>Отдельные входы.</strong> Логины <code>1</code> и <code>2</code> перенаправляются на <code>/1/</code> и <code>/2/</code>
+            (документы работников и загрузка баз бригад).
+        </div>
+
+        <div class="accordion mb-4" id="instructionsAccordion">
+
+            {% if user.is_superuser or user|has_group:"Администратор" %}
             <div class="accordion-item">
                 <h2 class="accordion-header" id="headingAdmin">
                     <button class="accordion-button" type="button" data-bs-toggle="collapse"
                             data-bs-target="#collapseAdmin" aria-expanded="true" aria-controls="collapseAdmin">
-                        Администратор
+                        Администратор / суперпользователь
                     </button>
                 </h2>
-                <div id="collapseAdmin" class="accordion-collapse collapse" aria-labelledby="headingAdmin"
+                <div id="collapseAdmin" class="accordion-collapse collapse show" aria-labelledby="headingAdmin"
                      data-bs-parent="#instructionsAccordion">
                     <div class="accordion-body">
-                        <p>Администратор обладает полными правами в системе. Он может выполнять все действия,
-                            включая:</p>
+                        <p class="text-muted small mb-3">Группа «Администратор»; часто совмещается с <code>is_superuser</code>
+                            - тогда на главной появляется карточка журнала действий и открывается админка 
+                             (если включена на сервере).</p>
+
+                        <h6 class="fw-bold">Пользователи и безопасность</h6>
                         <ul>
-                            <li><strong>Управление пользователями:</strong>
-                                <ul>
-                                    <li>Создание новых пользователей с различными правами.</li>
-                                    <li>Редактирование данных существующих пользователей.</li>
-                                    <li>Удаление пользователей из системы.</li>
-                                    <li>Управление группами пользователей и их правами доступа.</li>
-                                    <li>Просмотр истории действий пользователей в системе.</li>
-                                    <li>Просмотр журнала административных действий.</li>
-                                </ul>
-                            </li>
-                            <li><strong>Управление бригадами:</strong>
-                                <ul>
-                                    <li>Просмотр всех существующих бригад.</li>
-                                    <li>Создание новых бригад.</li>
-                                    <li>Редактирование информации о бригадах.</li>
-                                    <li>Удаление бригад из системы.</li>
-                                </ul>
-                            </li>
-                            <li><strong>Управление категориями:</strong>
-                                <ul>
-                                    <li>Просмотр всех существующих категорий.</li>
-                                    <li>Создание новых категорий.</li>
-                                    <li>Редактирование информации о категориях.</li>
-                                    <li>Удаление категорий из системы.</li>
-                                </ul>
-                            </li>
-                            <li><strong>Управление оборудованием:</strong>
-                                <ul>
-                                    <li>Просмотр списка всего оборудования.</li>
-                                    <li>Создание новых единиц оборудования.</li>
-                                    <li>Редактирование информации об оборудовании.</li>
-                                    <li>Удаление оборудования из системы.</li>
-                                    <li>Добавление и управление документацией по оборудованию.</li>
-                                </ul>
-                            </li>
-                            <li><strong>Управление документами:</strong>
-                                <ul>
-                                    <li>Просмотр всех загруженных документов.</li>
-                                    <li>Удаление документов.</li>
-                                </ul>
-                            </li>
+                            <li><strong>Список пользователей</strong> - <code>/dashboard/users/</code>.</li>
+                            <li><strong>Создание / редактирование / удаление</strong> - через тот же раздел; удаление в таблице обычно только у «Администратор».</li>
+                            <li><strong>Группы и права</strong> - <code>/dashboard/groups/</code> ( создание/удаление групп - по шаблонам, чаще только администратор).</li>
+                            <li><strong>Журнал действий</strong> - <code>/dashboard/action-log/</code>; карточка на главной при <code>is_superuser</code>.</li>
+                            <li><strong>Личный кабинет</strong> - <code>/dashboard/user/&lt;id&gt;/detail</code>.</li>
+                        </ul>
+
+                        <h6 class="fw-bold mt-3">Бригады и работы</h6>
+                        <ul>
+                            <li><strong>Список бригад</strong> - <code>/dashboard/brigades/</code> (поиск, Excel, свод по оснащению организации).</li>
+                            <li><strong>Карточка бригады</strong> - <code>/dashboard/brigade_index/&lt;id&gt;</code>.</li>
+                            <li><strong>Оборудование бригады</strong> - <code>/dashboard/brigade/&lt;id&gt;/equipment</code>.</li>
+                            <li><strong>Персонал и табель</strong> - <code>/dashboard/brigade/&lt;id&gt;/staff</code> (<code>WorkerActivity</code>).</li>
+                            <li><strong>Работа бригады по месяцам</strong> - <code>/dashboard/brigade/&lt;id&gt;/work/&lt;мес&gt;/&lt;год&gt;/</code> (<code>BrigadeActivity</code>).</li>
+                            <li><strong>Свод по всем бригадам</strong> - <code>/dashboard/brigade/brigade_table_total/</code>.</li>
+                            <li><strong>Тип бригады</strong> (своя/чужая/неразмечена) - в форме бригады и в админке; в анализе загрузки по организации - только своя и чужая.</li>
+                            <li><strong>Требования по оснащению</strong> - <code>/dashboard/brigades/&lt;id&gt;/edit/</code>, статус <code>/dashboard/brigades/&lt;id&gt;/status/</code>.</li>
+                            <li><strong>Месторождения</strong> - <code>/dashboard/brigades/work_object_list</code> и CRUD объектов.</li>
+                            <li><strong>Анализ загрузки</strong> - <code>/dashboard/brigades/&lt;id&gt;/load-analysis/</code>, по организации <code>/dashboard/brigades/load-analysis/</code>.</li>
+                        </ul>
+
+                        <h6 class="fw-bold mt-3">Категории и оборудование</h6>
+                        <ul>
+                            <li><strong>Категории</strong> - <code>/dashboard/categories/</code>.</li>
+                            <li><strong>Оборудование</strong> - <code>/dashboard/equipment/</code>, создание с бригадой <code>/dashboard/equipment/&lt;brigade_id&gt;/create/</code>.</li>
+                            <li><strong>Документы</strong> - <code>/dashboard/document/</code>, в карточке единицы - пакетная выгрузка.</li>
+                            <li><strong>Журнал перемещений</strong> - <code>/dashboard/transfers/history/</code>.</li>
+                        </ul>
+
+                        <h6 class="fw-bold mt-3">Снабжение и транспорт</h6>
+                        <ul>
+                            <li><strong>Снабжение</strong> - <code>/dashboard/transfers/transfer_index</code> и цепочка <code>/dashboard/transfer/...</code> (авто, перемещения, прочее оборудование).</li>
+                            <li><strong>Excel по перемещениям</strong> - отчётные URL в <code>dashboard/urls.py</code>.</li>
+                        </ul>
+
+                        <h6 class="fw-bold mt-3">Отчёты и выгрузки</h6>
+                        <ul>
+                            <li><strong>Отчёты</strong> - <code>/dashboard/reports/</code>, Excel - <code>/dashboard/reports/excel</code>.</li>
+                            <li>Выгрузки бригад, оборудования, активности бригад/работников за месяц, оснащённости - кнопки в списках и отчётах.</li>
+                        </ul>
+
+                        <h6 class="fw-bold mt-3">Прочее</h6>
+                        <ul>
+                            <li><strong>Помощь</strong> - <code>/dashboard/instructions</code>.</li>
+                            <li>Логика карточек главной - <code>templates/dashboard/index.html</code>, разрешения <code>Dashboard.*</code>.</li>
                         </ul>
                     </div>
                 </div>
             </div>
+            {% endif %}
 
+            {% if user.is_superuser or user|has_group:"Администратор" or user|has_group:"Руководитель" %}
             <div class="accordion-item">
                 <h2 class="accordion-header" id="headingManager">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#collapseManager" aria-expanded="false" aria-controls="collapseManager">
-                        Управляющий
+                    <button class="accordion-button {% if user.is_superuser or user|has_group:"Администратор" %}collapsed{% endif %}" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#collapseManager"
+                            aria-expanded="{% if user.is_superuser or user|has_group:"Администратор" %}false{% else %}true{% endif %}"
+                            aria-controls="collapseManager">
+                        Управляющий (группа «Руководитель»)
                     </button>
                 </h2>
-                <div id="collapseManager" class="accordion-collapse collapse" aria-labelledby="headingManager"
-                     data-bs-parent="#instructionsAccordion">
+                <div id="collapseManager" class="accordion-collapse collapse {% if not user.is_superuser and not user|has_group:"Администратор" %}show{% endif %}"
+                     aria-labelledby="headingManager" data-bs-parent="#instructionsAccordion">
                     <div class="accordion-body">
-                        <p>Управляющий имеет следующие права:</p>
+                        <p class="text-muted small mb-3">Роль для оперативного управления: те же разделы, что у администратора по бригадам,
+                            персоналу, календарям и снабжению, но без обязательного доступа к админке  и без раздела
+                            «Администратор» в этой справке (если вы не состоите в группе «Администратор»).</p>
+
+                        <h6 class="fw-bold">Главная страница</h6>
                         <ul>
-                            <li><strong>Управление бригадами:</strong>
-                                <ul>
-                                    <li>Просмотр всех существующих бригад.</li>
-                                    <li>Создание новых бригад.</li>
-                                    <li>Редактирование информации о бригадах.</li>
-                                    <li>Удаление бригад из системы.</li>
-                                </ul>
-                            </li>
-                            <li><strong>Управление категориями:</strong>
-                                <ul>
-                                    <li>Просмотр всех существующих категорий.</li>
-                                    <li>Создание новых категорий.</li>
-                                    <li>Редактирование информации о категориях.</li>
-                                    <li>Удаление категорий из системы.</li>
-                                </ul>
-                            </li>
-                            <li><strong>Управление оборудованием:</strong>
-                                <ul>
-                                    <li>Просмотр списка всего оборудования.</li>
-                                    <li>Создание новых единиц оборудования.</li>
-                                    <li>Редактирование информации об оборудовании.</li>
-                                    <li>Удаление оборудования из системы.</li>
-                                    <li>Добавление и управление документацией по оборудованию.</li>
-                                </ul>
-                            </li>
-                            <li><strong>Управление документами:</strong>
-                                <ul>
-                                    <li>Просмотр всех загруженных документов.</li>
-                                </ul>
-                            </li>
+                            <li><code>/dashboard/</code> - для группы «Руководитель» выводятся карточки:
+                                <strong>пользователи</strong>, <strong>сводный табель работников</strong> (<code>staff_table_total</code>),
+                                <strong>учёт бригад за месяц</strong> (<code>brigade_table_total</code>),
+                                <strong>месторождения</strong>, <strong>снабжение</strong>, <strong>журнал перемещений</strong>
+                                (см. условия в <code>index.html</code>).</li>
+                            <li>Плюс карточки по разрешениям: бригады, категории, оборудование, документы - если они выданы группе.</li>
                         </ul>
 
-                        <p>Управляющий не имеет доступа к управлению пользователями системы.</p>
+                        <h6 class="fw-bold mt-3">Пользователи и табели</h6>
+                        <ul>
+                            <li><strong>Список пользователей</strong> - <code>/dashboard/users/</code>; редактирование профилей и привязка к бригадам.</li>
+                            <li><strong>Сводный табель</strong> - <code>/dashboard/staff_table_total</code> (месяц/год в query).</li>
+                            <li><strong>Персонал бригады</strong> - <code>/dashboard/brigade/&lt;id&gt;/staff</code>; ввод <code>WorkerActivity</code> по дням.</li>
+                            <li>Редактирование сотрудника «с табеля» может требовать разрешения <code>auth.change_user</code> (см. шаблоны таблиц персонала).</li>
+                        </ul>
+
+                        <h6 class="fw-bold mt-3">Бригады, работы, объекты</h6>
+                        <ul>
+                            <li><strong>Список бригад</strong> - <code>/dashboard/brigades/</code>; создание/удаление - при наличии
+                                <code>Dashboard.add_brigade</code> / <code>delete_brigade</code>.</li>
+                            <li><strong>Карточка бригады</strong> - персонал, оборудование, календарь <code>BrigadeActivity</code>.</li>
+                            <li><strong>Свод календарей всех бригад</strong> - <code>/dashboard/brigade/brigade_table_total/</code>.</li>
+                            <li><strong>Требования по оснащению и статус</strong> - <code>update_brigade_requirements</code>, <code>brigade_requirement_status</code>.</li>
+                            <li><strong>Месторождения (объекты работ)</strong> - <code>work_object_list</code> и связанные формы.</li>
+                            <li><strong>Тип бригады</strong> и <strong>анализ загрузки</strong> - как у администратора (URL те же).</li>
+                        </ul>
+
+                        <h6 class="fw-bold mt-3">Оборудование, категории, документы</h6>
+                        <ul>
+                            <li><strong>Категории</strong> - <code>/dashboard/categories/</code> (CRUD по правам группы).</li>
+                            <li><strong>Оборудование</strong> - список, карточка, документы, массовая выгрузка по бригаде/единице.</li>
+                            <li><strong>Журнал перемещений оборудования</strong> - <code>/dashboard/transfers/history/</code>.</li>
+                        </ul>
+
+                        <h6 class="fw-bold mt-3">Снабжение</h6>
+                        <ul>
+                            <li><strong>Индекс снабжения</strong> - <code>/dashboard/transfers/transfer_index</code> с фильтром месяца/года.</li>
+                            <li>Управление автопарком, перемещениями, справочниками «прочего» оборудования - префикс <code>/dashboard/transfer/</code>.</li>
+                            <li>Экспорт перемещений в Excel - через отчётный view (см. кнопки в интерфейсе списка перемещений).</li>
+                        </ul>
+
+                        <h6 class="fw-bold mt-3">Отчёты</h6>
+                        <ul>
+                            <li><code>/dashboard/reports/</code>, сводные выгрузки Excel по бригадам, оборудованию, активности, оснащённости -
+                                доступны при тех же правах, что и у администратора операционной части.</li>
+                        </ul>
+
+                        <h6 class="fw-bold mt-3">Ограничения по сравнению с администратором</h6>
+                        <ul>
+                            <li><strong>Группы </strong> (<code>/dashboard/groups/</code>) в шаблонах для группы «Администратор».</li>
+                            <li><strong>Журнал на главной</strong> для всех действий - карточка суперпользователя; просмотр <code>action-log</code> - по выданным правам.</li>
+                            <li><strong>Админка </strong> - только у суперпользователей.</li>
+                        </ul>
                     </div>
                 </div>
             </div>
+            {% endif %}
+
             <div class="accordion-item">
                 <h2 class="accordion-header" id="headingOperator">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#collapseOperator" aria-expanded="false" aria-controls="collapseOperator">
+                    <button class="accordion-button {% if user.is_superuser or user|has_group:"Администратор" or user|has_group:"Руководитель" %}collapsed{% endif %}" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#collapseOperator"
+                            aria-expanded="{% if user.is_superuser or user|has_group:"Администратор" or user|has_group:"Руководитель" %}false{% else %}true{% endif %}"
+                            aria-controls="collapseOperator">
                         Оператор
                     </button>
                 </h2>
-                <div id="collapseOperator" class="accordion-collapse collapse" aria-labelledby="headingOperator"
-                     data-bs-parent="#instructionsAccordion">
+                <div id="collapseOperator" class="accordion-collapse collapse {% if not user.is_superuser and not user|has_group:"Администратор" and not user|has_group:"Руководитель" %}show{% endif %}"
+                     aria-labelledby="headingOperator" data-bs-parent="#instructionsAccordion">
                     <div class="accordion-body">
-                        <p>Оператор обладает следующими правами:</p>
+                        <p class="text-muted small mb-3">Оператор - пользователь <code>/dashboard/</code> без групп «Руководитель» и «Администратор»
+                            (или с узкой ролью по договорённости). Доступ к экранам определяется только <strong>разрешениями</strong> в вашей группе .</p>
+
+                        <h6 class="fw-bold">Главная страница</h6>
                         <ul>
-                            <li><strong>Просмотр категорий:</strong>
-                                <ul>
-                                    <li>Просмотр списка всех категорий оборудования.</li>
-                                </ul>
-                            </li>
-                            <li><strong>Управление оборудованием:</strong>
-                                <ul>
-                                    <li>Просмотр списка всего оборудования.</li>
-                                    <li>Редактирование информации об оборудовании.</li>
-                                    <li>Добавление и управление документацией по оборудованию.</li>
-                                </ul>
-                            </li>
+                            <li>Отображаются только карточки при наличии прав:
+                                <code>Dashboard.view_brigade</code>, <code>view_category</code>, <code>view_equipment</code>, <code>view_document</code>.</li>
+                            <li>Карточки «Пользователи», сводный табель, учёт бригад за месяц, месторождения, снабжение, журнал перемещений
+                                <strong>не показываются</strong> оператору в шаблоне главной (они привязаны к группам руководителя/администратора).</li>
                         </ul>
-                        <p>Оператор не может создавать, удалять или редактировать категории, а также управлять бригадами
-                            и пользователями.</p>
+
+                        <h6 class="fw-bold mt-3">Типичные задачи</h6>
+                        <ul>
+                            <li><strong>Бригады</strong> - просмотр <code>/dashboard/brigades/</code> при <code>view_brigade</code>;
+                                переход в карточку бригады и просмотр оборудования бригады; создание/удаление бригады - только при
+                                <code>add_brigade</code> / <code>delete_brigade</code>.</li>
+                            <li><strong>Категории</strong> - <code>/dashboard/categories/</code>; добавление/правка - при
+                                <code>add_category</code>, <code>change_category</code> (кнопки в шаблоне списка).</li>
+                            <li><strong>Оборудование</strong> - <code>/dashboard/equipment/</code>; кнопка «Добавить» при <code>add_equipment</code>;
+                                правка карточки и документов - при <code>change_equipment</code>, <code>add_document</code>, <code>view_document</code>.</li>
+                            <li><strong>Документы</strong> - общий список <code>/dashboard/document/</code> при соответствующих правах.</li>
+                            <li>Скачивание файлов с карточки оборудования - по <code>view_document</code>.</li>
+                        </ul>
+
+                        <h6 class="fw-bold mt-3">Чего обычно нет у оператора</h6>
+                        <ul>
+                            <li>Сводные табеля и календарь работ <strong>всех</strong> бригад - без группы «Руководитель» ярлыка на главной нет;
+                                прямой URL может быть закрыт на уровне прав или не использоваться.</li>
+                            <li>Разделы снабжения и массовые отчёты - если не выданы отдельные права и нет карточки на главной, ориентируйтесь на меню,
+                                которое вам открыл администратор.</li>
+                            <li><strong>Пользователи и группы</strong> - Нет организации; шаблоны списков пользователей/групп часто рассчитаны на администратора.</li>
+                        </ul>
+
+                        <h6 class="fw-bold mt-3">Практические советы</h6>
+                        <ul>
+                            <li>Если нужной кнопки нет - попросите администратора проверить группу и галочки для приложения <code>Dashboard</code>.</li>
+                            <li>При ошибке «доступ запрещён» или пустой главной - сравните свою группу с перечисленными выше разрешениями.</li>
+                        </ul>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="mt-4">
-            <p><strong>Дополнительные пояснения:</strong></p>
-            <ul>
-                <li><strong>Взаимодействие с формами:</strong> При создании и редактировании записей, вы будете
-                    использовать формы, которые включают необходимые поля для каждой модели.
-                </li>
-                <li><strong>Поиск и фильтрация:</strong> В списках оборудования вы можете использовать поиск и
-                    фильтрацию для быстрого доступа к необходимым данным.
-                </li>
-                <li><strong>Сортировка:</strong> Списки можно сортировать по различным параметрам.</li>
-                <li><strong>Пагинация:</strong> Списки длиннее 10 записей будут разделены на страницы для более удобного
-                    просмотра.
-                </li>
-                <li><strong>Выгрузка данных:</strong> Таблицы данных о бригадах и оборудовании можно выгрузить в формате
-                    .excel или .csv на соответствующих страницах сайта.
-                </li>
-            </ul>
+        <h2 class="h4">Общие приёмы работы в интерфейсе</h2>
+        <ul>
+            <li><strong>Формы:</strong> проверяйте сообщения об ошибках над полями.</li>
+            <li><strong>Поиск и фильтры:</strong> в списках бригад, оборудования, перемещений.</li>
+            <li><strong>Пагинация:</strong> длинные списки разбиты по страницам.</li>
+            <li><strong>Выгрузки:</strong> Excel с страниц списков; часть отчётов - с параметрами <code>month</code>, <code>year</code>.</li>
+        </ul>
+
+        <p class="mt-3"><strong>Контакты поддержки:</strong> вопросы по правам и группам - к администратору организации.</p>
+
+        <h2 class="h4 mt-4">Сводная таблица разрешений (ориентир)</h2>
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm align-middle">
+                <thead class="table-light">
+                <tr>
+                    <th>Объект / действие</th>
+                    {% if user.is_superuser or user|has_group:"Администратор" %}
+                        <th>Администратор</th>
+                    {% endif %}
+                    {% if user.is_superuser or user|has_group:"Администратор" or user|has_group:"Руководитель" %}
+                        <th>Управляющий (Руководитель)</th>
+                    {% endif %}
+                    <th>Оператор</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Бригады (просмотр списка)</td>
+                    {% if user.is_superuser or user|has_group:"Администратор" %}<td>Да</td>{% endif %}
+                    {% if user.is_superuser or user|has_group:"Администратор" or user|has_group:"Руководитель" %}<td>Да</td>{% endif %}
+                    <td>Просмотр</td>
+                </tr>
+                <tr>
+                    <td>Бригады (создание / удаление)</td>
+                    {% if user.is_superuser or user|has_group:"Администратор" %}<td>Да</td>{% endif %}
+                    {% if user.is_superuser or user|has_group:"Администратор" or user|has_group:"Руководитель" %}<td>По правам группы</td>{% endif %}
+                    <td>Нет</td>
+                </tr>
+                <tr>
+                    <td>Тип бригады, анализ загрузки</td>
+                    {% if user.is_superuser or user|has_group:"Администратор" %}<td>Да</td>{% endif %}
+                    {% if user.is_superuser or user|has_group:"Администратор" or user|has_group:"Руководитель" %}<td>Да</td>{% endif %}
+                    <td>Нет</td>
+                </tr>
+                <tr>
+                    <td>Категории (CRUD)</td>
+                    {% if user.is_superuser or user|has_group:"Администратор" %}<td>Да</td>{% endif %}
+                    {% if user.is_superuser or user|has_group:"Администратор" or user|has_group:"Руководитель" %}<td>Да</td>{% endif %}
+                    <td>Просмотр</td>
+                </tr>
+                <tr>
+                    <td>Оборудование</td>
+                    {% if user.is_superuser or user|has_group:"Администратор" %}<td>Да</td>{% endif %}
+                    {% if user.is_superuser or user|has_group:"Администратор" or user|has_group:"Руководитель" %}<td>Да</td>{% endif %}
+                    <td>Просмотр</td>
+                </tr>
+                <tr>
+                    <td>Сводные табеля, учёт бригад, объекты, снабжение</td>
+                    {% if user.is_superuser or user|has_group:"Администратор" %}<td>Да</td>{% endif %}
+                    {% if user.is_superuser or user|has_group:"Администратор" or user|has_group:"Руководитель" %}<td>Да</td>{% endif %}
+                    <td>Нет</td>
+                </tr>
+                <tr>
+                    <td>Пользователи и группы </td>
+                    {% if user.is_superuser or user|has_group:"Администратор" %}<td>Да</td>{% endif %}
+                    {% if user.is_superuser or user|has_group:"Администратор" or user|has_group:"Руководитель" %}<td>Да</td>{% endif %}
+                    <td>Нет</td>
+                </tr>
+                <tr>
+                    <td>Журнал действий</td>
+                    {% if user.is_superuser or user|has_group:"Администратор" %}<td>Да</td>{% endif %}
+                    {% if user.is_superuser or user|has_group:"Администратор" or user|has_group:"Руководитель" %}<td>По правам группы</td>{% endif %}
+                    <td>Нет</td>
+                </tr>
+                </tbody>
+            </table>
         </div>
-        <p><strong>Контакты поддержки:</strong> В случае возникновения вопросов или проблем, пожалуйста, свяжитесь с администратором системы. koshka@mail.ru</p>
 
-        <h2>Таблица разрешений</h2>
-        <table class="table table-bordered table-striped">
-            <tr>
-                <th>Таблицы БД</th>
-                <th>Администратор</th>
-                <th>Управляющий</th>
-                <th>Оператор</th>
-            </tr>
-            <tr>
-                <td>Оборудование</td>
-                <td>запись ✅ чтение ✅ удаление ✅</td>
-                <td>запись ✅ чтение ✅ удаление ✅</td>
-                <td>запись ✅ чтение ✅ удаление ✅</td>
-            </tr>
-            <tr>
-                <td>Документы</td>
-                <td>запись ✅ чтение ✅ удаление ✅</td>
-                <td>запись ✅ чтение ✅ удаление ✅</td>
-                <td>запись ✅ чтение ✅ удаление ✅</td>
-            </tr>
-            <tr>
-                <td>Бригады</td>
-                <td>запись ✅ чтение ✅ удаление ✅</td>
-                <td>запись ✅ чтение ✅ удаление ✅</td>
-                <td>запись 🛑 чтение ✅ удаление 🛑</td>
-            </tr>
-            <tr>
-                <td>Категории</td>
-                <td>запись ✅ чтение ✅ удаление ✅</td>
-                <td>запись ✅ чтение ✅ удаление ✅</td>
-                <td>запись 🛑 чтение ✅ удаление 🛑</td>
-            </tr>
-            <tr>
-                <td>Пользователи</td>
-                <td>запись ✅ чтение ✅ удаление ✅</td>
-                <td>запись 🛑 чтение 🛑 удаление 🛑</td>
-                <td>запись 🛑 чтение 🛑 удаление 🛑</td>
-            </tr>
-            <tr>
-                <td>Передача оборудования</td>
-                <td>запись 🛑 чтение ✅ удаление 🛑</td>
-                <td>запись 🛑 чтение ✅ удаление 🛑</td>
-                <td>запись 🛑 чтение 🛑 удаление 🛑</td>
-            </tr>
-            <tr>
-                <td>Логи</td>
-                <td>запись 🛑 чтение ✅ удаление 🛑</td>
-                <td>запись 🛑 чтение 🛑 удаление 🛑</td>
-                <td>запись 🛑 чтение 🛑 удаление 🛑</td>
-            </tr>
-        </table>
-
-
-        <h1>Связи между таблицами базы данных</h1>
-        <table class="table table-bordered table-striped">
-            <thead class="thead-dark">
-            <tr>
-                <th>Таблица 1</th>
-                <th>Тип связи</th>
-                <th>Таблица 2</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>Пользователь</td>
-                <td>Много-ко-многим</td>
-                <td>Группа</td>
-            </tr>
-            <tr>
-                <td>Оборудование</td>
-                <td>Многие-к-одному</td>
-                <td>Категория</td>
-            </tr>
-            <tr>
-                <td>Оборудование</td>
-                <td>Многие-к-одному</td>
-                <td>Бригада</td>
-            </tr>
-            <tr>
-                <td>Оборудование</td>
-                <td>Много-ко-многим</td>
-                <td>Документ</td>
-            </tr>
-            <tr>
-                <td>Документ</td>
-                <td>Многие-к-одному</td>
-                <td>Оборудование</td>
-            </tr>
-            <tr>
-                <td>Категория</td>
-                <td>Многие-к-одному</td>
-                <td>Бригада</td>
-            </tr>
-            </tbody>
-        </table>
+        <h2 class="h4 mt-4">Связи основных сущностей (упрощённо)</h2>
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm">
+                <thead class="table-light">
+                <tr>
+                    <th>Связь</th>
+                    <th>Комментарий</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Пользователь - группа</td>
+                    <td>Многие-ко-многим; права из разрешений группы.</td>
+                </tr>
+                <tr>
+                    <td>Оборудование - категория, бригада</td>
+                    <td>Многие-к-одному; смена бригады фиксируется в журнале перемещений.</td>
+                </tr>
+                <tr>
+                    <td>Оборудование - документы</td>
+                    <td>Многие-ко-многим.</td>
+                </tr>
+                <tr>
+                    <td>Профиль - бригада</td>
+                    <td>Для табелей и календаря работников.</td>
+                </tr>
+                <tr>
+                    <td>BrigadeActivity / WorkerActivity</td>
+                    <td>Календари работ бригады и работников; отчёты и анализ загрузки.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 {% endblock %}
-

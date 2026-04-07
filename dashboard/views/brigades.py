@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 import calendar
+import json
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -25,6 +26,16 @@ from openpyxl import Workbook
 NEGATIVE_BRIGADE_ACTIVITY_TYPES = {'Переезд', 'Простой', 'Авария', 'Движка', '-'}
 BRIGADE_MARKED_VALUES = {'own', 'external'}
 
+MONTH_CHOICES_RU = tuple(
+    zip(
+        range(1, 13),
+        [
+            'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+            'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь',
+        ],
+    )
+)
+
 
 def _clip_period_to_today(start_date, end_date):
     today = date.today()
@@ -32,7 +43,6 @@ def _clip_period_to_today(start_date, end_date):
     if effective_end < start_date:
         return start_date, start_date - timedelta(days=1), 0
     return start_date, effective_end, (effective_end - start_date).days + 1
-
 
 def _resolve_period(request):
     mode = request.GET.get('mode', 'month')
@@ -547,8 +557,9 @@ class BrigadeLoadAnalysisView(LoginRequiredMixin, StaffOnlyMixin, TemplateView):
             'end_date_input': end_date.strftime('%Y-%m-%d'),
             'month_input': start_date.month,
             'year_input': start_date.year,
-            'chart_labels': chart_labels,
-            'chart_data': chart_data,
+            'month_choices': MONTH_CHOICES_RU,
+            'chart_labels_json': json.dumps(chart_labels, ensure_ascii=False),
+            'chart_data_json': json.dumps(chart_data),
         })
         return context
 
@@ -563,16 +574,20 @@ class OrganizationLoadAnalysisView(LoginRequiredMixin, StaffOnlyMixin, TemplateV
         rows = [_build_brigade_load_stats(brigade, start_date, end_date) for brigade in brigades]
 
         total_positive_days = sum(row['positive_days'] for row in rows)
-        total_days = sum(row['days_total'] for row in rows)
-        org_percent = round((total_positive_days / total_days) * 100, 2) if total_days else 0
+        period_calendar_days = rows[0]['days_total'] if rows else 0
+        brigades_in_report = len(rows)
+        org_capacity_days = brigades_in_report * period_calendar_days if period_calendar_days else 0
+        org_percent = round((total_positive_days / org_capacity_days) * 100, 2) if org_capacity_days else 0
         own_rows = [row for row in rows if getattr(row['brigade'], 'affiliation', '') == 'own']
         external_rows = [row for row in rows if getattr(row['brigade'], 'affiliation', '') == 'external']
         own_positive_days = sum(row['positive_days'] for row in own_rows)
-        own_total_days = sum(row['days_total'] for row in own_rows)
-        own_percent = round((own_positive_days / own_total_days) * 100, 2) if own_total_days else 0
+        own_count = len(own_rows)
+        own_capacity = own_count * period_calendar_days if period_calendar_days else 0
+        own_percent = round((own_positive_days / own_capacity) * 100, 2) if own_capacity else 0
         external_positive_days = sum(row['positive_days'] for row in external_rows)
-        external_total_days = sum(row['days_total'] for row in external_rows)
-        external_percent = round((external_positive_days / external_total_days) * 100, 2) if external_total_days else 0
+        external_count = len(external_rows)
+        external_capacity = external_count * period_calendar_days if period_calendar_days else 0
+        external_percent = round((external_positive_days / external_capacity) * 100, 2) if external_capacity else 0
 
         context.update({
             'rows': rows,
@@ -581,21 +596,26 @@ class OrganizationLoadAnalysisView(LoginRequiredMixin, StaffOnlyMixin, TemplateV
             'end_date_input': end_date.strftime('%Y-%m-%d'),
             'month_input': start_date.month,
             'year_input': start_date.year,
+            'month_choices': MONTH_CHOICES_RU,
             'organization_positive_days': total_positive_days,
-            'organization_total_days': total_days,
+            'organization_calendar_days': period_calendar_days,
+            'organization_brigades_count': brigades_in_report,
+            'organization_capacity_days': org_capacity_days,
             'organization_load_percent': org_percent,
             'own_positive_days': own_positive_days,
-            'own_total_days': own_total_days,
+            'own_brigades_count': own_count,
+            'own_capacity_days': own_capacity,
             'own_load_percent': own_percent,
             'external_positive_days': external_positive_days,
-            'external_total_days': external_total_days,
+            'external_brigades_count': external_count,
+            'external_capacity_days': external_capacity,
             'external_load_percent': external_percent,
-            'chart_labels': [row['brigade'].name for row in rows],
-            'chart_data': [row['load_percent'] for row in rows],
-            'chart_colors': [
+            'chart_labels_json': json.dumps([row['brigade'].name for row in rows], ensure_ascii=False),
+            'chart_data_json': json.dumps([row['load_percent'] for row in rows]),
+            'chart_colors_json': json.dumps([
                 '#198754' if getattr(row['brigade'], 'affiliation', '') == 'own' else '#fd7e14'
                 for row in rows
-            ],
+            ]),
         })
         return context
 
@@ -640,20 +660,33 @@ def export_organization_load_excel(request):
         sheet.append([row['brigade'].name, affiliation_display, row['positive_days'], row['days_total'], row['load_percent']])
 
     total_positive_days = sum(row['positive_days'] for row in rows)
-    total_days = sum(row['days_total'] for row in rows)
-    total_percent = round((total_positive_days / total_days) * 100, 2) if total_days else 0
+    period_calendar_days = rows[0]['days_total'] if rows else 0
+    brigades_in_report = len(rows)
+    org_capacity = brigades_in_report * period_calendar_days if period_calendar_days else 0
+    total_percent = round((total_positive_days / org_capacity) * 100, 2) if org_capacity else 0
     own_rows = [row for row in rows if getattr(row['brigade'], 'affiliation', '') == 'own']
     external_rows = [row for row in rows if getattr(row['brigade'], 'affiliation', '') == 'external']
     own_positive_days = sum(row['positive_days'] for row in own_rows)
-    own_total_days = sum(row['days_total'] for row in own_rows)
-    own_percent = round((own_positive_days / own_total_days) * 100, 2) if own_total_days else 0
+    own_count = len(own_rows)
+    own_capacity = own_count * period_calendar_days if period_calendar_days else 0
+    own_percent = round((own_positive_days / own_capacity) * 100, 2) if own_capacity else 0
     external_positive_days = sum(row['positive_days'] for row in external_rows)
-    external_total_days = sum(row['days_total'] for row in external_rows)
-    external_percent = round((external_positive_days / external_total_days) * 100, 2) if external_total_days else 0
+    external_count = len(external_rows)
+    external_capacity = external_count * period_calendar_days if period_calendar_days else 0
+    external_percent = round((external_positive_days / external_capacity) * 100, 2) if external_capacity else 0
     sheet.append([])
-    sheet.append(['ИТОГО', '', total_positive_days, total_days, total_percent])
-    sheet.append(['ИТОГО СВОИ', '', own_positive_days, own_total_days, own_percent])
-    sheet.append(['ИТОГО ЧУЖИЕ', '', external_positive_days, external_total_days, external_percent])
+    sheet.append(
+        [
+            'Календарных дней в периоде (D)',
+            '',
+            period_calendar_days,
+            '',
+            '',
+        ]
+    )
+    sheet.append(['ИТОГО полож. дней', '', total_positive_days, org_capacity, total_percent])
+    sheet.append(['ИТОГО СВОИ', '', own_positive_days, own_capacity, own_percent])
+    sheet.append(['ИТОГО ЧУЖИЕ', '', external_positive_days, external_capacity, external_percent])
 
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = 'attachment; filename=organization_load.xlsx'
