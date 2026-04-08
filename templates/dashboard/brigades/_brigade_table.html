@@ -1,5 +1,6 @@
 {% load custom_filters %}
 
+
 <h2>Список бригад</h2>
 {% include 'dashboard/brigades/brigade_search.html' %}
 <div class="d-flex justify-content-between mt-4 mb-4">
@@ -21,11 +22,6 @@
             <i class="fas fa-file-excel"></i> Выгрузить сводный отчет
         </a>
 
-            <a href="{% url 'organization_load_analysis' %}" class="btn btn-outline-primary m-1"
-               title="Тест: расширенный анализ загрузки">
-                Анализ загрузки (организация)
-            </a>
-
     </div>
 </div>
 
@@ -39,7 +35,6 @@
             <th class="text-center">Персонал</th>
             <th>Заказчик</th>
             <th>Примечания</th>
-                <th class="text-center">Загрузка</th>
             <th class="text-center">Обеспечение</th>
             <th class="text-center">Действия</th>
         </tr>
@@ -65,17 +60,6 @@
                 </td>
                 <td>{% if brigade.customer %}{{ brigade.customer }}{% else %}---{% endif %}</td>
                 <td>{% if brigade.notes %}{{ brigade.notes }}{% else %}---{% endif %}</td>
-                    <td class="text-center">
-                        {% if brigade.affiliation == 'unmarked' %}
-                            <span class="d-inline-block" title="Проставьте тип бригады" style="cursor: not-allowed;">
-                                <span class="btn btn-sm btn-outline-secondary disabled mb-0" style="pointer-events: none;">Анализ</span>
-                            </span>
-                        {% else %}
-                            <a href="{% url 'brigade_load_analysis' brigade.id %}"
-                               class="btn btn-sm btn-outline-primary"
-                               title="Тест: анализ загрузки бригады">Анализ</a>
-                        {% endif %}
-                    </td>
                 <td class="text-center">
                     <div style="display: flex; gap: 8px; align-items: center; justify-content: center;">
 
@@ -147,14 +131,14 @@
             </tr>
         {% empty %}
             <tr>
-                <td colspan="9" class="text-center">Нет данных о бригадах.</td>
+                <td colspan="8" class="text-center">Нет данных о бригадах.</td>
             </tr>
         {% endfor %}
         </tbody>
         {# Добавляем секцию для общих итогов #}
         <tfoot>
         <tr class="table-info">
-            <th colspan="7" class="text-start">ИТОГО по обеспечению бригад:</th>
+            <th colspan="6" class="text-start">ИТОГО по обеспечению бригад:</th>
             {# Объединяем ячейки #}
             <th class="text-center">
                 <div style="display: flex; gap: 4px; justify-content: center;">

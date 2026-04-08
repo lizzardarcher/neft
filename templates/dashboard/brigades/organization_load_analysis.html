@@ -9,6 +9,7 @@
     </style>
 {% endblock %}
 
+
 {% block content %}
     <div class="container bg-light p-4 mt-4 rounded">
         <h3 class="mb-3">Расширенный анализ по организации</h3>
@@ -56,13 +57,15 @@
         </form>
 
         <div class="mb-3 small text-muted">
-            Один календарный день периода учитывается отдельно по каждой бригаде; для организации "ёмкость" периода =
-            число бригад × число календарных дней (D).
+            Показатели считаются как в Excel: для каждой бригады <strong>D</strong> — число дней от начала периода до последней
+            даты с заполнением; <strong>ВСЕГО</strong> — рабочие сутки (типы ЗБС и ВНС). Свод по организации:
+            сумма рабочих дней / сумма <strong>D</strong> по бригадам в отчёте.
         </div>
 
         <div class="mb-3">
-            <b>Итого положительных дней (по всем бригадам):</b> {{ organization_positive_days }}<br>
-            <b>Календарных дней в периоде (D):</b> {{ organization_calendar_days }}<br>
+            <b>Всего рабочих дней (по бригадам):</b> {{ organization_positive_days }}<br>
+            <b>Сумма D по бригадам (база для %):</b> {{ organization_capacity_days }}<br>
+            <b>Макс. D у одной бригады (для ориентира):</b> {{ organization_calendar_days }}<br>
             <b>Бригад в отчёте:</b> {{ organization_brigades_count }}<br>
         </div>
 
@@ -71,8 +74,8 @@
                 <thead>
                 <tr>
                     <th>Срез</th>
-                    <th class="text-center">Положительных дней</th>
-                    <th class="text-center">База (дней)</th>
+                    <th class="text-center">Рабочих дней</th>
+                    <th class="text-center">Σ D</th>
                     <th class="text-center">Загрузка, %</th>
                 </tr>
                 </thead>
@@ -123,9 +126,14 @@
                 <tr>
                     <th>Бригада</th>
                     <th>Тип</th>
-                    <th>Положительных дней</th>
-                    <th>Дней в периоде (D)</th>
-                    <th>Загрузка, %</th>
+                    <th class="text-center">D</th>
+                    <th class="text-center">ЗБС</th>
+                    <th class="text-center">ВНС</th>
+                    <th class="text-center">ВСЕГО</th>
+                    <th class="text-center">Переезд</th>
+                    <th class="text-center">Движка</th>
+                    <th class="text-center">Простой</th>
+                    <th class="text-center">%</th>
                     <th></th>
                 </tr>
                 </thead>
@@ -134,9 +142,14 @@
                     <tr>
                         <td>{{ row.brigade.name }}</td>
                         <td>{{ row.brigade.get_affiliation_display }}</td>
-                        <td>{{ row.positive_days }}</td>
-                        <td>{{ row.days_total }}</td>
-                        <td>{{ row.load_percent }}</td>
+                        <td class="text-center">{{ row.days_total }}</td>
+                        <td class="text-center">{{ row.zbs_days }}</td>
+                        <td class="text-center">{{ row.vns_days }}</td>
+                        <td class="text-center fw-semibold">{{ row.positive_days }}</td>
+                        <td class="text-center">{{ row.pereezd_days }}</td>
+                        <td class="text-center">{{ row.dvizhka_days }}</td>
+                        <td class="text-center">{{ row.prostoy_days }}</td>
+                        <td class="text-center">{{ row.load_percent }}</td>
                         <td>
                             <a class="btn btn-sm btn-outline-info" href="{% url 'brigade_load_analysis' row.brigade.id %}?mode={{ mode }}&month={{ month_input }}&year={{ year_input }}&start_date={{ start_date_input }}&end_date={{ end_date_input }}">
                                 Анализ бригады
@@ -145,7 +158,7 @@
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="6" class="text-center">Нет данных для анализа.</td>
+                        <td colspan="11" class="text-center">Нет данных для анализа.</td>
                     </tr>
                 {% endfor %}
                 </tbody>
@@ -155,7 +168,10 @@
         <div class="org-load-chart-wrap">
             <canvas id="orgLoadChart" height="120"></canvas>
         </div>
-        <a class="btn btn-outline-secondary mt-3" href="{% url 'brigade_list' %}">Назад</a>
+        <div class="d-flex flex-wrap gap-2 mt-3">
+            <a class="btn btn-outline-secondary" href="{% url 'brigade_table_total' %}?month={{ month_input }}&year={{ year_input }}">Учёт бригад</a>
+            <a class="btn btn-outline-secondary" href="{% url 'brigade_list' %}">Список бригад</a>
+        </div>
     </div>
 {% endblock %}
 

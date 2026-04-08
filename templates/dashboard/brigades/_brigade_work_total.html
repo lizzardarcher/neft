@@ -1,36 +1,66 @@
 {% load custom_filters %}
+
 <div class="p-2">
     <div class="text-center">
         <h1>Сводная таблица активности бригад</h1>
         <h3>{{ month }}/{{ year }}</h3>
-        <div class="mb-3">
-            <a href="{{ previous_month_url }}" class="btn btn-secondary"> <<< </a>
+        <div class="mb-3 d-flex flex-wrap justify-content-center align-items-center gap-2">
+            <a href="{{ previous_month_url }}" class="btn btn-secondary"> &lt;&lt;&lt; </a>
             <a href="{% url 'brigade_table_total' %}?month={{ current_month }}&year={{ current_year }}"
                class="btn btn-secondary"> <i class="fa fa-arrow-rotate-right"></i> </a>
-            <a href="{{ next_month_url }}" class="btn btn-secondary"> >>> </a>
+            <a href="{{ next_month_url }}" class="btn btn-secondary"> &gt;&gt;&gt; </a>
+            <a href="{% url 'organization_load_analysis' %}?mode=month&month={{ month }}&year={{ year }}"
+               class="btn btn-outline-primary" title="Расширенный анализ по организации за выбранный месяц">
+                Анализ загрузки (организация)
+            </a>
         </div>
     </div>
-    <table id="brigade_actions_table" class="table table-bordered">
+    <div class="table-responsive">
+    <table id="brigade_actions_table" class="table table-bordered table-sm align-middle text-nowrap">
         <thead class="table-secondary">
         <tr>
-            <th>Бригада</th>
-            <th>Заказчик</th>
-            <th>Примечания</th>
+            <th rowspan="2" class="align-middle">Бригада</th>
+            <th rowspan="2" class="align-middle">Тип</th>
+            <th rowspan="2" class="align-middle">Заказчик</th>
+            <th rowspan="2" class="align-middle">Примечания</th>
             {% for day in days %}
-                <th>{{ day }}</th>
+                <th rowspan="2" class="text-center">{{ day }}</th>
             {% endfor %}
-            <th>Действия</th>
+            <th colspan="9" class="text-center bg-light border-secondary">Показатели загрузки (месяц)</th>
+            <th rowspan="2" class="align-middle" style="min-width:7rem;">Действия</th>
+        </tr>
+        <tr>
+            <th class="text-center bg-light small">Итого<br><span class="text-muted fw-normal">(D)</span></th>
+            <th class="text-center bg-light small">ЗБС</th>
+            <th class="text-center bg-light small">ВНС</th>
+            <th class="text-center bg-light small">ВСЕГО</th>
+            <th class="text-center bg-light small">Переезд</th>
+            <th class="text-center bg-light small">Движка</th>
+            <th class="text-center bg-light small">Простой</th>
+            <th class="text-center bg-light small">Итого<br>суток</th>
+            <th class="text-center bg-light small">%</th>
         </tr>
         </thead>
         <tbody>
         {% for data in brigade_data %}
+            {% with L=data.load %}
             <tr id="{{ data.brigade.id }}">
-                <td><small><a href="{% url 'brigade_index' data.brigade.id %}">{% if data.brigade.name %}{{ data.brigade.name }}</a>{% else %}---{% endif %}</small></td>
-                <td><small>{% if data.brigade.customer %}{{ data.brigade.customer }}{% else %}---{% endif %}</small>
+                <td><small><a href="{% url 'brigade_index' data.brigade.id %}">{{ data.brigade.name }}</a></small></td>
+                <td class="small">
+                    {% if data.brigade.affiliation == 'own' %}
+                        <span class="badge bg-success">Своя</span>
+                    {% elif data.brigade.affiliation == 'external' %}
+                        <span class="badge text-bg-warning text-dark">Чужая</span>
+                    {% else %}
+                        <span class="badge bg-secondary" title="Для анализа загрузки проставьте тип">—</span>
+                    {% endif %}
                 </td>
-                <td><small>{% if data.brigade.notes %}{{ data.brigade.notes }}{% else %}---{% endif %}</small></td>
+                <td><small>{% if data.brigade.customer %}{{ data.brigade.customer }}{% else %}—{% endif %}</small></td>
+                <td><small>{% if data.brigade.notes %}{{ data.brigade.notes }}{% else %}—{% endif %}</small></td>
                 {% for ba in data.ba %}
-                    {% if ba.ba.work_type == '(ЗБС) Бурение' %}
+                    {% if not ba.ba %}
+                        <td class="" style="background-color: #ffffff"></td>
+                    {% elif ba.ba.work_type == '(ЗБС) Бурение' %}
                         <td class="border-light" style="background-color: #e4c89c">
                             {% if ba.ba.work_object %}<small><b>{{ ba.ba.work_object.short_name }}</b></small><br><span style="font-size: 0.7rem;">{{ ba.ba.work_object.hole }}</span>{% endif %}</td>
                     {% elif ba.ba.work_type == '(ЗБС) бурение горизонта' %}
@@ -66,10 +96,24 @@
                         <td class="" style="background-color: #ffffff"></td>
                     {% endif %}
                 {% endfor %}
+                <td class="text-center bg-light">{{ L.days_total }}</td>
+                <td class="text-center bg-light">{{ L.zbs_days }}</td>
+                <td class="text-center bg-light">{{ L.vns_days }}</td>
+                <td class="text-center bg-light fw-semibold">{{ L.positive_days }}</td>
+                <td class="text-center bg-light">{{ L.pereezd_days }}</td>
+                <td class="text-center bg-light">{{ L.dvizhka_days }}</td>
+                <td class="text-center bg-light">{{ L.prostoy_days }}</td>
+                <td class="text-center bg-light">{{ L.total_accounted_days }}</td>
+                <td class="text-center bg-light">{% if L.days_total %}{{ L.load_percent }}%{% else %}—{% endif %}</td>
                 <td>
+                    {% if data.brigade.affiliation == 'own' or data.brigade.affiliation == 'external' %}
+                        <a href="{% url 'brigade_load_analysis' data.brigade.id %}?mode=month&month={{ month }}&year={{ year }}"
+                           class="btn btn-sm btn-outline-primary mb-1" title="Подробный анализ">Анализ</a><br>
+                    {% else %}
+                        <span class="btn btn-sm btn-outline-secondary disabled mb-1" title="Укажите тип бригады (своя/чужая)">Анализ</span><br>
+                    {% endif %}
                     <small><a href="{% url 'brigade_update_from_total' data.brigade.id %}"
-                              class="btn btn-sm btn-outline-warning"><i
-                            class="fa fa-edit"></i></a></small>
+                              class="btn btn-sm btn-outline-warning mb-1"><i class="fa fa-edit"></i></a></small>
                     <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal"
                             data-target="#wa-modal{{ data.brigade.id }}">
                         <i class="fa fa-add"></i>
@@ -94,9 +138,33 @@
                     </div>
                 </td>
             </tr>
+            {% endwith %}
         {% endfor %}
         </tbody>
+        <tfoot class="table-light">
+        <tr>
+            <th colspan="4" class="text-end small">% загрузки · свои бригады (доля с рабочим днём):</th>
+            {% for v in daily_own_load %}
+                <th class="text-center small p-1">
+                    {% if v is None %}—{% else %}{{ v|floatformat:2 }}{% endif %}
+                </th>
+            {% endfor %}
+            <th colspan="9"></th>
+            <th></th>
+        </tr>
+        <tr>
+            <th colspan="4" class="text-end small">% загрузки · чужие бригады:</th>
+            {% for v in daily_external_load %}
+                <th class="text-center small p-1">
+                    {% if v is None %}—{% else %}{{ v|floatformat:2 }}{% endif %}
+                </th>
+            {% endfor %}
+            <th colspan="9"></th>
+            <th></th>
+        </tr>
+        </tfoot>
     </table>
+    </div>
     <div class="row">
         {% include 'dashboard/brigades/components/conditional_signs.html' %}
         {% include 'dashboard/brigades/components/work_objects_edit.html' %}

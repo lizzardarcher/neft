@@ -23,8 +23,11 @@ from dashboard.models import Brigade, Equipment, Manufacturer, WorkerActivity, B
 from dashboard.utils.utils import get_days_in_month
 from openpyxl import Workbook
 
+
 NEGATIVE_BRIGADE_ACTIVITY_TYPES = {'Переезд', 'Простой', 'Авария', 'Движка', '-'}
 BRIGADE_MARKED_VALUES = {'own', 'external'}
+ZBS_ACTIVITY_PREFIX = '(ЗБС)'
+VNS_ACTIVITY_PREFIX = '(ВНС)'
 
 MONTH_CHOICES_RU = tuple(
     zip(
@@ -88,34 +91,82 @@ def _get_marked_brigades_queryset(base_queryset=None):
     return queryset
 
 
-def _build_brigade_load_stats(brigade, start_date, end_date):
-    period_start, period_end, days_total = _clip_period_to_today(start_date, end_date)
+def _empty_brigade_load_stats(brigade, period_start, period_end):
+    return {
+        'brigade': brigade,
+        'period_start': period_start,
+        'period_end': period_end,
+        'days_total': 0,
+        'days_denominator': 0,
+        'days_with_any_activity': 0,
+        'positive_days': 0,
+        'zbs_days': 0,
+        'vns_days': 0,
+        'pereezd_days': 0,
+        'dvizhka_days': 0,
+        'prostoy_days': 0,
+        'avarya_days': 0,
+        'total_accounted_days': 0,
+        'load_percent': 0,
+        'load_ratio': 0.0,
+        'by_work_type': [],
+    }
 
-    if days_total == 0:
-        return {
-            'brigade': brigade,
-            'period_start': period_start,
-            'period_end': period_end,
-            'days_total': 0,
-            'positive_days': 0,
-            'load_percent': 0,
-            'by_work_type': [],
-        }
+
+def _build_brigade_load_stats(brigade, start_date, end_date):
+    """
+    Загрузка как в Excel заказёра: знаменатель D — число календарных дней от начала периода
+    до последней даты, где у бригады есть запись дня (последняя по id за дату).
+    Числитель — дни с «рабочим» типом (все не из NEGATIVE_BRIGADE_ACTIVITY_TYPES).
+    Дополнительно: сутки ЗБС / ВНС / переезд / движка / простой / авария.
+    """
+    period_start, period_end, _calendar_span = _clip_period_to_today(start_date, end_date)
+
+    if period_end < period_start:
+        return _empty_brigade_load_stats(brigade, period_start, period_end)
 
     latest_ids_per_day = BrigadeActivity.objects.filter(
         brigade=brigade,
-        brigade__isnull=False,
         date__range=(period_start, period_end),
     ).values('date').annotate(last_id=Max('id')).values('last_id')
 
-    effective_activities = BrigadeActivity.objects.filter(id__in=Subquery(latest_ids_per_day))
-    total_effective_days = effective_activities.count()
-    positive_activities = effective_activities.exclude(work_type__in=NEGATIVE_BRIGADE_ACTIVITY_TYPES)
-    positive_days = positive_activities.count()
-    load_percent = round((positive_days / days_total) * 100, 2) if days_total else 0
+    effective_qs = BrigadeActivity.objects.filter(id__in=Subquery(latest_ids_per_day)).order_by('date')
+    effective_list = list(effective_qs)
+
+    if not effective_list:
+        stats = _empty_brigade_load_stats(brigade, period_start, period_end)
+        stats['period_start'] = period_start
+        stats['period_end'] = period_end
+        return stats
+
+    last_date = max(act.date for act in effective_list)
+    D = (last_date - period_start).days + 1
+    zbs = vns = pereezd = prostoy = dvizhka = avarya = 0
+    positive_days = 0
+
+    for act in effective_list:
+        wt = act.work_type
+        if wt.startswith(ZBS_ACTIVITY_PREFIX):
+            zbs += 1
+        elif wt.startswith(VNS_ACTIVITY_PREFIX):
+            vns += 1
+        elif wt == 'Переезд':
+            pereezd += 1
+        elif wt == 'Простой':
+            prostoy += 1
+        elif wt == 'Движка':
+            dvizhka += 1
+        elif wt == 'Авария':
+            avarya += 1
+
+        if wt not in NEGATIVE_BRIGADE_ACTIVITY_TYPES:
+            positive_days += 1
+
+    load_ratio = (positive_days / D) if D else 0.0
+    load_percent = round(load_ratio * 100, 2)
 
     by_work_type = list(
-        effective_activities.values('work_type')
+        effective_qs.values('work_type')
         .annotate(total=Count('id'))
         .order_by('-total', 'work_type')
     )
@@ -126,12 +177,72 @@ def _build_brigade_load_stats(brigade, start_date, end_date):
         'brigade': brigade,
         'period_start': period_start,
         'period_end': period_end,
-        'days_total': days_total,
-        'days_with_any_activity': total_effective_days,
+        'days_total': D,
+        'days_denominator': D,
+        'days_with_any_activity': len(effective_list),
         'positive_days': positive_days,
+        'zbs_days': zbs,
+        'vns_days': vns,
+        'pereezd_days': pereezd,
+        'dvizhka_days': dvizhka,
+        'prostoy_days': prostoy,
+        'avarya_days': avarya,
+        'total_accounted_days': D,
         'load_percent': load_percent,
+        'load_ratio': load_ratio,
         'by_work_type': by_work_type,
     }
+
+
+def _affiliation_day_worktypes(affiliation, year, month):
+    bids = list(Brigade.objects.filter(affiliation=affiliation).values_list('id', flat=True))
+    if not bids:
+        return {}, bids
+
+    per_day_brigade = (
+        BrigadeActivity.objects.filter(
+            brigade_id__in=bids,
+            date__year=year,
+            date__month=month,
+        )
+        .values('brigade_id', 'date')
+        .annotate(last_id=Max('id'))
+    )
+    id_list = [row['last_id'] for row in per_day_brigade]
+    cache = {}
+    for act in BrigadeActivity.objects.filter(id__in=id_list):
+        cache[(act.brigade_id, act.date)] = act.work_type
+    return cache, bids
+
+
+def _daily_affiliation_load_ratios(affiliation, year, month):
+    """
+    По каждому дню месяца: доля бригад данной аффилиации с «рабочим» типом в последней записи дня.
+    Бригады без записи за этот день не считаются рабочими. Доля = рабочих / всех бригад в группе.
+    """
+    month_last = calendar.monthrange(year, month)[1]
+    period_start = date(year, month, 1)
+    period_end_nominal = date(year, month, month_last)
+    _, period_end_clip, _ = _clip_period_to_today(period_start, period_end_nominal)
+
+    cache, bids = _affiliation_day_worktypes(affiliation, year, month)
+    n = len(bids)
+    if n == 0:
+        return [None] * month_last
+
+    out = []
+    for day_num in range(1, month_last + 1):
+        d = date(year, month, day_num)
+        if d > period_end_clip:
+            out.append(None)
+            continue
+        good = 0
+        for bid in bids:
+            wt = cache.get((bid, d))
+            if wt and wt not in NEGATIVE_BRIGADE_ACTIVITY_TYPES:
+                good += 1
+        out.append(round(good / n, 6) if n else None)
+    return out
 
 # class BrigadeListView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, ListView):
 #     model = Brigade
@@ -469,19 +580,41 @@ class BrigadeTableTotalView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMi
         if not 1900 <= year <= datetime.now().year + 10:
             year = datetime.now().year
 
-        brigade_data = [
-            {
-                'brigade': brigade,
-                'total_ba': BrigadeActivity.objects.filter(brigade=brigade, date__month=month, date__year=year).count(),
-                'ba': [
-                    {'day': day,
-                     'ba': BrigadeActivity.objects.filter(brigade=brigade, date__month=month, date__year=year,
-                                                          date__day=day).last()}
-                    for day in get_days_in_month(month, year)
-                ],
-            } for brigade in brigades
-        ]
+        month_start = date(year, month, 1)
+        month_end = date(year, month, calendar.monthrange(year, month)[1])
+
+        brigade_data = []
+        for brigade in brigades:
+            day_strings = get_days_in_month(month, year)
+            ba_cells = []
+            for day_str in day_strings:
+                day_int = int(day_str)
+                ba_cells.append(
+                    {
+                        'day': day_str,
+                        'ba': BrigadeActivity.objects.filter(
+                            brigade=brigade,
+                            date__month=month,
+                            date__year=year,
+                            date__day=day_int,
+                        ).last(),
+                    }
+                )
+            load_stats = _build_brigade_load_stats(brigade, month_start, month_end)
+            brigade_data.append(
+                {
+                    'brigade': brigade,
+                    'total_ba': BrigadeActivity.objects.filter(
+                        brigade=brigade, date__month=month, date__year=year
+                    ).count(),
+                    'ba': ba_cells,
+                    'load': load_stats,
+                }
+            )
+
         context['brigade_data'] = brigade_data
+        context['daily_own_load'] = _daily_affiliation_load_ratios('own', year, month)
+        context['daily_external_load'] = _daily_affiliation_load_ratios('external', year, month)
 
         context['form'] = BrigadeActivityForm()
         context['work_object_form'] = WorkObjectForm()
@@ -538,8 +671,8 @@ class BrigadeLoadAnalysisView(LoginRequiredMixin, StaffOnlyMixin, TemplateView):
     def dispatch(self, request, *args, **kwargs):
         self.brigade = get_object_or_404(Brigade, pk=kwargs['pk'])
         if hasattr(self.brigade, 'affiliation') and self.brigade.affiliation not in BRIGADE_MARKED_VALUES:
-            messages.warning(request, 'Проставьте тип бригады.')
-            return redirect('brigade_list')
+            messages.warning(request, 'Проставьте тип бригады (своя / чужая), чтобы открыть анализ.')
+            return redirect(reverse('brigade_table_total') + f'?month={date.today().month}&year={date.today().year}')
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -574,20 +707,22 @@ class OrganizationLoadAnalysisView(LoginRequiredMixin, StaffOnlyMixin, TemplateV
         rows = [_build_brigade_load_stats(brigade, start_date, end_date) for brigade in brigades]
 
         total_positive_days = sum(row['positive_days'] for row in rows)
-        period_calendar_days = rows[0]['days_total'] if rows else 0
+        org_capacity_days = sum(row['days_total'] for row in rows)
         brigades_in_report = len(rows)
-        org_capacity_days = brigades_in_report * period_calendar_days if period_calendar_days else 0
         org_percent = round((total_positive_days / org_capacity_days) * 100, 2) if org_capacity_days else 0
         own_rows = [row for row in rows if getattr(row['brigade'], 'affiliation', '') == 'own']
         external_rows = [row for row in rows if getattr(row['brigade'], 'affiliation', '') == 'external']
         own_positive_days = sum(row['positive_days'] for row in own_rows)
         own_count = len(own_rows)
-        own_capacity = own_count * period_calendar_days if period_calendar_days else 0
+        own_capacity = sum(row['days_total'] for row in own_rows)
         own_percent = round((own_positive_days / own_capacity) * 100, 2) if own_capacity else 0
         external_positive_days = sum(row['positive_days'] for row in external_rows)
         external_count = len(external_rows)
-        external_capacity = external_count * period_calendar_days if period_calendar_days else 0
+        external_capacity = sum(row['days_total'] for row in external_rows)
         external_percent = round((external_positive_days / external_capacity) * 100, 2) if external_capacity else 0
+        period_calendar_days = (
+            max((row['days_total'] for row in rows), default=0) if rows else 0
+        )
 
         context.update({
             'rows': rows,
@@ -630,8 +765,14 @@ def export_brigade_load_excel(request, pk):
     sheet.title = f"Загрузка {brigade.name[:20]}"
     sheet.append(['Бригада', brigade.name])
     sheet.append(['Период', f"{stats['period_start']} - {stats['period_end']}"])
-    sheet.append(['Положительных дней', stats['positive_days']])
-    sheet.append(['Дней в периоде', stats['days_total']])
+    sheet.append(['Рабочих дней (ВСЕГО)', stats['positive_days']])
+    sheet.append(['Итого дней (D, до последней заполненной даты)', stats['days_total']])
+    sheet.append(['ЗБС, суток', stats.get('zbs_days', '—')])
+    sheet.append(['ВНС, суток', stats.get('vns_days', '—')])
+    sheet.append(['Переезд', stats.get('pereezd_days', '—')])
+    sheet.append(['Движка', stats.get('dvizhka_days', '—')])
+    sheet.append(['Простой', stats.get('prostoy_days', '—')])
+    sheet.append(['Авария', stats.get('avarya_days', '—')])
     sheet.append(['Загрузка, %', stats['load_percent']])
     sheet.append([])
     sheet.append(['Тип активности', 'Количество', 'Положительная'])
@@ -653,38 +794,60 @@ def export_organization_load_excel(request):
     sheet = workbook.active
     sheet.title = "Организация"
     sheet.append(['Период', f"{start_date} - {end_date}"])
-    sheet.append(['Бригада', 'Тип', 'Положительных дней', 'Дней в периоде', 'Загрузка, %'])
+    sheet.append(
+        [
+            'Бригада',
+            'Тип',
+            'ВСЕГО раб.',
+            'D',
+            '%',
+            'ЗБС',
+            'ВНС',
+            'Переезд',
+            'Движка',
+            'Простой',
+        ]
+    )
     for row in rows:
         affiliation = getattr(row['brigade'], 'get_affiliation_display', None)
         affiliation_display = affiliation() if callable(affiliation) else '—'
-        sheet.append([row['brigade'].name, affiliation_display, row['positive_days'], row['days_total'], row['load_percent']])
+        sheet.append(
+            [
+                row['brigade'].name,
+                affiliation_display,
+                row['positive_days'],
+                row['days_total'],
+                row['load_percent'],
+                row.get('zbs_days', 0),
+                row.get('vns_days', 0),
+                row.get('pereezd_days', 0),
+                row.get('dvizhka_days', 0),
+                row.get('prostoy_days', 0),
+            ]
+        )
 
     total_positive_days = sum(row['positive_days'] for row in rows)
-    period_calendar_days = rows[0]['days_total'] if rows else 0
-    brigades_in_report = len(rows)
-    org_capacity = brigades_in_report * period_calendar_days if period_calendar_days else 0
+    org_capacity = sum(row['days_total'] for row in rows)
     total_percent = round((total_positive_days / org_capacity) * 100, 2) if org_capacity else 0
     own_rows = [row for row in rows if getattr(row['brigade'], 'affiliation', '') == 'own']
     external_rows = [row for row in rows if getattr(row['brigade'], 'affiliation', '') == 'external']
     own_positive_days = sum(row['positive_days'] for row in own_rows)
-    own_count = len(own_rows)
-    own_capacity = own_count * period_calendar_days if period_calendar_days else 0
+    own_capacity = sum(row['days_total'] for row in own_rows)
     own_percent = round((own_positive_days / own_capacity) * 100, 2) if own_capacity else 0
     external_positive_days = sum(row['positive_days'] for row in external_rows)
-    external_count = len(external_rows)
-    external_capacity = external_count * period_calendar_days if period_calendar_days else 0
+    external_capacity = sum(row['days_total'] for row in external_rows)
     external_percent = round((external_positive_days / external_capacity) * 100, 2) if external_capacity else 0
     sheet.append([])
     sheet.append(
         [
-            'Календарных дней в периоде (D)',
+            'Сумма D по бригадам (как в своде Excel)',
             '',
-            period_calendar_days,
+            org_capacity,
             '',
-            '',
+            total_percent,
         ]
     )
-    sheet.append(['ИТОГО полож. дней', '', total_positive_days, org_capacity, total_percent])
+    sheet.append(['ИТОГО раб. дней', '', total_positive_days, org_capacity, total_percent])
     sheet.append(['ИТОГО СВОИ', '', own_positive_days, own_capacity, own_percent])
     sheet.append(['ИТОГО ЧУЖИЕ', '', external_positive_days, external_capacity, external_percent])
 
