@@ -17,13 +17,13 @@
         <form method="get" class="mb-3" id="org-load-period-form" novalidate>
             <div class="row g-2 align-items-end">
                 <div class="col-md-3">
-                    <label class="form-label" for="org-load-mode">Режим</label>
+                    <label class="form-label" for="org-load-mode">Как задать период</label>
                     <select name="mode" id="org-load-mode" class="form-control">
-                        <option value="month" {% if mode == 'month' %}selected{% endif %}>Месяц + год</option>
-                        <option value="range" {% if mode == 'range' %}selected{% endif %}>Произвольный период</option>
+                        <option value="month" {% if mode == 'month' %}selected{% endif %}>Весь календарный месяц</option>
+                        <option value="range" {% if mode == 'range' %}selected{% endif %}>Произвольный интервал (с даты по дату)</option>
                     </select>
                 </div>
-                <div class="col-md-8 row g-2" id="org-load-fields-month">
+                <div class="col-md-7 row g-2" id="org-load-fields-month">
                     <div class="col-md-5">
                         <label class="form-label" for="org-load-month">Месяц</label>
                         <select name="month" id="org-load-month" class="form-control">
@@ -38,7 +38,8 @@
                                min="1900" max="2100" class="form-control">
                     </div>
                 </div>
-                <div class="col-md-8 row g-2 d-none" id="org-load-fields-range">
+
+                <div class="col-md-7 row g-2 d-none" id="org-load-fields-range">
                     <div class="col-md-5">
                         <label class="form-label" for="org-load-start">Дата с</label>
                         <input type="date" name="start_date" id="org-load-start" value="{{ start_date_input }}"
@@ -50,8 +51,9 @@
                                class="form-control">
                     </div>
                 </div>
-                <div class="col-md-1">
-                    <button class="btn btn-primary w-100" type="submit">OK</button>
+                <div class="col-md-2 col-lg-2">
+                    <label class="form-label d-block">&nbsp;</label>
+                    <button class="btn btn-primary w-100" type="submit">Показать отчёт</button>
                 </div>
             </div>
         </form>
