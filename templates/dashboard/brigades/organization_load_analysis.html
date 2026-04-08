@@ -20,7 +20,7 @@
                     <label class="form-label" for="org-load-mode">Как задать период</label>
                     <select name="mode" id="org-load-mode" class="form-control">
                         <option value="month" {% if mode == 'month' %}selected{% endif %}>Весь календарный месяц</option>
-                        <option value="range" {% if mode == 'range' %}selected{% endif %}>Произвольный интервал (с даты по дату)</option>
+                        <option value="range" {% if mode == 'range' %}selected{% endif %}>Произвольный интервал · даты с и по</option>
                     </select>
                 </div>
                 <div class="col-md-7 row g-2" id="org-load-fields-month">
@@ -38,7 +38,6 @@
                                min="1900" max="2100" class="form-control">
                     </div>
                 </div>
-
                 <div class="col-md-7 row g-2 d-none" id="org-load-fields-range">
                     <div class="col-md-5">
                         <label class="form-label" for="org-load-start">Дата с</label>
@@ -69,6 +68,7 @@
                 <tr>
                     <th>Срез</th>
                     <th class="text-center">Рабочих дней</th>
+                    <th class="text-center">Сумма D</th>
                     <th class="text-center">Загрузка, %</th>
                 </tr>
                 </thead>
@@ -76,20 +76,23 @@
                 <tr>
                     <td>Организация</td>
                     <td class="text-center">{{ organization_positive_days }}</td>
+                    <td class="text-center">{{ organization_capacity_days }}</td>
                     <td class="text-center fw-bold {% if organization_load_percent < 65 %}text-danger{% elif organization_load_percent < 80 %}text-warning{% else %}text-success{% endif %}">
                         {{ organization_load_percent }}%
                     </td>
                 </tr>
                 <tr>
-                    <td>Свои бригады ({{ own_brigades_count }})</td>
+                    <td>Свои бригады — {{ own_brigades_count }}</td>
                     <td class="text-center">{{ own_positive_days }}</td>
+                    <td class="text-center">{{ own_capacity_days }}</td>
                     <td class="text-center fw-bold {% if own_load_percent < 65 %}text-danger{% elif own_load_percent < 80 %}text-warning{% else %}text-success{% endif %}">
                         {{ own_load_percent }}%
                     </td>
                 </tr>
                 <tr>
-                    <td>Чужие бригады ({{ external_brigades_count }})</td>
+                    <td>Чужие бригады — {{ external_brigades_count }}</td>
                     <td class="text-center">{{ external_positive_days }}</td>
+                    <td class="text-center">{{ external_capacity_days }}</td>
                     <td class="text-center fw-bold {% if external_load_percent < 65 %}text-danger{% elif external_load_percent < 80 %}text-warning{% else %}text-success{% endif %}">
                         {{ external_load_percent }}%
                     </td>

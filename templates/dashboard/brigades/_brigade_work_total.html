@@ -1,6 +1,5 @@
 {% load custom_filters %}
 
-
 <div class="p-2">
     <div class="text-center">
         <h1>Сводная таблица активности бригад</h1>
@@ -12,7 +11,7 @@
             <a href="{{ next_month_url }}" class="btn btn-secondary"> &gt;&gt;&gt; </a>
             <a href="{% url 'organization_load_analysis' %}?mode=month&month={{ month }}&year={{ year }}"
                class="btn btn-outline-primary" title="Показатели загрузки и свод по организации">
-                Анализ загрузки (организация)
+                Анализ загрузки по организации
             </a>
         </div>
     </div>
@@ -79,7 +78,10 @@
                         <a href="{% url 'brigade_load_analysis' data.brigade.id %}?mode=month&month={{ month }}&year={{ year }}"
                            class="btn btn-sm btn-outline-primary mb-1" title="Показатели загрузки">Анализ</a><br>
                     {% else %}
-                        <span class="btn btn-sm btn-outline-secondary disabled mb-1" title="Укажите тип бригады (своя/чужая) в карточке">Анализ</span><br>
+                        <span class="d-inline-block mb-1" style="cursor: not-allowed;"
+                              title="Проставьте тип бригады: своя или чужая. Без этого расширенный анализ недоступен.">
+                            <span class="btn btn-sm btn-outline-secondary disabled" style="pointer-events: none;">Анализ</span>
+                        </span><br>
                     {% endif %}
                     <small><a href="{% url 'brigade_update_from_total' data.brigade.id %}"
                               class="btn btn-sm btn-outline-warning mb-1"><i class="fa fa-edit"></i></a></small>

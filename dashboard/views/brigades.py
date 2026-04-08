@@ -28,6 +28,7 @@ BRIGADE_MARKED_VALUES = {'own', 'external'}
 ZBS_ACTIVITY_PREFIX = '(ЗБС)'
 VNS_ACTIVITY_PREFIX = '(ВНС)'
 
+
 MONTH_CHOICES_RU = tuple(
     zip(
         range(1, 13),
@@ -612,7 +613,7 @@ class BrigadeLoadAnalysisView(LoginRequiredMixin, StaffOnlyMixin, TemplateView):
     def dispatch(self, request, *args, **kwargs):
         self.brigade = get_object_or_404(Brigade, pk=kwargs['pk'])
         if hasattr(self.brigade, 'affiliation') and self.brigade.affiliation not in BRIGADE_MARKED_VALUES:
-            messages.warning(request, 'Проставьте тип бригады (своя / чужая), чтобы открыть анализ.')
+            messages.warning(request, 'Проставьте тип бригады: своя или чужая, чтобы открыть анализ.')
             return redirect(reverse('brigade_table_total') + f'?month={date.today().month}&year={date.today().year}')
         return super().dispatch(request, *args, **kwargs)
 
@@ -620,8 +621,6 @@ class BrigadeLoadAnalysisView(LoginRequiredMixin, StaffOnlyMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         mode, start_date, end_date = _resolve_period(self.request)
         stats = _build_brigade_load_stats(self.brigade, start_date, end_date)
-        chart_labels = [row['work_type'] for row in stats['by_work_type']]
-        chart_data = [row['total'] for row in stats['by_work_type']]
 
         context.update({
             'brigade': self.brigade,
@@ -632,8 +631,6 @@ class BrigadeLoadAnalysisView(LoginRequiredMixin, StaffOnlyMixin, TemplateView):
             'month_input': start_date.month,
             'year_input': start_date.year,
             'month_choices': MONTH_CHOICES_RU,
-            'chart_labels_json': json.dumps(chart_labels, ensure_ascii=False),
-            'chart_data_json': json.dumps(chart_data),
         })
         return context
 
@@ -706,17 +703,35 @@ def export_brigade_load_excel(request, pk):
     sheet.title = f"Загрузка {brigade.name[:20]}"
     sheet.append(['Бригада', brigade.name])
     sheet.append(['Период', f"{stats['period_start']} - {stats['period_end']}"])
-    sheet.append(['Рабочих дней (ВСЕГО)', stats['positive_days']])
-    sheet.append(['Итого дней (D, до последней заполненной даты)', stats['days_total']])
-    sheet.append(['ЗБС, суток', stats.get('zbs_days', '—')])
-    sheet.append(['ВНС, суток', stats.get('vns_days', '—')])
-    sheet.append(['Переезд', stats.get('pereezd_days', '—')])
-    sheet.append(['Движка', stats.get('dvizhka_days', '—')])
-    sheet.append(['Простой', stats.get('prostoy_days', '—')])
-    sheet.append(['Авария', stats.get('avarya_days', '—')])
-    sheet.append(['Загрузка, %', stats['load_percent']])
+    sheet.append(
+        [
+            'ЗБС',
+            'ВНС',
+            'ВСЕГО',
+            'Переезд',
+            'Движка',
+            'Простой',
+            'Авария',
+            'Итого суток',
+            '%',
+        ]
+    )
+    sheet.append(
+        [
+            stats.get('zbs_days', 0),
+            stats.get('vns_days', 0),
+            stats['positive_days'],
+            stats.get('pereezd_days', 0),
+            stats.get('dvizhka_days', 0),
+            stats.get('prostoy_days', 0),
+            stats.get('avarya_days', 0),
+            stats.get('total_accounted_days', stats['days_total']),
+            stats['load_percent'],
+        ]
+    )
+    sheet.append(['D', stats['days_total']])
     sheet.append([])
-    sheet.append(['Тип активности', 'Количество', 'Положительная'])
+    sheet.append(['Тип активности', 'Количество дней', 'Положительная'])
     for row in stats['by_work_type']:
         sheet.append([row['work_type'], row['total'], 'Да' if row['is_positive'] else 'Нет'])
 
@@ -739,14 +754,14 @@ def export_organization_load_excel(request):
         [
             'Бригада',
             'Тип',
-            'ВСЕГО раб.',
             'D',
-            '%',
             'ЗБС',
             'ВНС',
+            'ВСЕГО',
             'Переезд',
             'Движка',
             'Простой',
+            '%',
         ]
     )
     for row in rows:
@@ -756,14 +771,14 @@ def export_organization_load_excel(request):
             [
                 row['brigade'].name,
                 affiliation_display,
-                row['positive_days'],
                 row['days_total'],
-                row['load_percent'],
                 row.get('zbs_days', 0),
                 row.get('vns_days', 0),
+                row['positive_days'],
                 row.get('pereezd_days', 0),
                 row.get('dvizhka_days', 0),
                 row.get('prostoy_days', 0),
+                row['load_percent'],
             ]
         )
 
@@ -779,18 +794,10 @@ def export_organization_load_excel(request):
     external_capacity = sum(row['days_total'] for row in external_rows)
     external_percent = round((external_positive_days / external_capacity) * 100, 2) if external_capacity else 0
     sheet.append([])
-    sheet.append(
-        [
-            'Сумма D по бригадам (как в своде Excel)',
-            '',
-            org_capacity,
-            '',
-            total_percent,
-        ]
-    )
-    sheet.append(['ИТОГО раб. дней', '', total_positive_days, org_capacity, total_percent])
-    sheet.append(['ИТОГО СВОИ', '', own_positive_days, own_capacity, own_percent])
-    sheet.append(['ИТОГО ЧУЖИЕ', '', external_positive_days, external_capacity, external_percent])
+    sheet.append(['Свод', 'Рабочих дней', 'Сумма D', 'Загрузка %'])
+    sheet.append(['Организация', total_positive_days, org_capacity, total_percent])
+    sheet.append(['Свои бригады', own_positive_days, own_capacity, own_percent])
+    sheet.append(['Чужие бригады', external_positive_days, external_capacity, external_percent])
 
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = 'attachment; filename=organization_load.xlsx'
