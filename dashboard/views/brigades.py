@@ -22,12 +22,13 @@ from dashboard.models import Brigade, Equipment, Manufacturer, WorkerActivity, B
     Category, BrigadeEquipmentRequirement
 from dashboard.utils.utils import get_days_in_month
 from openpyxl import Workbook
+from openpyxl.styles import Font
+
 
 NEGATIVE_BRIGADE_ACTIVITY_TYPES = {'Переезд', 'Простой', 'Авария', 'Движка', '-'}
 BRIGADE_MARKED_VALUES = {'own', 'external'}
 ZBS_ACTIVITY_PREFIX = '(ЗБС)'
 VNS_ACTIVITY_PREFIX = '(ВНС)'
-
 
 MONTH_CHOICES_RU = tuple(
     zip(
@@ -191,6 +192,142 @@ def _build_brigade_load_stats(brigade, start_date, end_date):
         'load_percent': load_percent,
         'load_ratio': load_ratio,
         'by_work_type': by_work_type,
+    }
+
+
+def _affiliation_day_worktypes_in_period(affiliation, period_start, period_end):
+    bids = list(Brigade.objects.filter(affiliation=affiliation).values_list('id', flat=True))
+    if not bids:
+        return {}, bids
+
+    per_day_brigade = (
+        BrigadeActivity.objects.filter(
+            brigade_id__in=bids,
+            date__range=(period_start, period_end),
+        )
+        .values('brigade_id', 'date')
+        .annotate(last_id=Max('id'))
+    )
+    id_list = [row['last_id'] for row in per_day_brigade]
+    cache = {}
+    for act in BrigadeActivity.objects.filter(id__in=id_list):
+        cache[(act.brigade_id, act.date)] = act.work_type
+    return cache, bids
+
+
+def _daily_affiliation_load_percent_series(affiliation, period_start, period_end):
+    """
+    По каждому календарному дню периода: доля бригад с положительной последней активностью дня, в процентах 0–100.
+    Знаменатель — число бригад данной аффилиации; при 0 бригадах для дня — None.
+    """
+    cache, bids = _affiliation_day_worktypes_in_period(affiliation, period_start, period_end)
+    n = len(bids)
+    if n == 0:
+        return [None] * ((period_end - period_start).days + 1 if period_end >= period_start else 0)
+
+    out = []
+    d = period_start
+    while d <= period_end:
+        good = 0
+        for bid in bids:
+            wt = cache.get((bid, d))
+            if wt and wt not in NEGATIVE_BRIGADE_ACTIVITY_TYPES:
+                good += 1
+        out.append(round((good / n) * 100, 2))
+        d += timedelta(days=1)
+    return out
+
+
+def _mean_positive(values):
+    usable = [v for v in values if v is not None]
+    if not usable:
+        return None
+    return round(sum(usable) / len(usable), 2)
+
+
+def _load_percent_css_class(p):
+    if p is None:
+        return 'text-muted'
+    if p < 65:
+        return 'text-danger'
+    if p < 80:
+        return 'text-warning'
+    return 'text-success'
+
+
+def _excel_font_for_load_percent(p):
+    if p is None:
+        return Font(color='666666')
+    if p < 65:
+        return Font(color='CC3333')
+    if p < 80:
+        return Font(color='C47A00')
+    return Font(color='198754')
+
+
+def build_org_daily_affiliation_display(start_date, end_date):
+    """
+    Данные для таблицы «% загрузки собственные / субподряд» по дням выбранного периода (учёт обрезки по сегодня).
+    """
+    period_start, period_end, span = _clip_period_to_today(start_date, end_date)
+    if span == 0 or period_end < period_start:
+        return {
+            'org_daily_headers': [],
+            'org_daily_own_cells': [],
+            'org_daily_external_cells': [],
+            'org_daily_own_avg': None,
+            'org_daily_external_avg': None,
+            'org_daily_clipped_label': f'{period_start} — {period_end}',
+        }
+
+    own_raw = _daily_affiliation_load_percent_series('own', period_start, period_end)
+    ext_raw = _daily_affiliation_load_percent_series('external', period_start, period_end)
+    own_avg = _mean_positive(own_raw)
+    ext_avg = _mean_positive(ext_raw)
+
+    headers = []
+    own_cells = []
+    ext_cells = []
+    d = period_start
+    i = 0
+    while d <= period_end:
+        headers.append(d.strftime('%d.%m'))
+        op = own_raw[i] if i < len(own_raw) else None
+        ep = ext_raw[i] if i < len(ext_raw) else None
+        own_cells.append(
+            {'value': op, 'css_class': _load_percent_css_class(op), 'suffix': '' if op is None else '%'}
+        )
+        ext_cells.append(
+            {'value': ep, 'css_class': _load_percent_css_class(ep), 'suffix': '' if ep is None else '%'}
+        )
+        d += timedelta(days=1)
+        i += 1
+
+    if headers:
+        own_cells.append(
+            {
+                'value': own_avg,
+                'css_class': _load_percent_css_class(own_avg) if own_avg is not None else 'text-muted',
+                'suffix': '%' if own_avg is not None else '',
+            }
+        )
+        ext_cells.append(
+            {
+                'value': ext_avg,
+                'css_class': _load_percent_css_class(ext_avg) if ext_avg is not None else 'text-muted',
+                'suffix': '%' if ext_avg is not None else '',
+            }
+        )
+
+    header_labels = headers + (['Итог'] if headers else [])
+
+    return {
+        'org_daily_headers': header_labels,
+        'org_daily_own_cells': own_cells,
+        'org_daily_external_cells': ext_cells,
+        'org_daily_own_avg': own_avg,
+        'org_daily_external_avg': ext_avg,
+        'org_daily_clipped_label': f'{period_start} — {period_end}',
     }
 
 # class BrigadeListView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, ListView):
@@ -690,6 +827,7 @@ class OrganizationLoadAnalysisView(LoginRequiredMixin, StaffOnlyMixin, TemplateV
                 for row in rows
             ]),
         })
+        context.update(build_org_daily_affiliation_display(start_date, end_date))
         return context
 
 
@@ -753,7 +891,6 @@ def export_organization_load_excel(request):
     sheet.append(
         [
             'Бригада',
-            'Тип',
             'D',
             'ЗБС',
             'ВНС',
@@ -765,12 +902,12 @@ def export_organization_load_excel(request):
         ]
     )
     for row in rows:
-        affiliation = getattr(row['brigade'], 'get_affiliation_display', None)
-        affiliation_display = affiliation() if callable(affiliation) else '—'
+        b = row['brigade']
+        aff = getattr(b, 'affiliation', '') or ''
+        prefix = '[С] ' if aff == 'own' else '[Ч] ' if aff == 'external' else ''
         sheet.append(
             [
-                row['brigade'].name,
-                affiliation_display,
+                f"{prefix}{b.name}",
                 row['days_total'],
                 row.get('zbs_days', 0),
                 row.get('vns_days', 0),
@@ -798,6 +935,44 @@ def export_organization_load_excel(request):
     sheet.append(['Организация', total_positive_days, org_capacity, total_percent])
     sheet.append(['Свои бригады', own_positive_days, own_capacity, own_percent])
     sheet.append(['Чужие бригады', external_positive_days, external_capacity, external_percent])
+
+    period_start, period_end, span = _clip_period_to_today(start_date, end_date)
+    if span > 0 and period_end >= period_start:
+        own_series = _daily_affiliation_load_percent_series('own', period_start, period_end)
+        ext_series = _daily_affiliation_load_percent_series('external', period_start, period_end)
+        o_avg = _mean_positive(own_series)
+        e_avg = _mean_positive(ext_series)
+        date_labels = []
+        dd = period_start
+        while dd <= period_end:
+            date_labels.append(dd.strftime('%d.%m'))
+            dd += timedelta(days=1)
+
+        sheet.append([])
+        sheet.append(['Загрузка по дням', f'{period_start} - {period_end}'])
+        header_row = ['Показатель'] + date_labels + ['Итог']
+        sheet.append(header_row)
+
+        def _write_pct_row(label, series, avg_val):
+            row_values = [label]
+            for p in series:
+                row_values.append(p if p is not None else '')
+            row_values.append(avg_val if avg_val is not None else '')
+            sheet.append(row_values)
+            out_row = sheet.max_row
+            for col_i, val in enumerate(row_values, start=1):
+                if col_i == 1:
+                    continue
+                if val == '' or val is None:
+                    continue
+                try:
+                    fval = float(val)
+                except (TypeError, ValueError):
+                    continue
+                sheet.cell(row=out_row, column=col_i).font = _excel_font_for_load_percent(fval)
+
+        _write_pct_row('% загрузки собственные', own_series, o_avg)
+        _write_pct_row('% загрузки субподряд', ext_series, e_avg)
 
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = 'attachment; filename=organization_load.xlsx'

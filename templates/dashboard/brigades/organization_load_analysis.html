@@ -38,6 +38,7 @@
                                min="1900" max="2100" class="form-control">
                     </div>
                 </div>
+
                 <div class="col-md-7 row g-2 d-none" id="org-load-fields-range">
                     <div class="col-md-5">
                         <label class="form-label" for="org-load-start">Дата с</label>
@@ -56,7 +57,7 @@
                 </div>
             </div>
         </form>
-
+        <hr>
         <div class="mb-3">
             <b>Дней в периоде:</b> {{ organization_calendar_days }}<br>
             <b>Бригад в отчёте:</b> {{ organization_brigades_count }}<br>
@@ -100,13 +101,50 @@
                 </tbody>
             </table>
         </div>
+        {% if org_daily_headers %}
+            <h4 class="h6 mt-4 mb-2">Загрузка по дням</h4>
+            <div class="table-responsive mb-3">
+                <table class="table table-sm table-bordered align-middle">
+                    <thead class="table-light">
+                    <tr>
+                        <th class="text-nowrap">Показатель</th>
+                        {% for h in org_daily_headers %}
+                            <th class="text-center text-nowrap small px-2">{{ h }}</th>
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td class="fw-semibold text-nowrap" style="background-color: #fff3cd;">% загрузки собственные</td>
+                        {% for cell in org_daily_own_cells %}
+                            <td class="text-center fw-semibold {{ cell.css_class }} small px-1">
+                                {% if cell.value is None %}—{% else %}{{ cell.value }}{{ cell.suffix }}{% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="fw-semibold text-nowrap" style="background-color: #f8d7da;">% загрузки субподряд</td>
+                        {% for cell in org_daily_external_cells %}
+                            <td class="text-center fw-semibold {{ cell.css_class }} small px-1">
+                                {% if cell.value is None %}—{% else %}{{ cell.value }}{{ cell.suffix }}{% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+
+
+        <hr>
 
         <div class="mb-2">
             <span class="me-3"><span class="d-inline-block rounded"
-                                    style="width:14px;height:14px;background:#198754;"></span> Своя</span>
+                                    style="width:14px;height:14px;background:#198754;"></span> Собственные</span>
             <span><span class="d-inline-block rounded"
-                          style="width:14px;height:14px;background:#fd7e14;"></span> Чужая</span>
+                          style="width:14px;height:14px;background:#fd7e14;"></span> Субподряд</span>
         </div>
+
 
         <a href="{% url 'organization_load_export_excel' %}?mode={{ mode }}&month={{ month_input }}&year={{ year_input }}&start_date={{ start_date_input }}&end_date={{ end_date_input }}"
            class="btn btn-success mb-3">
@@ -118,7 +156,6 @@
                 <thead>
                 <tr>
                     <th>Бригада</th>
-                    <th>Тип</th>
                     <th class="text-center">D</th>
                     <th class="text-center">ЗБС</th>
                     <th class="text-center">ВНС</th>
@@ -133,8 +170,22 @@
                 <tbody>
                 {% for row in rows %}
                     <tr>
-                        <td>{{ row.brigade.name }}</td>
-                        <td>{{ row.brigade.get_affiliation_display }}</td>
+                        <td class="align-middle">
+                            {% if row.brigade.affiliation == 'own' %}
+                                <span class="d-inline-block align-middle rounded-circle border border-white shadow-sm me-2 flex-shrink-0"
+                                      style="width:12px;height:12px;background:#198754;"
+                                      title="Своя бригада"></span>
+                            {% elif row.brigade.affiliation == 'external' %}
+                                <span class="d-inline-block align-middle rounded-circle border border-white shadow-sm me-2 flex-shrink-0"
+                                      style="width:12px;height:12px;background:#fd7e14;"
+                                      title="Чужая бригада"></span>
+                            {% else %}
+                                <span class="d-inline-block align-middle rounded-circle border border-secondary me-2 flex-shrink-0"
+                                      style="width:12px;height:12px;background:#adb5bd;"
+                                      title="Тип не указан"></span>
+                            {% endif %}
+                            {{ row.brigade.name }}
+                        </td>
                         <td class="text-center">{{ row.days_total }}</td>
                         <td class="text-center">{{ row.zbs_days }}</td>
                         <td class="text-center">{{ row.vns_days }}</td>
@@ -142,7 +193,9 @@
                         <td class="text-center">{{ row.pereezd_days }}</td>
                         <td class="text-center">{{ row.dvizhka_days }}</td>
                         <td class="text-center">{{ row.prostoy_days }}</td>
-                        <td class="text-center">{{ row.load_percent }}</td>
+                        <td class="text-center fw-semibold {% if row.load_percent < 65 %}text-danger{% elif row.load_percent < 80 %}text-warning{% else %}text-success{% endif %}">
+                            {{ row.load_percent }}%
+                        </td>
                         <td>
                             <a class="btn btn-sm btn-outline-info" href="{% url 'brigade_load_analysis' row.brigade.id %}?mode={{ mode }}&month={{ month_input }}&year={{ year_input }}&start_date={{ start_date_input }}&end_date={{ end_date_input }}">
                                 Анализ бригады
@@ -151,7 +204,7 @@
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="11" class="text-center">Нет данных для анализа.</td>
+                        <td colspan="10" class="text-center">Нет данных для анализа.</td>
                     </tr>
                 {% endfor %}
                 </tbody>
