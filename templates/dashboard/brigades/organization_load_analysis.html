@@ -56,16 +56,8 @@
             </div>
         </form>
 
-        <div class="mb-3 small text-muted">
-            Показатели считаются как в Excel: для каждой бригады <strong>D</strong> — число дней от начала периода до последней
-            даты с заполнением; <strong>ВСЕГО</strong> — рабочие сутки (типы ЗБС и ВНС). Свод по организации:
-            сумма рабочих дней / сумма <strong>D</strong> по бригадам в отчёте.
-        </div>
-
         <div class="mb-3">
-            <b>Всего рабочих дней (по бригадам):</b> {{ organization_positive_days }}<br>
-            <b>Сумма D по бригадам (база для %):</b> {{ organization_capacity_days }}<br>
-            <b>Макс. D у одной бригады (для ориентира):</b> {{ organization_calendar_days }}<br>
+            <b>Дней в периоде:</b> {{ organization_calendar_days }}<br>
             <b>Бригад в отчёте:</b> {{ organization_brigades_count }}<br>
         </div>
 
@@ -75,7 +67,6 @@
                 <tr>
                     <th>Срез</th>
                     <th class="text-center">Рабочих дней</th>
-                    <th class="text-center">Σ D</th>
                     <th class="text-center">Загрузка, %</th>
                 </tr>
                 </thead>
@@ -83,7 +74,6 @@
                 <tr>
                     <td>Организация</td>
                     <td class="text-center">{{ organization_positive_days }}</td>
-                    <td class="text-center">{{ organization_capacity_days }}</td>
                     <td class="text-center fw-bold {% if organization_load_percent < 65 %}text-danger{% elif organization_load_percent < 80 %}text-warning{% else %}text-success{% endif %}">
                         {{ organization_load_percent }}%
                     </td>
@@ -91,7 +81,6 @@
                 <tr>
                     <td>Свои бригады ({{ own_brigades_count }})</td>
                     <td class="text-center">{{ own_positive_days }}</td>
-                    <td class="text-center">{{ own_capacity_days }}</td>
                     <td class="text-center fw-bold {% if own_load_percent < 65 %}text-danger{% elif own_load_percent < 80 %}text-warning{% else %}text-success{% endif %}">
                         {{ own_load_percent }}%
                     </td>
@@ -99,7 +88,6 @@
                 <tr>
                     <td>Чужие бригады ({{ external_brigades_count }})</td>
                     <td class="text-center">{{ external_positive_days }}</td>
-                    <td class="text-center">{{ external_capacity_days }}</td>
                     <td class="text-center fw-bold {% if external_load_percent < 65 %}text-danger{% elif external_load_percent < 80 %}text-warning{% else %}text-success{% endif %}">
                         {{ external_load_percent }}%
                     </td>

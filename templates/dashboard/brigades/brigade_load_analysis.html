@@ -57,9 +57,9 @@
         </form>
 
         <div class="mb-3">
-            <b>Период (учёт):</b> {{ stats.period_start }} — {{ stats.period_end }}<br>
-            <b>D (дней до последней заполненной даты):</b> {{ stats.days_total }}<br>
-            <b>Загрузка:</b> {{ stats.load_percent }}% <span class="text-muted">(ВСЕГО рабочих / D)</span>
+            <b>Период:</b> {{ stats.period_start }} — {{ stats.period_end }}<br>
+            <b>Дней:</b> {{ stats.days_total }}<br>
+            <b>Загрузка:</b> {{ stats.load_percent }}%
         </div>
 
         <a href="{% url 'brigade_load_export_excel' brigade.id %}?mode={{ mode }}&month={{ month_input }}&year={{ year_input }}&start_date={{ start_date_input }}&end_date={{ end_date_input }}"
@@ -67,7 +67,7 @@
             <i class="fa fa-download"></i> Выгрузить Excel
         </a>
 
-        <h5 class="h6">Свод по суткам (как в Excel)</h5>
+        <h5 class="h6">Свод по суткам</h5>
         <div class="table-responsive mb-4">
             <table class="table table-sm table-bordered w-auto">
                 <thead class="table-light">

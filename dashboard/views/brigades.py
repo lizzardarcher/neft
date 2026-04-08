@@ -23,7 +23,6 @@ from dashboard.models import Brigade, Equipment, Manufacturer, WorkerActivity, B
 from dashboard.utils.utils import get_days_in_month
 from openpyxl import Workbook
 
-
 NEGATIVE_BRIGADE_ACTIVITY_TYPES = {'Переезд', 'Простой', 'Авария', 'Движка', '-'}
 BRIGADE_MARKED_VALUES = {'own', 'external'}
 ZBS_ACTIVITY_PREFIX = '(ЗБС)'
@@ -192,57 +191,6 @@ def _build_brigade_load_stats(brigade, start_date, end_date):
         'load_ratio': load_ratio,
         'by_work_type': by_work_type,
     }
-
-
-def _affiliation_day_worktypes(affiliation, year, month):
-    bids = list(Brigade.objects.filter(affiliation=affiliation).values_list('id', flat=True))
-    if not bids:
-        return {}, bids
-
-    per_day_brigade = (
-        BrigadeActivity.objects.filter(
-            brigade_id__in=bids,
-            date__year=year,
-            date__month=month,
-        )
-        .values('brigade_id', 'date')
-        .annotate(last_id=Max('id'))
-    )
-    id_list = [row['last_id'] for row in per_day_brigade]
-    cache = {}
-    for act in BrigadeActivity.objects.filter(id__in=id_list):
-        cache[(act.brigade_id, act.date)] = act.work_type
-    return cache, bids
-
-
-def _daily_affiliation_load_ratios(affiliation, year, month):
-    """
-    По каждому дню месяца: доля бригад данной аффилиации с «рабочим» типом в последней записи дня.
-    Бригады без записи за этот день не считаются рабочими. Доля = рабочих / всех бригад в группе.
-    """
-    month_last = calendar.monthrange(year, month)[1]
-    period_start = date(year, month, 1)
-    period_end_nominal = date(year, month, month_last)
-    _, period_end_clip, _ = _clip_period_to_today(period_start, period_end_nominal)
-
-    cache, bids = _affiliation_day_worktypes(affiliation, year, month)
-    n = len(bids)
-    if n == 0:
-        return [None] * month_last
-
-    out = []
-    for day_num in range(1, month_last + 1):
-        d = date(year, month, day_num)
-        if d > period_end_clip:
-            out.append(None)
-            continue
-        good = 0
-        for bid in bids:
-            wt = cache.get((bid, d))
-            if wt and wt not in NEGATIVE_BRIGADE_ACTIVITY_TYPES:
-                good += 1
-        out.append(round(good / n, 6) if n else None)
-    return out
 
 # class BrigadeListView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, ListView):
 #     model = Brigade
@@ -580,9 +528,6 @@ class BrigadeTableTotalView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMi
         if not 1900 <= year <= datetime.now().year + 10:
             year = datetime.now().year
 
-        month_start = date(year, month, 1)
-        month_end = date(year, month, calendar.monthrange(year, month)[1])
-
         brigade_data = []
         for brigade in brigades:
             day_strings = get_days_in_month(month, year)
@@ -600,7 +545,6 @@ class BrigadeTableTotalView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMi
                         ).last(),
                     }
                 )
-            load_stats = _build_brigade_load_stats(brigade, month_start, month_end)
             brigade_data.append(
                 {
                     'brigade': brigade,
@@ -608,13 +552,10 @@ class BrigadeTableTotalView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMi
                         brigade=brigade, date__month=month, date__year=year
                     ).count(),
                     'ba': ba_cells,
-                    'load': load_stats,
                 }
             )
 
         context['brigade_data'] = brigade_data
-        context['daily_own_load'] = _daily_affiliation_load_ratios('own', year, month)
-        context['daily_external_load'] = _daily_affiliation_load_ratios('external', year, month)
 
         context['form'] = BrigadeActivityForm()
         context['work_object_form'] = WorkObjectForm()
