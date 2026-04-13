@@ -1,5 +1,4 @@
 {% extends "layouts/base.html" %}
-
 {% block content %}
     <div class="container bg-light p-4 mt-4 rounded">
         <h3 class="mb-3">Загрузка бригады: {{ brigade.name }}</h3>
@@ -48,7 +47,8 @@
         </form>
         <div class="mb-3">
             <b>Период:</b> {{ stats.period_start }} — {{ stats.period_end }}<br>
-            <b>Дней:</b> {{ stats.days_total }}<br>
+            <b>Размеченных дней (D):</b> {{ stats.days_total }}<br>
+            <b>Неразмечено в выбранном периоде:</b> {{ stats.unmarked_days }}<br>
             <b>Загрузка:</b> {{ stats.load_percent }}%
         </div>
         <a href="{% url 'brigade_load_export_excel' brigade.id %}?mode={{ mode }}&month={{ month_input }}&year={{ year_input }}&start_date={{ start_date_input }}&end_date={{ end_date_input }}"

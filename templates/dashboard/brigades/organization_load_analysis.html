@@ -8,11 +8,9 @@
         }
     </style>
 {% endblock %}
-
 {% block content %}
     <div class="container bg-light p-4 mt-4 rounded">
         <h3 class="mb-3">Расширенный анализ по организации</h3>
-
         <form method="get" class="mb-3" id="org-load-period-form" novalidate>
             <div class="row g-2 align-items-end">
                 <div class="col-md-3">
@@ -149,13 +147,13 @@
            class="btn btn-success mb-3">
             <i class="fa fa-download"></i> Выгрузить Excel
         </a>
-
         <div class="table-responsive">
             <table class="table table-bordered">
                 <thead>
                 <tr>
                     <th>Бригада</th>
-                    <th class="text-center">D</th>
+                    <th class="text-center small text-nowrap" style="font-size: 0.78rem;">Д Всего</th>
+                    <th class="text-center small text-nowrap" style="font-size: 0.78rem;">Д Неразмечено</th>
                     <th class="text-center">ЗБС</th>
                     <th class="text-center">ВНС</th>
                     <th class="text-center">ВСЕГО</th>
@@ -186,6 +184,9 @@
                             {{ row.brigade.name }}
                         </td>
                         <td class="text-center">{{ row.days_total }}</td>
+                        <td class="text-center {% if row.unmarked_days > 0 %}text-danger fw-semibold{% else %}text-muted{% endif %}">
+                            {{ row.unmarked_days }}
+                        </td>
                         <td class="text-center">{{ row.zbs_days }}</td>
                         <td class="text-center">{{ row.vns_days }}</td>
                         <td class="text-center fw-semibold">{{ row.positive_days }}</td>
@@ -203,7 +204,7 @@
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="10" class="text-center">Нет данных для анализа.</td>
+                        <td colspan="11" class="text-center">Нет данных для анализа.</td>
                     </tr>
                 {% endfor %}
                 </tbody>
@@ -259,7 +260,8 @@
 
             const labels = {{ chart_labels_json|safe }};
             const values = {{ chart_data_json|safe }};
-            const colors = {{ chart_colors_json|safe }};
+            const barColors = {{ chart_bar_colors_json|safe }};
+            const labelColors = {{ chart_label_colors_json|safe }};
             const ctx = document.getElementById('orgLoadChart');
             if (ctx && labels.length) {
                 new Chart(ctx, {
@@ -269,7 +271,7 @@
                         datasets: [{
                             label: 'Загрузка, %',
                             data: values,
-                            backgroundColor: colors,
+                            backgroundColor: barColors,
                             borderWidth: 1,
                             maxBarThickness: 48
                         }]
@@ -278,7 +280,14 @@
                         responsive: true,
                         maintainAspectRatio: true,
                         scales: {
-                            y: {beginAtZero: true, max: 100}
+                            y: {beginAtZero: true, max: 100},
+                            x: {
+                                ticks: {
+                                    color: function (ctx) {
+                                        return labelColors[ctx.index] || '#6c757d';
+                                    }
+                                }
+                            }
                         }
                     }
                 });

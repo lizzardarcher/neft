@@ -24,7 +24,6 @@ from dashboard.utils.utils import get_days_in_month
 from openpyxl import Workbook
 from openpyxl.styles import Font
 
-
 NEGATIVE_BRIGADE_ACTIVITY_TYPES = {'Переезд', 'Простой', 'Авария', 'Движка', '-'}
 BRIGADE_MARKED_VALUES = {'own', 'external'}
 ZBS_ACTIVITY_PREFIX = '(ЗБС)'
@@ -39,7 +38,6 @@ MONTH_CHOICES_RU = tuple(
         ],
     )
 )
-
 
 def _clip_period_to_today(start_date, end_date):
     today = date.today()
@@ -97,9 +95,11 @@ def _empty_brigade_load_stats(brigade, period_start, period_end):
         'brigade': brigade,
         'period_start': period_start,
         'period_end': period_end,
+        'days_in_period': 0,
         'days_total': 0,
         'days_denominator': 0,
         'days_with_any_activity': 0,
+        'unmarked_days': 0,
         'positive_days': 0,
         'zbs_days': 0,
         'vns_days': 0,
@@ -116,12 +116,12 @@ def _empty_brigade_load_stats(brigade, period_start, period_end):
 
 def _build_brigade_load_stats(brigade, start_date, end_date):
     """
-    Загрузка как в Excel заказёра: знаменатель D — число календарных дней от начала периода
-    до последней даты, где у бригады есть запись дня (последняя по id за дату).
+    Загрузка по бригаде: знаменатель D — число фактически размеченных дней в периоде
+    (по одной последней записи на день, выбираем max(id) на дату).
     Числитель — дни с «рабочим» типом (все не из NEGATIVE_BRIGADE_ACTIVITY_TYPES).
     Дополнительно: сутки ЗБС / ВНС / переезд / движка / простой / авария.
     """
-    period_start, period_end, _calendar_span = _clip_period_to_today(start_date, end_date)
+    period_start, period_end, days_in_period = _clip_period_to_today(start_date, end_date)
 
     if period_end < period_start:
         return _empty_brigade_load_stats(brigade, period_start, period_end)
@@ -138,10 +138,12 @@ def _build_brigade_load_stats(brigade, start_date, end_date):
         stats = _empty_brigade_load_stats(brigade, period_start, period_end)
         stats['period_start'] = period_start
         stats['period_end'] = period_end
+        stats['days_in_period'] = days_in_period
+        stats['unmarked_days'] = days_in_period
         return stats
 
-    last_date = max(act.date for act in effective_list)
-    D = (last_date - period_start).days + 1
+    D = len(effective_list)
+    unmarked_days = max(days_in_period - D, 0)
     zbs = vns = pereezd = prostoy = dvizhka = avarya = 0
     positive_days = 0
 
@@ -178,9 +180,11 @@ def _build_brigade_load_stats(brigade, start_date, end_date):
         'brigade': brigade,
         'period_start': period_start,
         'period_end': period_end,
+        'days_in_period': days_in_period,
         'days_total': D,
         'days_denominator': D,
         'days_with_any_activity': len(effective_list),
+        'unmarked_days': unmarked_days,
         'positive_days': positive_days,
         'zbs_days': zbs,
         'vns_days': vns,
@@ -238,6 +242,18 @@ def _daily_affiliation_load_percent_series(affiliation, period_start, period_end
     return out
 
 
+def _last_activity_date_for_affiliation(affiliation, period_start, period_end):
+    return (
+        BrigadeActivity.objects.filter(
+            brigade__affiliation=affiliation,
+            date__range=(period_start, period_end),
+        )
+        .order_by('-date')
+        .values_list('date', flat=True)
+        .first()
+    )
+
+
 def _mean_positive(values):
     usable = [v for v in values if v is not None]
     if not usable:
@@ -265,6 +281,22 @@ def _excel_font_for_load_percent(p):
     return Font(color='198754')
 
 
+def _load_percent_bar_color(p):
+    if p < 65:
+        return '#dc3545'
+    if p < 80:
+        return '#ffc107'
+    return '#198754'
+
+
+def _affiliation_chart_label_color(affiliation):
+    if affiliation == 'own':
+        return '#198754'
+    if affiliation == 'external':
+        return '#fd7e14'
+    return '#6c757d'
+
+
 def build_org_daily_affiliation_display(start_date, end_date):
     """
     Данные для таблицы «% загрузки собственные / субподряд» по дням выбранного периода (учёт обрезки по сегодня).
@@ -280,8 +312,27 @@ def build_org_daily_affiliation_display(start_date, end_date):
             'org_daily_clipped_label': f'{period_start} — {period_end}',
         }
 
-    own_raw = _daily_affiliation_load_percent_series('own', period_start, period_end)
-    ext_raw = _daily_affiliation_load_percent_series('external', period_start, period_end)
+    own_last = _last_activity_date_for_affiliation('own', period_start, period_end)
+    ext_last = _last_activity_date_for_affiliation('external', period_start, period_end)
+    display_end = max([d for d in [own_last, ext_last] if d is not None], default=None)
+    if display_end is None:
+        return {
+            'org_daily_headers': [],
+            'org_daily_own_cells': [],
+            'org_daily_external_cells': [],
+            'org_daily_own_avg': None,
+            'org_daily_external_avg': None,
+            'org_daily_clipped_label': f'{period_start} — {period_end}',
+        }
+
+    own_raw = (
+        _daily_affiliation_load_percent_series('own', period_start, own_last)
+        if own_last is not None else []
+    )
+    ext_raw = (
+        _daily_affiliation_load_percent_series('external', period_start, ext_last)
+        if ext_last is not None else []
+    )
     own_avg = _mean_positive(own_raw)
     ext_avg = _mean_positive(ext_raw)
 
@@ -290,7 +341,7 @@ def build_org_daily_affiliation_display(start_date, end_date):
     ext_cells = []
     d = period_start
     i = 0
-    while d <= period_end:
+    while d <= display_end:
         headers.append(d.strftime('%d.%m'))
         op = own_raw[i] if i < len(own_raw) else None
         ep = ext_raw[i] if i < len(ext_raw) else None
@@ -327,7 +378,7 @@ def build_org_daily_affiliation_display(start_date, end_date):
         'org_daily_external_cells': ext_cells,
         'org_daily_own_avg': own_avg,
         'org_daily_external_avg': ext_avg,
-        'org_daily_clipped_label': f'{period_start} — {period_end}',
+        'org_daily_clipped_label': f'{period_start} — {display_end}',
     }
 
 # class BrigadeListView(LoginRequiredMixin, StaffOnlyMixin, SuccessMessageMixin, ListView):
@@ -778,6 +829,7 @@ class OrganizationLoadAnalysisView(LoginRequiredMixin, StaffOnlyMixin, TemplateV
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         mode, start_date, end_date = _resolve_period(self.request)
+        _, _, days_in_period = _clip_period_to_today(start_date, end_date)
         brigades = _get_marked_brigades_queryset(Brigade.objects.all().order_by('name'))
         rows = [_build_brigade_load_stats(brigade, start_date, end_date) for brigade in brigades]
 
@@ -795,10 +847,6 @@ class OrganizationLoadAnalysisView(LoginRequiredMixin, StaffOnlyMixin, TemplateV
         external_count = len(external_rows)
         external_capacity = sum(row['days_total'] for row in external_rows)
         external_percent = round((external_positive_days / external_capacity) * 100, 2) if external_capacity else 0
-        period_calendar_days = (
-            max((row['days_total'] for row in rows), default=0) if rows else 0
-        )
-
         context.update({
             'rows': rows,
             'mode': mode,
@@ -808,7 +856,7 @@ class OrganizationLoadAnalysisView(LoginRequiredMixin, StaffOnlyMixin, TemplateV
             'year_input': start_date.year,
             'month_choices': MONTH_CHOICES_RU,
             'organization_positive_days': total_positive_days,
-            'organization_calendar_days': period_calendar_days,
+            'organization_calendar_days': days_in_period,
             'organization_brigades_count': brigades_in_report,
             'organization_capacity_days': org_capacity_days,
             'organization_load_percent': org_percent,
@@ -822,8 +870,11 @@ class OrganizationLoadAnalysisView(LoginRequiredMixin, StaffOnlyMixin, TemplateV
             'external_load_percent': external_percent,
             'chart_labels_json': json.dumps([row['brigade'].name for row in rows], ensure_ascii=False),
             'chart_data_json': json.dumps([row['load_percent'] for row in rows]),
-            'chart_colors_json': json.dumps([
-                '#198754' if getattr(row['brigade'], 'affiliation', '') == 'own' else '#fd7e14'
+            'chart_bar_colors_json': json.dumps([
+                _load_percent_bar_color(row['load_percent']) for row in rows
+            ]),
+            'chart_label_colors_json': json.dumps([
+                _affiliation_chart_label_color(getattr(row['brigade'], 'affiliation', ''))
                 for row in rows
             ]),
         })
@@ -851,6 +902,7 @@ def export_brigade_load_excel(request, pk):
             'Простой',
             'Авария',
             'Итого суток',
+            'Неразмечено',
             '%',
         ]
     )
@@ -864,6 +916,7 @@ def export_brigade_load_excel(request, pk):
             stats.get('prostoy_days', 0),
             stats.get('avarya_days', 0),
             stats.get('total_accounted_days', stats['days_total']),
+            stats.get('unmarked_days', 0),
             stats['load_percent'],
         ]
     )
@@ -892,6 +945,7 @@ def export_organization_load_excel(request):
         [
             'Бригада',
             'D',
+            'Неразмечено',
             'ЗБС',
             'ВНС',
             'ВСЕГО',
@@ -909,6 +963,7 @@ def export_organization_load_excel(request):
             [
                 f"{prefix}{b.name}",
                 row['days_total'],
+                row.get('unmarked_days', 0),
                 row.get('zbs_days', 0),
                 row.get('vns_days', 0),
                 row['positive_days'],
@@ -936,28 +991,18 @@ def export_organization_load_excel(request):
     sheet.append(['Свои бригады', own_positive_days, own_capacity, own_percent])
     sheet.append(['Чужие бригады', external_positive_days, external_capacity, external_percent])
 
-    period_start, period_end, span = _clip_period_to_today(start_date, end_date)
-    if span > 0 and period_end >= period_start:
-        own_series = _daily_affiliation_load_percent_series('own', period_start, period_end)
-        ext_series = _daily_affiliation_load_percent_series('external', period_start, period_end)
-        o_avg = _mean_positive(own_series)
-        e_avg = _mean_positive(ext_series)
-        date_labels = []
-        dd = period_start
-        while dd <= period_end:
-            date_labels.append(dd.strftime('%d.%m'))
-            dd += timedelta(days=1)
-
+    daily = build_org_daily_affiliation_display(start_date, end_date)
+    if daily['org_daily_headers']:
         sheet.append([])
-        sheet.append(['Загрузка по дням', f'{period_start} - {period_end}'])
-        header_row = ['Показатель'] + date_labels + ['Итог']
+        sheet.append(['Загрузка по дням', daily['org_daily_clipped_label']])
+        header_row = ['Показатель'] + daily['org_daily_headers']
         sheet.append(header_row)
 
-        def _write_pct_row(label, series, avg_val):
-            row_values = [label]
-            for p in series:
-                row_values.append(p if p is not None else '')
-            row_values.append(avg_val if avg_val is not None else '')
+        def _write_pct_row(label, cells):
+            row_values = [label] + [
+                (cell['value'] if cell.get('value') is not None else '')
+                for cell in cells
+            ]
             sheet.append(row_values)
             out_row = sheet.max_row
             for col_i, val in enumerate(row_values, start=1):
@@ -971,8 +1016,8 @@ def export_organization_load_excel(request):
                     continue
                 sheet.cell(row=out_row, column=col_i).font = _excel_font_for_load_percent(fval)
 
-        _write_pct_row('% загрузки собственные', own_series, o_avg)
-        _write_pct_row('% загрузки субподряд', ext_series, e_avg)
+        _write_pct_row('% загрузки собственные', daily['org_daily_own_cells'])
+        _write_pct_row('% загрузки субподряд', daily['org_daily_external_cells'])
 
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = 'attachment; filename=organization_load.xlsx'
