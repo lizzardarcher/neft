@@ -66,7 +66,7 @@
                 <tr>
                     <th>Срез</th>
                     <th class="text-center">Рабочих дней</th>
-                    <th class="text-center">Сумма D</th>
+                    <th class="text-center">Календарных дней</th>
                     <th class="text-center">Загрузка, %</th>
                 </tr>
                 </thead>
@@ -132,16 +132,13 @@
             </div>
         {% endif %}
 
-
         <hr>
-
         <div class="mb-2">
             <span class="me-3"><span class="d-inline-block rounded"
                                     style="width:14px;height:14px;background:#198754;"></span> Собственные</span>
             <span><span class="d-inline-block rounded"
                           style="width:14px;height:14px;background:#fd7e14;"></span> Субподряд</span>
         </div>
-
 
         <a href="{% url 'organization_load_export_excel' %}?mode={{ mode }}&month={{ month_input }}&year={{ year_input }}&start_date={{ start_date_input }}&end_date={{ end_date_input }}"
            class="btn btn-success mb-3">
@@ -152,8 +149,8 @@
                 <thead>
                 <tr>
                     <th>Бригада</th>
-                    <th class="text-center small text-nowrap" style="font-size: 0.78rem;">Д Всего</th>
-                    <th class="text-center small text-nowrap" style="font-size: 0.78rem;">Д Неразмечено</th>
+                    <th class="text-center small text-nowrap" style="font-size: 0.78rem;">Дней</th>
+                    <th class="text-center small text-nowrap" style="font-size: 0.78rem;">Дней <small>неразмечено</small></th>
                     <th class="text-center">ЗБС</th>
                     <th class="text-center">ВНС</th>
                     <th class="text-center">ВСЕГО</th>
@@ -208,6 +205,23 @@
                     </tr>
                 {% endfor %}
                 </tbody>
+                {% if org_table_totals %}
+                    <tfoot class="table-light">
+                    <tr class="fw-semibold">
+                        <td>Итого</td>
+                        <td class="text-center">{{ org_table_totals.days_total }}</td>
+                        <td class="text-center">{{ org_table_totals.unmarked_days }}</td>
+                        <td class="text-center">{{ org_table_totals.zbs_days }}</td>
+                        <td class="text-center">{{ org_table_totals.vns_days }}</td>
+                        <td class="text-center">{{ org_table_totals.positive_days }}</td>
+                        <td class="text-center">{{ org_table_totals.pereezd_days }}</td>
+                        <td class="text-center">{{ org_table_totals.dvizhka_days }}</td>
+                        <td class="text-center">{{ org_table_totals.prostoy_days }}</td>
+                        <td class="text-center text-muted">—</td>
+                        <td></td>
+                    </tr>
+                    </tfoot>
+                {% endif %}
             </table>
         </div>
 

@@ -847,8 +847,21 @@ class OrganizationLoadAnalysisView(LoginRequiredMixin, StaffOnlyMixin, TemplateV
         external_count = len(external_rows)
         external_capacity = sum(row['days_total'] for row in external_rows)
         external_percent = round((external_positive_days / external_capacity) * 100, 2) if external_capacity else 0
+        org_table_totals = None
+        if rows:
+            org_table_totals = {
+                'days_total': sum(r['days_total'] for r in rows),
+                'unmarked_days': sum(r.get('unmarked_days', 0) for r in rows),
+                'zbs_days': sum(r.get('zbs_days', 0) for r in rows),
+                'vns_days': sum(r.get('vns_days', 0) for r in rows),
+                'positive_days': sum(r['positive_days'] for r in rows),
+                'pereezd_days': sum(r.get('pereezd_days', 0) for r in rows),
+                'dvizhka_days': sum(r.get('dvizhka_days', 0) for r in rows),
+                'prostoy_days': sum(r.get('prostoy_days', 0) for r in rows),
+            }
         context.update({
             'rows': rows,
+            'org_table_totals': org_table_totals,
             'mode': mode,
             'start_date_input': start_date.strftime('%Y-%m-%d'),
             'end_date_input': end_date.strftime('%Y-%m-%d'),
@@ -974,6 +987,22 @@ def export_organization_load_excel(request):
             ]
         )
 
+    if rows:
+        sheet.append(
+            [
+                'Итого',
+                sum(r['days_total'] for r in rows),
+                sum(r.get('unmarked_days', 0) for r in rows),
+                sum(r.get('zbs_days', 0) for r in rows),
+                sum(r.get('vns_days', 0) for r in rows),
+                sum(r['positive_days'] for r in rows),
+                sum(r.get('pereezd_days', 0) for r in rows),
+                sum(r.get('dvizhka_days', 0) for r in rows),
+                sum(r.get('prostoy_days', 0) for r in rows),
+                '',
+            ]
+        )
+
     total_positive_days = sum(row['positive_days'] for row in rows)
     org_capacity = sum(row['days_total'] for row in rows)
     total_percent = round((total_positive_days / org_capacity) * 100, 2) if org_capacity else 0
@@ -986,7 +1015,7 @@ def export_organization_load_excel(request):
     external_capacity = sum(row['days_total'] for row in external_rows)
     external_percent = round((external_positive_days / external_capacity) * 100, 2) if external_capacity else 0
     sheet.append([])
-    sheet.append(['Свод', 'Рабочих дней', 'Сумма D', 'Загрузка %'])
+    sheet.append(['Свод', 'Рабочих дней', 'Календарных дней', 'Загрузка %'])
     sheet.append(['Организация', total_positive_days, org_capacity, total_percent])
     sheet.append(['Свои бригады', own_positive_days, own_capacity, own_percent])
     sheet.append(['Чужие бригады', external_positive_days, external_capacity, external_percent])
